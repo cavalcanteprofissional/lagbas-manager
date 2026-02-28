@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+
+{% block title %}Cilindros - LabGas Manager{% endblock %}
+
+{% block content %}
+<h2 class="mb-4"><i class="bi bi-box-seam"></i> Cilindros</h2>
+
+<div class="card mb-4">
+    <div class="card-header">
+        <button class="btn btn-primary btn-sm" data-bs-toggle="collapse" data-bs-target="#formCilindro">
+            <i class="bi bi-plus-circle"></i> Novo Cilindro
+        </button>
+    </div>
+    <div class="collapse" id="formCilindro">
+        <div class="card-body">
+            <form method="POST">
+                <input type="hidden" name="action" value="create">
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Código *</label>
+                        <input type="text" name="codigo" class="form-control" placeholder="Ex: CIL-001" required>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Data de Compra *</label>
+                        <input type="date" name="data_compra" class="form-control" required>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Status</label>
+                        <select name="status" class="form-select">
+                            {% for status in status_options %}
+                            <option value="{{ status }}">{{ status|title }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Gás (kg)</label>
+                        <input type="number" name="gas_kg" class="form-control" value="1.0" step="0.1" min="0.1">
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Custo (R$)</label>
+                        <input type="number" name="custo" class="form-control" value="290.00" step="1" min="0">
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-success">Cadastrar</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        {% if cilindro %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Código</th>
+                        <th>Data Compra</th>
+                        <th>Gás (kg)</th>
+                        <th>Litros</th>
+                        <th>Custo</th>
+                        <th>Status</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for c in cilindro %}
+                    <tr>
+                        <td>{{ c.codigo }}</td>
+                        <td>{{ c.data_compra }}</td>
+                        <td>{{ "%.2f"|format(c.gas_kg) }}</td>
+                        <td>{{ "%.2f"|format(c.litros_equivalentes) }}</td>
+                        <td>R$ {{ "%.2f"|format(c.custo) }}</td>
+                        <td><span class="badge bg-{{ 'success' if c.status == 'ativo' else 'primary' if c.status == 'em_uso' else 'danger' if c.status == 'esgotado' else 'secondary' }}">{{ c.status }}</span></td>
+                        <td>
+                            <button class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#editModal{{ c.id }}">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <form method="POST" style="display:inline;">
+                                <input type="hidden" name="action" value="delete">
+                                <input type="hidden" name="cilindro_id" value="{{ c.id }}">
+                                <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Excluir?')">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    <div class="modal fade" id="editModal{{ c.id }}" tabindex="-1">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <form method="POST">
+                                    <input type="hidden" name="action" value="update">
+                                    <input type="hidden" name="cilindro_id" value="{{ c.id }}">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">Editar Cilindro</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <div class="mb-3">
+                                            <label class="form-label">Código</label>
+                                            <input type="text" name="codigo" class="form-control" value="{{ c.codigo }}" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Data de Compra</label>
+                                            <input type="date" name="data_compra" class="form-control" value="{{ c.data_compra }}" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Gás (kg)</label>
+                                            <input type="number" name="gas_kg" class="form-control" value="{{ c.gas_kg }}" step="0.1">
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Custo (R$)</label>
+                                            <input type="number" name="custo" class="form-control" value="{{ c.custo }}" step="1">
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Status</label>
+                                            <select name="status" class="form-select">
+                                                {% for s in status_options %}
+                                                <option value="{{ s }}" {% if c.status == s %}selected{% endif %}>{{ s|title }}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="submit" class="btn btn-primary">Salvar</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="text-muted">Nenhum cilindro cadastrado.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+
+{% block title %}Amostras - LabGas Manager{% endblock %}
+
+{% block content %}
+<h2 class="mb-4"><i class="bi bi-graph-up"></i> Amostras</h2>
+
+<div class="card mb-4">
+    <div class="card-header">
+        <button class="btn btn-primary btn-sm" data-bs-toggle="collapse" data-bs-target="#formAmostra">
+            <i class="bi bi-plus-circle"></i> Nova Amostra
+        </button>
+    </div>
+    <div class="collapse" id="formAmostra">
+        <div class="card-body">
+            <form method="POST">
+                <div class="row">
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">Data *</label>
+                        <input type="date" name="data" class="form-control" required>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">Hora *</label>
+                        <input type="time" name="hora" class="form-control" required>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">Cilindro *</label>
+                        <select name="cilindro_id" class="form-select" required>
+                            <option value="">Selecione</option>
+                            {% for c in cilindro %}
+                            <option value="{{ c.id }}">{{ c.codigo }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">Elemento *</label>
+                        <select name="elemento_id" class="form-select" required>
+                            <option value="">Selecione</option>
+                            {% for e in elementos %}
+                            <option value="{{ e.id }}">{{ e.nome }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div">
+                    <div class="row class="col-md-4 mb-3">
+                        <label class="form-label">Tempo Chama (segundos)</label>
+                        <input type="number" name="tempo_chama_segundos" class="form-control" value="0" min="0">
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-success">Registrar</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        {% if amostras %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Data</th>
+                        <th>Hora</th>
+                        <th>Cilindro</th>
+                        <th>Elemento</th>
+                        <th>Tempo (s)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for a in amostras %}
+                    <tr>
+                        <td>{{ a.data }}</td>
+                        <td>{{ a.hora }}</td>
+                        <td>{{ a.cilindro_nome }}</td>
+                        <td>{{ a.elemento_nome }}</td>
+                        <td>{{ a.tempo_chama_segundos }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="text-muted">Nenhuma amostra registrada.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

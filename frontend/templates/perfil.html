@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block title %}Perfil - LabGas Manager{% endblock %}
+
+{% block content %}
+<h2 class="mb-4"><i class="bi bi-person"></i> Perfil do Usuário</h2>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Informações do Usuário</h5>
+            </div>
+            <div class="card-body">
+                <p><strong>Email:</strong> {{ current_user.email }}</p>
+                <p><strong>Função:</strong> Usuário</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Estatísticas</h5>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-6 mb-3">
+                        <h3>{{ stats.cilindros }}</h3>
+                        <small>Cilindros</small>
+                    </div>
+                    <div class="col-6 mb-3">
+                        <h3>{{ stats.elementos }}</h3>
+                        <small>Elementos</small>
+                    </div>
+                    <div class="col-6">
+                        <h3>{{ stats.amostras }}</h3>
+                        <small>Amostras</small>
+                    </div>
+                    <div class="col-6">
+                        <h3>{{ stats.tempos }}</h3>
+                        <small>Registros</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

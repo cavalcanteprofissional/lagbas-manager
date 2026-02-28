@@ -1,283 +1,434 @@
-import streamlit as st
 import os
-import sys
-import requests
+from datetime import timedelta
+from flask import Flask, render_template, request, redirect, url_for, flash, session
+from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from dotenv import load_dotenv
+from supabase import create_client, Client
 
 load_dotenv()
 
-API_BASE_URL = os.getenv("API_BASE_URL", "http://localhost:5000")
+app = Flask(__name__)
+app.secret_key = os.getenv('SECRET_KEY', 'dev-secret-key-change-in-production')
+
+SUPABASE_URL = os.getenv('SUPABASE_URL')
+SUPABASE_KEY = os.getenv('SUPABASE_KEY')
+
+supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
+
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = 'login'
+
+LITROS_EQUIVALENTES_KG = 956.0
+GAS_KG_DEFAULT = 1.0
+CUSTO_DEFAULT = 290.00
+CILINDRO_STATUS = ['ativo', 'em_uso', 'esgotado', 'inativo']
+
+ELEMENTOS_PADRAO = [
+    {"nome": "Antimônio", "consumo_lpm": 1.5},
+    {"nome": "Alumínio", "consumo_lpm": 4.5},
+    {"nome": "Arsênio", "consumo_lpm": 1.5},
+    {"nome": "Bário", "consumo_lpm": 4.5},
+    {"nome": "Cádmio", "consumo_lpm": 1.5},
+    {"nome": "Chumbo", "consumo_lpm": 2.0},
+    {"nome": "Cobalto", "consumo_lpm": 1.5},
+    {"nome": "Cobre", "consumo_lpm": 1.5},
+    {"nome": "Cromo", "consumo_lpm": 4.5},
+    {"nome": "Estanho FAAS", "consumo_lpm": 4.5},
+    {"nome": "Estanho HG", "consumo_lpm": 1.5},
+    {"nome": "Ferro", "consumo_lpm": 2.0},
+    {"nome": "Manganês", "consumo_lpm": 1.5},
+    {"nome": "Mercúrio", "consumo_lpm": 0},
+    {"nome": "Molibdênio", "consumo_lpm": 4.5},
+    {"nome": "Níquel", "consumo_lpm": 1.5},
+    {"nome": "Prata", "consumo_lpm": 1.5},
+    {"nome": "Selênio", "consumo_lpm": 2.0},
+    {"nome": "Zinco", "consumo_lpm": 1.5},
+    {"nome": "Tálio", "consumo_lpm": 1.5}
+]
+
+class User:
+    def __init__(self, id, email, user_data=None):
+        self.id = id
+        self.email = email
+        self.user_data = user_data or {}
+
+    def is_authenticated(self):
+        return True
+
+    def is_active(self):
+        return True
+
+    def is_anonymous(self):
+        return False
+
+    def get_id(self):
+        return self.id
 
 
-class APIClient:
-    def __init__(self):
-        self.base_url = API_BASE_URL
-        self.token = None
-    
-    def set_token(self, token):
-        self.token = token
-    
-    def _get_headers(self):
-        headers = {"Content-Type": "application/json"}
-        if self.token:
-            headers["Authorization"] = f"Bearer {self.token}"
-        return headers
-    
-    def login(self, email, password):
-        response = requests.post(
-            f"{self.base_url}/api/auth/login",
-            json={"email": email, "password": password}
-        )
-        return response
-    
-    def register(self, email, password, name=""):
-        response = requests.post(
-            f"{self.base_url}/api/auth/register",
-            json={"email": email, "password": password, "name": name}
-        )
-        return response
-    
-    def logout(self):
-        response = requests.post(
-            f"{self.base_url}/api/auth/logout",
-            headers=self._get_headers()
-        )
-        return response
-    
-    def get_cilindros(self):
-        response = requests.get(
-            f"{self.base_url}/api/cilindros",
-            headers=self._get_headers()
-        )
-        return response
-    
-    def create_cilindro(self, data):
-        response = requests.post(
-            f"{self.base_url}/api/cilindros",
-            json=data,
-            headers=self._get_headers()
-        )
-        return response
-    
-    def get_elementos(self):
-        response = requests.get(
-            f"{self.base_url}/api/elementos",
-            headers=self._get_headers()
-        )
-        return response
-    
-    def get_amostras(self):
-        response = requests.get(
-            f"{self.base_url}/api/amostras",
-            headers=self._get_headers()
-        )
-        return response
-    
-    def get_tempos(self):
-        response = requests.get(
-            f"{self.base_url}/api/tempo-chama",
-            headers=self._get_headers()
-        )
-        return response
+@login_manager.user_loader
+def load_user(user_id):
+    user_data = session.get('user_data')
+    if user_data:
+        return User(user_id, user_data.get('email'), user_data)
+    return None
 
 
-api_client = APIClient()
-
-st.set_page_config(page_title="LabGas Manager", page_icon="🔬", layout="wide")
-
-
-def init_session_state():
-    if 'authenticated' not in st.session_state:
-        st.session_state['authenticated'] = False
-    if 'token' not in st.session_state:
-        st.session_state['token'] = None
-    if 'user' not in st.session_state:
-        st.session_state['user'] = None
+def get_user_id():
+    return session.get('user_id')
 
 
-def check_auth():
-    init_session_state()
+@app.route('/')
+def index():
+    if current_user.is_authenticated:
+        return redirect(url_for('dashboard'))
+    return redirect(url_for('login'))
+
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if current_user.is_authenticated:
+        return redirect(url_for('dashboard'))
     
-    if not st.session_state['authenticated']:
-        render_login_page()
-        st.stop()
-    
-    return st.session_state['user']
-
-
-def render_login_page():
-    st.title("🔬 LabGas Manager - Login")
-    
-    with st.form("login_form"):
-        email = st.text_input("Email", placeholder="seu@email.com")
-        password = st.text_input("Senha", type="password")
+    if request.method == 'POST':
+        email = request.form.get('email')
+        password = request.form.get('password')
         
-        col1, col2 = st.columns(2)
-        with col1:
-            login_button = st.form_submit_button("Entrar", use_container_width=True)
-        with col2:
-            register_button = st.form_submit_button("Registrar", use_container_width=True)
-    
-    if login_button:
-        if email and password:
-            response = api_client.login(email, password)
-            if response.status_code == 200:
-                data = response.json()
-                st.session_state['token'] = data['token']
-                st.session_state['user'] = data['user']
-                st.session_state['authenticated'] = True
-                api_client.set_token(data['token'])
-                st.rerun()
-            else:
-                st.error(f"Erro no login: {response.json().get('message', 'Erro desconhecido')}")
-        else:
-            st.warning("Preencha email e senha")
-    
-    if register_button:
-        st.session_state['show_register'] = True
-    
-    if st.session_state.get('show_register', False):
-        with st.form("register_form"):
-            st.subheader("Registrar Novo Usuário")
-            new_email = st.text_input("Email", placeholder="novo@email.com")
-            new_password = st.text_input("Senha", type="password")
-            confirm_password = st.text_input("Confirmar Senha", type="password")
-            nome = st.text_input("Nome Completo")
+        try:
+            response = supabase.auth.sign_in_with_password({
+                'email': email,
+                'password': password
+            })
             
-            if st.form_submit_button("Criar Conta"):
-                if new_password != confirm_password:
-                    st.error("Senhas não conferem")
-                elif new_email and new_password:
-                    response = api_client.register(new_email, new_password, nome)
-                    if response.status_code in [200, 201]:
-                        st.success("Conta criada! Verifique seu email para confirmação.")
-                        st.session_state['show_register'] = False
-                        st.rerun()
-                    else:
-                        st.error(f"Erro no registro: {response.json().get('message', 'Erro desconhecido')}")
-                else:
-                    st.warning("Preencha todos os campos")
+            session['user_id'] = response.user.id
+            session['user_data'] = {
+                'id': response.user.id,
+                'email': response.user.email,
+                'email_confirmed_at': response.user.email_confirmed_at
+            }
+            
+            user = User(response.user.id, response.user.email, session['user_data'])
+            login_user(user, remember=True, duration=timedelta(days=7))
+            
+            flash('Login realizado com sucesso!', 'success')
+            return redirect(url_for('dashboard'))
+            
+        except Exception as e:
+            flash(f'Erro no login: {str(e)}', 'danger')
+    
+    return render_template('login.html')
+
+
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if current_user.is_authenticated:
+        return redirect(url_for('dashboard'))
+    
+    if request.method == 'POST':
+        email = request.form.get('email')
+        password = request.form.get('password')
+        confirm_password = request.form.get('confirm_password')
+        nome = request.form.get('nome', '')
         
-        if st.button("Voltar"):
-            st.session_state['show_register'] = False
-            st.rerun()
+        if password != confirm_password:
+            flash('Senhas não conferem.', 'danger')
+            return render_template('register.html')
+        
+        try:
+            response = supabase.auth.sign_up({
+                'email': email,
+                'password': password,
+                'options': {
+                    'data': {
+                        'nome': nome
+                    }
+                }
+            })
+            
+            flash('Conta criada! Verifique seu email para confirmação.', 'success')
+            return redirect(url_for('login'))
+            
+        except Exception as e:
+            flash(f'Erro no registro: {str(e)}', 'danger')
+    
+    return render_template('register.html')
 
 
+@app.route('/logout')
+@login_required
 def logout():
-    if st.session_state.get('token'):
-        api_client.set_token(st.session_state['token'])
-        api_client.logout()
-    st.session_state['authenticated'] = False
-    st.session_state['token'] = None
-    st.session_state['user'] = None
-    api_client.set_token(None)
-    st.rerun()
-
-
-APP_NAME = "LabGas Manager"
-APP_VERSION = "0.1.0"
-
-
-def main():
-    user = check_auth()
+    try:
+        supabase.auth.sign_out()
+    except:
+        pass
     
-    if user:
-        if st.session_state.get('token'):
-            api_client.set_token(st.session_state['token'])
-        
-        st.sidebar.title(f"🔬 {APP_NAME}")
-        st.sidebar.markdown(f"**Usuário:** {user.get('email', 'N/A')}")
-        st.sidebar.markdown(f"**Versão:** {APP_VERSION}")
-        
-        if st.sidebar.button("Logout"):
-            logout()
-        
-        st.title("📊 Dashboard - Visão Geral")
-        
-        response_cilindros = api_client.get_cilindros()
-        response_elementos = api_client.get_elementos()
-        response_amostras = api_client.get_amostras()
-        response_tempos = api_client.get_tempos()
-        
-        cilindro = response_cilindros.json() if response_cilindros.status_code == 200 else []
-        elementos = response_elementos.json() if response_elementos.status_code == 200 else []
-        amostras = response_amostras.json() if response_amostras.status_code == 200 else []
-        tempos_chama = response_tempos.json() if response_tempos.status_code == 200 else []
-        
-        col1, col2, col3, col4 = st.columns(4)
-        
-        with col1:
-            st.metric("Cilindros Cadastrados", len(cilindro))
-        with col2:
-            ativos = len([c for c in cilindro if c.get('status') == 'ativo'])
-            st.metric("Cilindros Ativos", ativos)
-        with col3:
-            st.metric("Elementos Cadastrados", len(elementos))
-        with col4:
-            st.metric("Amostras Registradas", len(amostras))
-        
-        st.markdown("---")
-        
-        import pandas as pd
-        import plotly.express as px
-        
-        col1, col2 = st.columns(2)
-        
-        with col1:
-            st.subheader("📦 Cilindros por Status")
-            if cilindro:
-                status_counts = {}
-                for c in cilindro:
-                    status = c.get('status', 'desconhecido')
-                    status_counts[status] = status_counts.get(status, 0) + 1
-                
-                df_status = pd.DataFrame(list(status_counts.items()), columns=['Status', 'Quantidade'])
-                fig_status = px.pie(df_status, values='Quantidade', names='Status', 
-                                  color='Status',
-                                  color_discrete_map={
-                                      'ativo': 'green',
-                                      'em_uso': 'blue',
-                                      'esgotado': 'red',
-                                      'inativo': 'gray'
-                                  })
-                st.plotly_chart(fig_status, use_container_width=True)
-            else:
-                st.info("Nenhum cilindro cadastrado.")
-        
-        with col2:
-            st.subheader("🧪 Elementos e Consumo (L/min)")
-            if elementos:
-                df_elementos = pd.DataFrame(elementos)
-                df_elementos = df_elementos.sort_values('consumo_lpm', ascending=True)
-                fig_consumo = px.bar(df_elementos, x='consumo_lpm', y='nome', 
-                                    orientation='h',
-                                    title='Consumo por Elemento (L/min)',
-                                    labels={'consumo_lpm': 'Consumo (L/min)', 'nome': 'Elemento'})
-                st.plotly_chart(fig_consumo, use_container_width=True)
-            else:
-                st.info("Nenhum elemento cadastrado.")
-        
-        st.markdown("---")
-        
-        st.subheader("⏱️ Tempo de Chama - Últimos Registros")
-        if tempos_chama:
-            df_tempos = pd.DataFrame(tempos_chama)
-            df_tempos = df_tempos.sort_values('created_at', ascending=False).head(10)
-            
-            df_tempos['tempo_formatado'] = df_tempos.apply(
-                lambda x: f"{x['horas']:02d}:{x['minutos']:02d}:{x['segundos']:02d}", axis=1
-            )
-            
-            st.dataframe(
-                df_tempos[['tempo_formatado', 'created_at']].rename(
-                    columns={'tempo_formatado': 'Tempo', 'created_at': 'Data/Hora'}
-                ),
-                use_container_width=True,
-                hide_index=True
-            )
-        else:
-            st.info("Nenhum tempo de chama registrado.")
+    session.clear()
+    logout_user()
+    flash('Logout realizado com sucesso!', 'success')
+    return redirect(url_for('login'))
 
 
-if __name__ == "__main__":
-    main()
+@app.route('/dashboard')
+@login_required
+def dashboard():
+    user_id = get_user_id()
+    
+    cilindro_response = supabase.table('cilindro').select('*').eq('user_id', user_id).execute()
+    elementos_response = supabase.table('elemento').select('*').eq('user_id', user_id).execute()
+    amostras_response = supabase.table('amostra').select('*').eq('user_id', user_id).execute()
+    tempos_response = supabase.table('tempo_chama').select('*').eq('user_id', user_id).execute()
+    
+    cilindro = cilindro_response.data or []
+    elementos = elementos_response.data or []
+    amostras = amostras_response.data or []
+    tempos_chama = tempos_response.data or []
+    
+    ativos = len([c for c in cilindro if c.get('status') == 'ativo'])
+    
+    status_counts = {}
+    for c in cilindro:
+        status = c.get('status', 'desconhecido')
+        status_counts[status] = status_counts.get(status, 0) + 1
+    
+    return render_template('dashboard.html',
+                         cilindro=cilindro,
+                         elementos=elementos,
+                         amostras=amostras,
+                         tempos_chama=tempos_chama,
+                         ativos=ativos,
+                         status_counts=status_counts)
+
+
+@app.route('/cilindros', methods=['GET', 'POST'])
+@login_required
+def cilindro_list():
+    user_id = get_user_id()
+    
+    if request.method == 'POST':
+        action = request.form.get('action')
+        
+        if action == 'create':
+            codigo = request.form.get('codigo')
+            data_compra = request.form.get('data_compra')
+            gas_kg = float(request.form.get('gas_kg', GAS_KG_DEFAULT))
+            custo = float(request.form.get('custo', CUSTO_DEFAULT))
+            status = request.form.get('status', 'ativo')
+            
+            existing = supabase.table('cilindro').select('id').eq('codigo', codigo).eq('user_id', user_id).execute()
+            if existing.data:
+                flash('Código já existe.', 'danger')
+            else:
+                supabase.table('cilindro').insert({
+                    'codigo': codigo,
+                    'data_compra': data_compra,
+                    'gas_kg': gas_kg,
+                    'litros_equivalentes': gas_kg * LITROS_EQUIVALENTES_KG,
+                    'custo': custo,
+                    'status': status,
+                    'user_id': user_id
+                }).execute()
+                flash('Cilindro cadastrado!', 'success')
+        
+        elif action == 'update':
+            cilindro_id = request.form.get('cilindro_id')
+            codigo = request.form.get('codigo')
+            data_compra = request.form.get('data_compra')
+            gas_kg = float(request.form.get('gas_kg'))
+            custo = float(request.form.get('custo'))
+            status = request.form.get('status')
+            
+            supabase.table('cilindro').update({
+                'codigo': codigo,
+                'data_compra': data_compra,
+                'gas_kg': gas_kg,
+                'litros_equivalentes': gas_kg * LITROS_EQUIVALENTES_KG,
+                'custo': custo,
+                'status': status
+            }).eq('id', cilindro_id).execute()
+            flash('Cilindro atualizado!', 'success')
+        
+        elif action == 'delete':
+            cilindro_id = request.form.get('cilindro_id')
+            supabase.table('cilindro').delete().eq('id', cilindro_id).execute()
+            flash('Cilindro excluído!', 'success')
+        
+        return redirect(url_for('cilindro_list'))
+    
+    response = supabase.table('cilindro').select('*').eq('user_id', user_id).execute()
+    cilindro = response.data or []
+    
+    return render_template('cilindro.html', cilindro=cilindro, status_options=CILINDRO_STATUS)
+
+
+@app.route('/elementos', methods=['GET', 'POST'])
+@login_required
+def elemento_list():
+    user_id = get_user_id()
+    
+    response = supabase.table('elemento').select('*').eq('user_id', user_id).execute()
+    elementos = response.data or []
+    
+    if not elementos:
+        for elem in ELEMENTOS_PADRAO:
+            supabase.table('elemento').insert({
+                'nome': elem['nome'],
+                'consumo_lpm': elem['consumo_lpm'],
+                'user_id': user_id
+            }).execute()
+        response = supabase.table('elemento').select('*').eq('user_id', user_id).execute()
+        elementos = response.data or []
+    
+    if request.method == 'POST':
+        action = request.form.get('action')
+        
+        if action == 'create':
+            nome = request.form.get('nome')
+            consumo_lpm = float(request.form.get('consumo_lpm'))
+            
+            existing = supabase.table('elemento').select('id').eq('nome', nome).eq('user_id', user_id).execute()
+            if existing.data:
+                flash('Elemento já existe.', 'danger')
+            else:
+                supabase.table('elemento').insert({
+                    'nome': nome,
+                    'consumo_lpm': consumo_lpm,
+                    'user_id': user_id
+                }).execute()
+                flash('Elemento cadastrado!', 'success')
+        
+        elif action == 'update':
+            elemento_id = request.form.get('elemento_id')
+            nome = request.form.get('nome')
+            consumo_lpm = float(request.form.get('consumo_lpm'))
+            
+            supabase.table('elemento').update({
+                'nome': nome,
+                'consumo_lpm': consumo_lpm
+            }).eq('id', elemento_id).execute()
+            flash('Elemento atualizado!', 'success')
+        
+        elif action == 'delete':
+            elemento_id = request.form.get('elemento_id')
+            supabase.table('elemento').delete().eq('id', elemento_id).execute()
+            flash('Elemento excluído!', 'success')
+        
+        return redirect(url_for('elemento_list'))
+    
+    return render_template('elemento.html', elementos=elementos)
+
+
+@app.route('/amostras', methods=['GET', 'POST'])
+@login_required
+def amostra_list():
+    user_id = get_user_id()
+    
+    cilindro_response = supabase.table('cilindro').select('id,codigo').eq('user_id', user_id).execute()
+    elementos_response = supabase.table('elemento').select('id,nome').eq('user_id', user_id).execute()
+    
+    cilindro = cilindro_response.data or []
+    elementos = elementos_response.data or []
+    
+    if request.method == 'POST':
+        data = request.form.get('data')
+        hora = request.form.get('hora')
+        cilindro_id = request.form.get('cilindro_id')
+        elemento_id = request.form.get('elemento_id')
+        tempo_chama_segundos = int(request.form.get('tempo_chama_segundos', 0))
+        
+        supabase.table('amostra').insert({
+            'data': data,
+            'hora': hora,
+            'cilindro_id': cilindro_id,
+            'elemento_id': elemento_id,
+            'tempo_chama_segundos': tempo_chama_segundos,
+            'user_id': user_id
+        }).execute()
+        flash('Amostra registrada!', 'success')
+        return redirect(url_for('amostra_list'))
+    
+    response = supabase.table('amostra').select('*').eq('user_id', user_id).order('data', desc=True).execute()
+    amostras = response.data or []
+    
+    for amostra in amostras:
+        for c in cilindro:
+            if c.get('id') == amostra.get('cilindro_id'):
+                amostra['cilindro_nome'] = c.get('codigo')
+                break
+        for e in elementos:
+            if e.get('id') == amostra.get('elemento_id'):
+                amostra['elemento_nome'] = e.get('nome')
+                break
+    
+    return render_template('amostra.html', amostras=amostras, cilindro=cilindro, elementos=elementos)
+
+
+@app.route('/tempo-chama', methods=['GET', 'POST'])
+@login_required
+def tempo_chama_list():
+    user_id = get_user_id()
+    
+    cilindro_response = supabase.table('cilindro').select('id,codigo').eq('user_id', user_id).execute()
+    elementos_response = supabase.table('elemento').select('id,nome,consumo_lpm').eq('user_id', user_id).execute()
+    
+    cilindro = cilindro_response.data or []
+    elementos = elementos_response.data or []
+    
+    if request.method == 'POST':
+        horas = int(request.form.get('horas', 0))
+        minutos = int(request.form.get('minutos', 0))
+        segundos = int(request.form.get('segundos', 0))
+        cilindro_id = request.form.get('cilindro_id')
+        elemento_id = request.form.get('elemento_id')
+        
+        supabase.table('tempo_chama').insert({
+            'horas': horas,
+            'minutos': minutos,
+            'segundos': segundos,
+            'cilindro_id': cilindro_id,
+            'elemento_id': elemento_id,
+            'user_id': user_id
+        }).execute()
+        flash('Tempo de chama registrado!', 'success')
+        return redirect(url_for('tempo_chama_list'))
+    
+    response = supabase.table('tempo_chama').select('*').eq('user_id', user_id).order('created_at', desc=True).execute()
+    tempos = response.data or []
+    
+    for tempo in tempos:
+        for c in cilindro:
+            if c.get('id') == tempo.get('cilindro_id'):
+                tempo['cilindro_nome'] = c.get('codigo')
+                break
+        for e in elementos:
+            if e.get('id') == tempo.get('elemento_id'):
+                tempo['elemento_nome'] = e.get('nome')
+                tempo['consumo_lpm'] = e.get('consumo_lpm', 0)
+                total_segundos = tempo.get('horas', 0) * 3600 + tempo.get('minutos', 0) * 60 + tempo.get('segundos', 0)
+                tempo['consumo_litros'] = tempo['consumo_lpm'] * (total_segundos / 60)
+                break
+    
+    return render_template('tempo_chama.html', tempos=tempos, cilindro=cilindro, elementos=elementos)
+
+
+@app.route('/perfil')
+@login_required
+def perfil():
+    user_id = get_user_id()
+    
+    cilindro_response = supabase.table('cilindro').select('id').eq('user_id', user_id).execute()
+    elementos_response = supabase.table('elemento').select('id').eq('user_id', user_id).execute()
+    amostras_response = supabase.table('amostra').select('id').eq('user_id', user_id).execute()
+    tempos_response = supabase.table('tempo_chama').select('id').eq('user_id', user_id).execute()
+    
+    stats = {
+        'cilindros': len(cilindro_response.data or []),
+        'elementos': len(elementos_response.data or []),
+        'amostras': len(amostras_response.data or []),
+        'tempos': len(tempos_response.data or [])
+    }
+    
+    return render_template('perfil.html', stats=stats)
+
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5000, debug=True)

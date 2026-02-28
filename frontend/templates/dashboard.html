@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - LabGas Manager{% endblock %}
+
+{% block content %}
+<h2 class="mb-4"><i class="bi bi-speedometer2"></i> Dashboard</h2>
+
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card stat-card">
+            <div class="card-body">
+                <h5 class="card-title">Cilindros</h5>
+                <h2>{{ cilindro|length }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card green">
+            <div class="card-body">
+                <h5 class="card-title">Ativos</h5>
+                <h2>{{ ativos }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card orange">
+            <div class="card-body">
+                <h5 class="card-title">Elementos</h5>
+                <h2>{{ elementos|length }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card blue">
+            <div class="card-body">
+                <h5 class="card-title">Amostras</h5>
+                <h2>{{ amostras|length }}</h2>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-pie-chart"></i> Cilindros por Status</h5>
+            </div>
+            <div class="card-body">
+                {% if status_counts %}
+                <canvas id="statusChart"></canvas>
+                {% else %}
+                <p class="text-muted">Nenhum cilindro cadastrado.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-bar-chart"></i> Consumo por Elemento</h5>
+            </div>
+            <div class="card-body">
+                {% if elementos %}
+                <canvas id="elementosChart"></canvas>
+                {% else %}
+                <p class="text-muted">Nenhum elemento cadastrado.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0"><i class="bi bi-clock-history"></i> Últimos Tempos de Chama</h5>
+    </div>
+    <div class="card-body">
+        {% if tempos_chama %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Tempo</th>
+                        <th>Data</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for tempo in tempos_chama[:10] %}
+                    <tr>
+                        <td>{{ '%02d'|format(tempo.horas) }}:{{ '%02d'|format(tempo.minutos) }}:{{ '%02d'|format(tempo.segundos) }}</td>
+                        <td>{{ tempo.created_at[:10] if tempo.created_at else '-' }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="text-muted">Nenhum tempo de chama registrado.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+{% if status_counts %}
+new Chart(document.getElementById('statusChart'), {
+    type: 'doughnut',
+    data: {
+        labels: {{ status_counts.keys()|list }},
+        datasets: [{
+            data: {{ status_counts.values()|list }},
+            backgroundColor: ['#28a745', '#007bff', '#dc3545', '#6c757d']
+        }]
+    }
+});
+{% endif %}
+
+{% if elementos %}
+new Chart(document.getElementById('elementosChart'), {
+    type: 'bar',
+    data: {
+        labels: {{ elementos|map(attribute='nome')|list }},
+        datasets: [{
+            label: 'Consumo (L/min)',
+            data: {{ elementos|map(attribute='consumo_lpm')|list }},
+            backgroundColor: '#667eea'
+        }]
+    },
+    options: {
+        indexAxis: 'y',
+        responsive: true
+    }
+});
+{% endif %}
+</script>
+{% endblock %}
