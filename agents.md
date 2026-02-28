@@ -2,67 +2,69 @@
 
 ## Visão Geral
 
-Dashboard para gestão de cilindro de gás e elementos analisados em laboratório de química, utilizando **Flask** para APIs REST (CRUDs) e **Streamlit** para dashboards/visualizações, com **Supabase** como banco de dados PostgreSQL.
+Dashboard para gestão de cilindro de gás e elementos analisados em laboratório de química, utilizando **Flask** com **Jinja2** para o frontend web e **Supabase** como banco de dados PostgreSQL.
 
 ## Arquitetura do Sistema
 
 ```
 ┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
-│   Streamlit     │     │    Flask API    │     │    Supabase     │
-│  (Dashboards)  │────▶│  (CRUDs + Auth) │────▶│  (PostgreSQL)   │
+│   Flask+Jinja2  │     │    Flask API    │     │    Supabase     │
+│  (Frontend Web) │────▶│  (CRUDs + Auth) │────▶│  (PostgreSQL)   │
 │                 │     │                 │     │                 │
 └─────────────────┘     └─────────────────┘     └─────────────────┘
 ```
 
 ## Tecnologias
 
+- **Frontend**: Flask 3.0 + Jinja2 + Bootstrap 5
 - **Backend API**: Flask 3.0 + Flask-RESTX
-- **Frontend Dashboard**: Streamlit
 - **Banco de Dados**: Supabase (PostgreSQL)
-- **Autenticação**: Supabase Auth (via API Flask)
-- **Gerenciamento de Dependências**: Poetry (frontend), pip + venv (backend)
+- **Autenticação**: Supabase Auth (via Flask-Login)
+- **Gerenciamento de Dependências**: pip + venv
 - **Deploy**: Railway.app
 
 ## Estrutura de Diretórios
 
 ```
 labgas-manager/
-├── pyproject.toml              # Poetry config (Streamlit)
+├── pyproject.toml              # Poetry config (não usado atualmente)
 ├── poetry.lock
 ├── .env                       # Variáveis ambiente (não commitado)
 ├── .gitignore
 ├── agents.md                  # Este arquivo
 ├── readme.md                  # Documentação do projeto
-├── backend/                   # Flask API
-│   ├── app.py                 # Aplicação Flask principal
+├── backend/                   # Flask API (separado)
+│   ├── app.py                 # Aplicação Flask API
 │   ├── .env                   # Variáveis do backend
-│   ├── requirements.txt        # Dependências Python
+│   ├── requirements.txt       # Dependências Python
 │   ├── venv/                  # Virtual environment
-│   ├── Procfile               # Deploy Railway (web: gunicorn app:app)
+│   ├── Procfile               # Deploy Railway
 │   ├── config.py              # Configurações
 │   ├── routes/
-│   │   ├── __init__.py
-│   │   ├── auth.py            # Autenticação (login, register, logout)
+│   │   ├── auth.py            # Autenticação
 │   │   ├── cilindro.py        # CRUD Cilindros
 │   │   ├── elemento.py        # CRUD Elementos
 │   │   ├── amostra.py         # CRUD Amostras
 │   │   └── tempo_chama.py     # CRUD Tempo Chama
 │   └── utils/
 │       ├── supabase.py        # Cliente Supabase
-│       └── decorators.py       # Autenticação JWT
-└── frontend/                   # Streamlit Dashboard
-    ├── app.py                  # Página principal com login
-    ├── .env                    # API_BASE_URL
-    ├── requirements.txt        # Dependências
-    ├── Procfile               # Deploy Railway (web: streamlit run app.py)
-    ├── pages/
-    │   ├── 1_📦_Cilindros.py  # CRUD Cilindros
-    │   ├── 2_🧪_Elementos.py  # CRUD Elementos
-    │   ├── 3_📊_Amostras.py   # CRUD Amostras
-    │   ├── 4_🔥_Tempo_Chama.py # CRUD Tempo Chama
-    │   └── 5_👥_Usuarios.py   # Perfil do usuário
-    └── services/
-        └── api_client.py       # Cliente API REST
+│       └── decorators.py      # Autenticação JWT
+└── frontend/                   # Flask + Jinja2 (Web)
+    ├── app.py                 # Aplicação Flask principal
+    ├── .env                   # Variáveis do frontend
+    ├── requirements.txt        # Dependências Python
+    ├── venv/                  # Virtual environment
+    ├── Procfile               # Deploy Railway
+    └── templates/              # Templates HTML Jinja2
+        ├── base.html          # Layout base
+        ├── login.html         # Login
+        ├── register.html      # Registro
+        ├── dashboard.html     # Dashboard
+        ├── cilindro.html      # CRUD Cilindros
+        ├── elemento.html     # CRUD Elementos
+        ├── amostra.html      # CRUD Amostras
+        ├── tempo_chama.html  # CRUD Tempo Chama
+        └── perfil.html       # Perfil usuário
 ```
 
 ## Modelo de Dados (Supabase)
@@ -131,20 +133,7 @@ CREATE TABLE tempo_chama (
 );
 ```
 
-## Elementos Padrão (Dados Iniciais)
-
-```sql
-INSERT INTO elemento (nome, consumo_lpm) VALUES
-('Antimônio', 1.5), ('Alumínio', 4.5), ('Arsênio', 1.5),
-('Bário', 4.5), ('Cádmio', 1.5), ('Chumbo', 2.0),
-('Cobalto', 1.5), ('Cobre', 1.5), ('Cromo', 4.5),
-('Estanho FAAS', 4.5), ('Estanho HG', 1.5), ('Ferro', 2.0),
-('Manganês', 1.5), ('Mercúrio', 0), ('Molibdênio', 4.5),
-('Níquel', 1.5), ('Prata', 1.5), ('Selênio', 2.0),
-('Zinco', 1.5), ('Tálio', 1.5);
-```
-
-## Endpoints da API REST
+## Endpoints da API REST (Backend)
 
 ### Autenticação
 
@@ -196,72 +185,58 @@ INSERT INTO elemento (nome, consumo_lpm) VALUES
 
 ## Configuração de Ambiente
 
+### Variáveis de Ambiente (Frontend - frontend/.env)
+
+```env
+SECRET_KEY=sua_chave_secreta_aqui
+SUPABASE_URL=https://seu-projeto.supabase.co
+SUPABASE_KEY=sua_chave_anon
+```
+
 ### Variáveis de Ambiente (Backend - backend/.env)
 
 ```env
-# Flask
 FLASK_ENV=development
 FLASK_DEBUG=1
 SECRET_KEY=sua_chave_secreta_aqui
-
-# Supabase
 SUPABASE_URL=https://seu-projeto.supabase.co
 SUPABASE_KEY=sua_chave_anon
 SUPABASE_JWT_SECRET=seu_jwt_secret
 ```
 
-### Variáveis de Ambiente (Frontend - frontend/.env)
-
-```env
-# Streamlit
-API_BASE_URL=http://localhost:5000
-# Em produção: API_BASE_URL=https://seu-backend.railway.app
-```
-
 ## Como Rodar Local
 
-### Backend
-
-```bash
-cd backend
-
-# Criar virtual environment (primeira vez)
-python -m venv venv
-
-# Ativar e instalar dependências
-./venv/Scripts/pip install -r requirements.txt
-
-# Rodar o servidor
-./venv/Scripts/python app.py
-```
-
-### Frontend
+### Frontend (Flask + Jinja2)
 
 ```bash
 cd frontend
-poetry install
-poetry run streamlit run app.py
+python -m venv venv
+./venv/Scripts/pip install -r requirements.txt
+./venv/Scripts/python app.py
+```
+
+### Backend (API - opcional)
+
+```bash
+cd backend
+python -m venv venv
+./venv/Scripts/pip install -r requirements.txt
+./venv/Scripts/python app.py
 ```
 
 ## Deploy Railway
 
-### Backend
+### Frontend (Flask Web)
 - Build Command: (vazio)
 - Start Command: `gunicorn app:app`
 
-### Frontend
-- Build Command: (vazio)
-- Start Command: `streamlit run app.py`
-
 ## Fluxo de Autenticação
 
-1. Usuário faz login no Streamlit
-2. Streamlit envia credenciais para `/api/auth/login`
+1. Usuário acessa o frontend Flask
+2. Faz login com email/senha
 3. Flask valida no Supabase Auth
-4. Supabase retorna sessão
-5. Flask gera JWT interno e retorna ao Streamlit
-6. Streamlit armazena token no session_state
-7. Requisições futuras incluem token no header `Authorization: Bearer <token>`
+4. Sessão gerenciada por Flask-Login (cookies)
+5. Dados filtrados por user_id em todas as consultas
 
 ## Regras de Negócio
 
@@ -276,7 +251,7 @@ poetry run streamlit run app.py
 - Nomes únicos por usuário
 
 ### Amostra
-- Data/hora automática (editável)
+- Data/hora editável
 - Vincular a cilindro e elemento existentes
 
 ### Tempo Chama
@@ -289,4 +264,4 @@ poetry run streamlit run app.py
 - Não permitir duplicatas
 - Validar campos obrigatórios
 - Confirmar antes de deletar
-- Proteger rotas com JWT
+- Proteger rotas com @login_required

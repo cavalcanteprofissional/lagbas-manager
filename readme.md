@@ -1,44 +1,44 @@
 # LabGas Manager
 
-Dashboard para gestão de cilindro de gás e elementos analisados em laboratório de química, utilizando **Flask** para APIs REST (CRUDs) e **Streamlit** para dashboards/visualizações, com **Supabase** como banco de dados PostgreSQL.
+Dashboard para gestão de cilindro de gás e elementos analisados em laboratório de química, utilizando **Flask** com **Jinja2** para o frontend e **Supabase** como banco de dados.
 
 ## Arquitetura do Sistema
 
 ```
 ┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
-│   Streamlit     │     │    Flask API    │     │    Supabase     │
-│  (Dashboards)  │────▶│  (CRUDs + Auth) │────▶│  (PostgreSQL)   │
+│   Flask+Jinja2  │     │    Flask API    │     │    Supabase     │
+│  (Frontend Web) │────▶│  (CRUDs + Auth) │────▶│  (PostgreSQL)   │
 │                 │     │                 │     │                 │
 └─────────────────┘     └─────────────────┘     └─────────────────┘
 ```
 
 ## Tecnologias
 
+- **Frontend**: Flask 3.0 + Jinja2 + Bootstrap 5
 - **Backend API**: Flask 3.0 + Flask-RESTX
-- **Frontend Dashboard**: Streamlit
 - **Banco de Dados**: Supabase (PostgreSQL)
-- **Autenticação**: Supabase Auth (via API Flask)
-- **Gerenciamento de Dependências**: Poetry (frontend), pip + venv (backend)
+- **Autenticação**: Supabase Auth
+- **Gerenciamento de Dependências**: pip + venv
 - **Deploy**: Railway.app
 
 ## Estrutura de Diretórios
 
 ```
 labgas-manager/
-├── pyproject.toml              # Poetry config (Streamlit)
+├── pyproject.toml              # Poetry config (não usado atualmente)
 ├── poetry.lock
 ├── .env                       # Variáveis ambiente (raiz)
 ├── .gitignore
-├── agents.md                  # Documentação para IA
-├── backend/                   # Flask API
-│   ├── app.py                 # Aplicação Flask
+├── agents.md                  # Documentação técnica
+├── readme.md                  # Este arquivo
+├── backend/                   # Flask API (separado)
+│   ├── app.py                 # Aplicação Flask API
 │   ├── .env                   # Variáveis do backend
-│   ├── requirements.txt        # Dependências Python
-│   ├── venv/                  # Virtual environment (criar com `python -m venv venv`)
+│   ├── requirements.txt       # Dependências Python
+│   ├── venv/                  # Virtual environment
 │   ├── Procfile               # Deploy Railway
 │   ├── config.py              # Configurações
 │   ├── routes/
-│   │   ├── __init__.py
 │   │   ├── auth.py            # Autenticação
 │   │   ├── cilindro.py        # CRUD Cilindros
 │   │   ├── elemento.py        # CRUD Elementos
@@ -46,76 +46,71 @@ labgas-manager/
 │   │   └── tempo_chama.py     # CRUD Tempo Chama
 │   └── utils/
 │       ├── supabase.py        # Cliente Supabase
-│       └── decorators.py       # Autenticação JWT
-└── frontend/                   # Streamlit Dashboard
-    ├── app.py                  # Página principal
-    ├── .env                   # API_BASE_URL
-    ├── requirements.txt
+│       └── decorators.py      # Autenticação JWT
+└── frontend/                  # Flask + Jinja2 (Web)
+    ├── app.py                 # Aplicação Flask principal
+    ├── .env                   # Variáveis do frontend
+    ├── requirements.txt        # Dependências Python
+    ├── venv/                  # Virtual environment
     ├── Procfile               # Deploy Railway
-    ├── pages/
-    │   ├── 1_📦_Cilindros.py
-    │   ├── 2_🧪_Elementos.py
-    │   ├── 3_📊_Amostras.py
-    │   ├── 4_🔥_Tempo_Chama.py
-    │   └── 5_👥_Usuarios.py
-    ├── services/
-    │   └── api_client.py      # Cliente API
-    └── assets/
-        └── style.css
+    └── templates/              # Templates HTML
+        ├── base.html           # Layout base
+        ├── login.html          # Login
+        ├── register.html       # Registro
+        ├── dashboard.html      # Dashboard
+        ├── cilindro.html       # CRUD Cilindros
+        ├── elemento.html       # CRUD Elementos
+        ├── amostra.html        # CRUD Amostras
+        ├── tempo_chama.html    # CRUD Tempo Chama
+        └── perfil.html        # Perfil usuário
 ```
 
 ## Como Rodar Local
 
-### Backend (Flask API)
+### Frontend (Flask + Jinja2)
 
 ```bash
 # 1. Criar ambiente virtual (primeira vez)
-cd backend
+cd frontend
 python -m venv venv
 
-# 2. Ativar e instalar dependências
+# 2. Instalar dependências
 ./venv/Scripts/pip install -r requirements.txt
 
 # 3. Rodar o servidor
 ./venv/Scripts/python app.py
 ```
 
-O backend estará disponível em: `http://localhost:5000`
+O frontend estará disponível em: `http://localhost:5000`
 
-### Frontend (Streamlit)
+### Backend (API - opcional, se necessário separar)
 
 ```bash
-# 1. Instalar dependências
-cd frontend
-poetry install
-
-# 2. Rodar o app
-poetry run streamlit run app.py
+cd backend
+python -m venv venv
+./venv/Scripts/pip install -r requirements.txt
+./venv/Scripts/python app.py
 ```
-
-O frontend estará disponível em: `http://localhost:8501`
 
 ## Variáveis de Ambiente
-
-### backend/.env
-
-```env
-# Flask
-FLASK_ENV=development
-FLASK_DEBUG=1
-SECRET_KEY=sua_chave_secreta
-
-# Supabase
-SUPABASE_URL=https://seu-projeto.supabase.co
-SUPABASE_KEY=sua_chave_anon
-SUPABASE_JWT_SECRET=seu_jwt_secret
-```
 
 ### frontend/.env
 
 ```env
-API_BASE_URL=http://localhost:5000
-# Em produção: API_BASE_URL=https://seu-backend.railway.app
+SECRET_KEY=sua_chave_secreta
+SUPABASE_URL=https://seu-projeto.supabase.co
+SUPABASE_KEY=sua_chave_anon
+```
+
+### backend/.env
+
+```env
+FLASK_ENV=development
+FLASK_DEBUG=1
+SECRET_KEY=sua_chave_secreta
+SUPABASE_URL=https://seu-projeto.supabase.co
+SUPABASE_KEY=sua_chave_anon
+SUPABASE_JWT_SECRET=seu_jwt_secret
 ```
 
 ## Modelo de Dados (Supabase)
@@ -184,79 +179,21 @@ CREATE TABLE tempo_chama (
 );
 ```
 
-## Endpoints da API REST
-
-### Autenticação
-
-| Método | Endpoint | Descrição |
-|--------|----------|-----------|
-| POST | /api/auth/login | Login com email/senha |
-| POST | /api/auth/register | Registro de novo usuário |
-| POST | /api/auth/logout | Logout |
-| GET | /api/auth/me | Dados do usuário atual |
-
-### Cilindros
-
-| Método | Endpoint | Descrição |
-|--------|----------|-----------|
-| GET | /api/cilindros | Listar todos (filtrado por user_id) |
-| POST | /api/cilindros | Criar novo |
-| GET | /api/cilindros/{id} | Detalhes |
-| PUT | /api/cilindros/{id} | Atualizar |
-| DELETE | /api/cilindros/{id} | Deletar |
-
-### Elementos
-
-| Método | Endpoint | Descrição |
-|--------|----------|-----------|
-| GET | /api/elementos | Listar todos |
-| POST | /api/elementos | Criar novo |
-| GET | /api/elementos/{id} | Detalhes |
-| PUT | /api/elementos/{id} | Atualizar |
-| DELETE | /api/elementos/{id} | Deletar |
-
-### Amostras
-
-| Método | Endpoint | Descrição |
-|--------|----------|-----------|
-| GET | /api/amostras | Listar todas |
-| POST | /api/amostras | Criar nova |
-| GET | /api/amostras/{id} | Detalhes |
-| PUT | /api/amostras/{id} | Atualizar |
-| DELETE | /api/amostras/{id} | Deletar |
-
-### Tempo Chama
-
-| Método | Endpoint | Descrição |
-|--------|----------|-----------|
-| GET | /api/tempo-chama | Listar todos |
-| POST | /api/tempo-chama | Criar novo |
-| GET | /api/tempo-chama/{id} | Detalhes |
-| DELETE | /api/tempo-chama/{id} | Deletar |
-
 ## Deploy no Railway
 
-### Backend
+### Frontend (Flask Web)
 
 Crie um serviço Railway com:
 - Build Command: (vazio)
 - Start Command: `gunicorn app:app`
 
-### Frontend
+## Fluxo de Autenticação
 
-Crie outro serviço Railway com:
-- Build Command: (vazio)
-- Start Command: `streamlit run app.py`
-
-## Fluxicação
-
-1.o de Autent Usuário faz login no Streamlit
-2. Streamlit envia credenciais para `/api/auth/login`
+1. Usuário acessa o frontend Flask
+2. Faz login com email/senha
 3. Flask valida no Supabase Auth
-4. Supabase retorna sessão
-5. Flask gera JWT interno e retorna ao Streamlit
-6. Streamlit armazena token no session_state
-7. Requisições futuras incluem token no header `Authorization: Bearer <token>`
+4. Sessão gerenciada por Flask-Login
+5. Dados filtrados por user_id
 
 ## Regras de Negócio
 
@@ -271,7 +208,7 @@ Crie outro serviço Railway com:
 - Nomes únicos por usuário
 
 ### Amostra
-- Data/hora automática (editável)
+- Data/hora editável
 - Vincular a cilindro e elemento existentes
 
 ### Tempo Chama
