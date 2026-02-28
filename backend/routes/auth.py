@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
-from backend.utils.supabase import get_supabase
-from backend.utils.decorators import generate_token, token_required
+from utils.supabase import get_supabase
+from utils.decorators import generate_token, token_required
 
 auth_bp = Blueprint('auth', __name__, url_prefix='/api/auth')
 

@@ -1,7 +1,7 @@
 from functools import wraps
 from flask import request, jsonify
 import jwt
-from backend.config import SECRET_KEY
+from config import SECRET_KEY
 
 
 def token_required(f):

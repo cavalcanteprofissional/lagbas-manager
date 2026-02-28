@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify
-from backend.utils.supabase import get_supabase
-from backend.utils.decorators import token_required
-from backend.config import ELEMENTOS_PADRAO
+from utils.supabase import get_supabase
+from utils.decorators import token_required
+from config import ELEMENTOS_PADRAO
 
 elemento_bp = Blueprint('elemento', __name__, url_prefix='/api/elementos')
 

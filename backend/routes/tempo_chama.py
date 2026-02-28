@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
-from backend.utils.supabase import get_supabase
-from backend.utils.decorators import token_required
+from utils.supabase import get_supabase
+from utils.decorators import token_required
 
 tempo_chama_bp = Blueprint('tempo_chama', __name__, url_prefix='/api/tempo-chama')
 

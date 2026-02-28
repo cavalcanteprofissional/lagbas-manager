@@ -1,4 +1,4 @@
-# LabGas Manager - Arquitetura Migrada
+# LabGas Manager - Documentação Técnica
 
 ## Visão Geral
 
@@ -16,11 +16,11 @@ Dashboard para gestão de cilindro de gás e elementos analisados em laboratóri
 
 ## Tecnologias
 
-- **Backend API**: Flask + Flask-RESTX
+- **Backend API**: Flask 3.0 + Flask-RESTX
 - **Frontend Dashboard**: Streamlit
 - **Banco de Dados**: Supabase (PostgreSQL)
 - **Autenticação**: Supabase Auth (via API Flask)
-- **Gerenciamento de Dependências**: Poetry (frontend), pip (backend)
+- **Gerenciamento de Dependências**: Poetry (frontend), pip + venv (backend)
 - **Deploy**: Railway.app
 
 ## Estrutura de Diretórios
@@ -29,37 +29,40 @@ Dashboard para gestão de cilindro de gás e elementos analisados em laboratóri
 labgas-manager/
 ├── pyproject.toml              # Poetry config (Streamlit)
 ├── poetry.lock
-├── .env                        # Variáveis ambiente
+├── .env                       # Variáveis ambiente (não commitado)
 ├── .gitignore
-├── agents.md
-├── backend/                    # Flask API
-│   ├── app.py                 # Aplicação Flask
-│   ├── requirements.txt       # Dependências Python
+├── agents.md                  # Este arquivo
+├── readme.md                  # Documentação do projeto
+├── backend/                   # Flask API
+│   ├── app.py                 # Aplicação Flask principal
+│   ├── .env                   # Variáveis do backend
+│   ├── requirements.txt        # Dependências Python
+│   ├── venv/                  # Virtual environment
+│   ├── Procfile               # Deploy Railway (web: gunicorn app:app)
 │   ├── config.py              # Configurações
 │   ├── routes/
 │   │   ├── __init__.py
-│   │   ├── auth.py           # Autenticação
-│   │   ├── cilindro.py       # CRUD Cilindros
-│   │   ├── elemento.py       # CRUD Elementos
-│   │   ├── amostra.py        # CRUD Amostras
-│   │   └── tempo_chama.py    # CRUD Tempo Chama
+│   │   ├── auth.py            # Autenticação (login, register, logout)
+│   │   ├── cilindro.py        # CRUD Cilindros
+│   │   ├── elemento.py        # CRUD Elementos
+│   │   ├── amostra.py         # CRUD Amostras
+│   │   └── tempo_chama.py     # CRUD Tempo Chama
 │   └── utils/
-│       ├── supabase.py       # Cliente Supabase
-│       └── decorators.py      # Autenticação JWT
-├── frontend/                  # Streamlit Dashboard
-│   ├── app.py               # Página principal
-│   ├── requirements.txt
-│   ├── pages/
-│   │   ├── 1_📦_Cilindros.py
-│   │   ├── 2_🧪_Elementos.py
-│   │   ├── 3_📊_Amostras.py
-│   │   ├── 4_🔥_Tempo_Chama.py
-│   │   └── 5_👥_Usuarios.py
-│   ├── services/
-│   │   └── api_client.py    # Cliente API
-│   └── assets/
-│       └── style.css
-└── README.md
+│       ├── supabase.py        # Cliente Supabase
+│       └── decorators.py       # Autenticação JWT
+└── frontend/                   # Streamlit Dashboard
+    ├── app.py                  # Página principal com login
+    ├── .env                    # API_BASE_URL
+    ├── requirements.txt        # Dependências
+    ├── Procfile               # Deploy Railway (web: streamlit run app.py)
+    ├── pages/
+    │   ├── 1_📦_Cilindros.py  # CRUD Cilindros
+    │   ├── 2_🧪_Elementos.py  # CRUD Elementos
+    │   ├── 3_📊_Amostras.py   # CRUD Amostras
+    │   ├── 4_🔥_Tempo_Chama.py # CRUD Tempo Chama
+    │   └── 5_👥_Usuarios.py   # Perfil do usuário
+    └── services/
+        └── api_client.py       # Cliente API REST
 ```
 
 ## Modelo de Dados (Supabase)
@@ -122,7 +125,6 @@ CREATE TABLE tempo_chama (
     horas INTEGER NOT NULL,
     minutos INTEGER NOT NULL,
     segundos INTEGER NOT NULL,
-    total_segundos INTEGER GENERATED ALWAYS AS (horas * 3600 + minutos * 60 + segundos) STORED,
     user_id UUID REFERENCES auth.users(id),
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
@@ -194,12 +196,12 @@ INSERT INTO elemento (nome, consumo_lpm) VALUES
 
 ## Configuração de Ambiente
 
-### Variáveis de Ambiente (Backend)
+### Variáveis de Ambiente (Backend - backend/.env)
 
 ```env
 # Flask
-FLASK_ENV=production
-FLASK_DEBUG=0
+FLASK_ENV=development
+FLASK_DEBUG=1
 SECRET_KEY=sua_chave_secreta_aqui
 
 # Supabase
@@ -208,7 +210,7 @@ SUPABASE_KEY=sua_chave_anon
 SUPABASE_JWT_SECRET=seu_jwt_secret
 ```
 
-### Variáveis de Ambiente (Frontend)
+### Variáveis de Ambiente (Frontend - frontend/.env)
 
 ```env
 # Streamlit
@@ -216,48 +218,40 @@ API_BASE_URL=http://localhost:5000
 # Em produção: API_BASE_URL=https://seu-backend.railway.app
 ```
 
-## Implementação
+## Como Rodar Local
 
-### 1. Backend Flask
-
-Criar estrutura base com:
-- `backend/app.py` - Aplicação principal
-- `backend/config.py` - Configurações
-- `backend/routes/` - Rotas da API
-- Integração com Supabase Auth
-- Validação JWT para rotas protegidas
-
-### 2. Frontend Streamlit
-
-Atualizar para:
-- Usar API Client para comunicar com Flask
-- Consumir endpoints REST
-- Manter dashboards e visualizações
-- Sessão armazenada no session_state
-
-### 3. Deploy Railway
-
-- Backend: `web: gunicorn app:app`
-- Frontend: `web: streamlit run app.py`
-
-## Comandos de Desenvolvimento
+### Backend
 
 ```bash
-# Backend
 cd backend
-pip install -r requirements.txt
-python app.py
 
-# Frontend
+# Criar virtual environment (primeira vez)
+python -m venv venv
+
+# Ativar e instalar dependências
+./venv/Scripts/pip install -r requirements.txt
+
+# Rodar o servidor
+./venv/Scripts/python app.py
+```
+
+### Frontend
+
+```bash
 cd frontend
 poetry install
 poetry run streamlit run app.py
-
-# Deploy Railway
-railway login
-railway init
-railway deploy
 ```
+
+## Deploy Railway
+
+### Backend
+- Build Command: (vazio)
+- Start Command: `gunicorn app:app`
+
+### Frontend
+- Build Command: (vazio)
+- Start Command: `streamlit run app.py`
 
 ## Fluxo de Autenticação
 
@@ -277,7 +271,7 @@ railway deploy
 - Status: ativo, em_uso, esgotado, inativo
 
 ### Elemento
-- Lista pré-carregada automática
+- Lista pré-carregada automática (20 elementos padrão)
 - Consumo em L/min
 - Nomes únicos por usuário
 
@@ -295,5 +289,4 @@ railway deploy
 - Não permitir duplicatas
 - Validar campos obrigatórios
 - Confirmar antes de deletar
-- Verificar permissões por role
 - Proteger rotas com JWT

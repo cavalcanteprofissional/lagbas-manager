@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify
-from backend.utils.supabase import get_supabase
-from backend.utils.decorators import token_required
-from backend.config import LITROS_EQUIVALENTES_KG, CUSTO_DEFAULT, GAS_KG_DEFAULT
+from utils.supabase import get_supabase
+from utils.decorators import token_required
+from config import LITROS_EQUIVALENTES_KG, CUSTO_DEFAULT, GAS_KG_DEFAULT
 
 cilindro_bp = Blueprint('cilindro', __name__, url_prefix='/api/cilindros')
 

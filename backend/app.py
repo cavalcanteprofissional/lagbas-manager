@@ -1,11 +1,11 @@
 from flask import Flask
 from flask_cors import CORS
-from backend.config import APP_NAME, FLASK_ENV
-from backend.routes.auth import auth_bp
-from backend.routes.cilindro import cilindro_bp
-from backend.routes.elemento import elemento_bp
-from backend.routes.amostra import amostra_bp
-from backend.routes.tempo_chama import tempo_chama_bp
+from config import APP_NAME, FLASK_ENV
+from routes.auth import auth_bp
+from routes.cilindro import cilindro_bp
+from routes.elemento import elemento_bp
+from routes.amostra import amostra_bp
+from routes.tempo_chama import tempo_chama_bp
 
 app = Flask(__name__)
 CORS(app)

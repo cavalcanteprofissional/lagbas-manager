@@ -1,21 +1,280 @@
+# LabGas Manager
+
+Dashboard para gestão de cilindro de gás e elementos analisados em laboratório de química, utilizando **Flask** para APIs REST (CRUDs) e **Streamlit** para dashboards/visualizações, com **Supabase** como banco de dados PostgreSQL.
+
+## Arquitetura do Sistema
+
+```
+┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
+│   Streamlit     │     │    Flask API    │     │    Supabase     │
+│  (Dashboards)  │────▶│  (CRUDs + Auth) │────▶│  (PostgreSQL)   │
+│                 │     │                 │     │                 │
+└─────────────────┘     └─────────────────┘     └─────────────────┘
+```
+
+## Tecnologias
+
+- **Backend API**: Flask 3.0 + Flask-RESTX
+- **Frontend Dashboard**: Streamlit
+- **Banco de Dados**: Supabase (PostgreSQL)
+- **Autenticação**: Supabase Auth (via API Flask)
+- **Gerenciamento de Dependências**: Poetry (frontend), pip + venv (backend)
+- **Deploy**: Railway.app
+
+## Estrutura de Diretórios
+
+```
 labgas-manager/
-├── pyproject.toml
+├── pyproject.toml              # Poetry config (Streamlit)
 ├── poetry.lock
-├── .env
+├── .env                       # Variáveis ambiente (raiz)
 ├── .gitignore
-├── README.md
-├── app.py
-├── pages/
-│   ├── 1_📦_Cilindros.py
-│   ├── 2_🧪_Elementos.py
-│   ├── 3_📊_Amostras.py
-│   └── 4_🔥_Tempo_Chama.py
-├── utils/
-│   ├── __init__.py
-│   ├── database.py
-│   ├── config.py
-│   └── helpers.py
-├── data/
-│   └── elementos_default.csv
-└── assets/
-    └── style.css
+├── agents.md                  # Documentação para IA
+├── backend/                   # Flask API
+│   ├── app.py                 # Aplicação Flask
+│   ├── .env                   # Variáveis do backend
+│   ├── requirements.txt        # Dependências Python
+│   ├── venv/                  # Virtual environment (criar com `python -m venv venv`)
+│   ├── Procfile               # Deploy Railway
+│   ├── config.py              # Configurações
+│   ├── routes/
+│   │   ├── __init__.py
+│   │   ├── auth.py            # Autenticação
+│   │   ├── cilindro.py        # CRUD Cilindros
+│   │   ├── elemento.py        # CRUD Elementos
+│   │   ├── amostra.py         # CRUD Amostras
+│   │   └── tempo_chama.py     # CRUD Tempo Chama
+│   └── utils/
+│       ├── supabase.py        # Cliente Supabase
+│       └── decorators.py       # Autenticação JWT
+└── frontend/                   # Streamlit Dashboard
+    ├── app.py                  # Página principal
+    ├── .env                   # API_BASE_URL
+    ├── requirements.txt
+    ├── Procfile               # Deploy Railway
+    ├── pages/
+    │   ├── 1_📦_Cilindros.py
+    │   ├── 2_🧪_Elementos.py
+    │   ├── 3_📊_Amostras.py
+    │   ├── 4_🔥_Tempo_Chama.py
+    │   └── 5_👥_Usuarios.py
+    ├── services/
+    │   └── api_client.py      # Cliente API
+    └── assets/
+        └── style.css
+```
+
+## Como Rodar Local
+
+### Backend (Flask API)
+
+```bash
+# 1. Criar ambiente virtual (primeira vez)
+cd backend
+python -m venv venv
+
+# 2. Ativar e instalar dependências
+./venv/Scripts/pip install -r requirements.txt
+
+# 3. Rodar o servidor
+./venv/Scripts/python app.py
+```
+
+O backend estará disponível em: `http://localhost:5000`
+
+### Frontend (Streamlit)
+
+```bash
+# 1. Instalar dependências
+cd frontend
+poetry install
+
+# 2. Rodar o app
+poetry run streamlit run app.py
+```
+
+O frontend estará disponível em: `http://localhost:8501`
+
+## Variáveis de Ambiente
+
+### backend/.env
+
+```env
+# Flask
+FLASK_ENV=development
+FLASK_DEBUG=1
+SECRET_KEY=sua_chave_secreta
+
+# Supabase
+SUPABASE_URL=https://seu-projeto.supabase.co
+SUPABASE_KEY=sua_chave_anon
+SUPABASE_JWT_SECRET=seu_jwt_secret
+```
+
+### frontend/.env
+
+```env
+API_BASE_URL=http://localhost:5000
+# Em produção: API_BASE_URL=https://seu-backend.railway.app
+```
+
+## Modelo de Dados (Supabase)
+
+### Tabela: cilindro
+
+```sql
+CREATE TABLE cilindro (
+    id SERIAL PRIMARY KEY,
+    codigo VARCHAR(50) UNIQUE NOT NULL,
+    data_compra DATE NOT NULL,
+    data_inicio_consumo DATE,
+    data_fim DATE,
+    gas_kg DECIMAL(5,2) DEFAULT 1.0,
+    litros_equivalentes DECIMAL(10,2) DEFAULT 956.0,
+    custo DECIMAL(10,2) DEFAULT 290.00,
+    status VARCHAR(20) DEFAULT 'ativo',
+    user_id UUID REFERENCES auth.users(id),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+```
+
+### Tabela: elemento
+
+```sql
+CREATE TABLE elemento (
+    id SERIAL PRIMARY KEY,
+    nome VARCHAR(100) UNIQUE NOT NULL,
+    consumo_lpm DECIMAL(5,2) NOT NULL,
+    user_id UUID REFERENCES auth.users(id),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+```
+
+### Tabela: amostra
+
+```sql
+CREATE TABLE amostra (
+    id SERIAL PRIMARY KEY,
+    data DATE NOT NULL,
+    hora TIME NOT NULL,
+    cilindro_id INTEGER REFERENCES cilindro(id) ON DELETE SET NULL,
+    elemento_id INTEGER REFERENCES elemento(id) ON DELETE SET NULL,
+    tempo_chama_segundos INTEGER,
+    user_id UUID REFERENCES auth.users(id),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+```
+
+### Tabela: tempo_chama
+
+```sql
+CREATE TABLE tempo_chama (
+    id SERIAL PRIMARY KEY,
+    elemento_id INTEGER REFERENCES elemento(id) ON DELETE SET NULL,
+    cilindro_id INTEGER REFERENCES cilindro(id) ON DELETE SET NULL,
+    horas INTEGER NOT NULL,
+    minutos INTEGER NOT NULL,
+    segundos INTEGER NOT NULL,
+    user_id UUID REFERENCES auth.users(id),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+```
+
+## Endpoints da API REST
+
+### Autenticação
+
+| Método | Endpoint | Descrição |
+|--------|----------|-----------|
+| POST | /api/auth/login | Login com email/senha |
+| POST | /api/auth/register | Registro de novo usuário |
+| POST | /api/auth/logout | Logout |
+| GET | /api/auth/me | Dados do usuário atual |
+
+### Cilindros
+
+| Método | Endpoint | Descrição |
+|--------|----------|-----------|
+| GET | /api/cilindros | Listar todos (filtrado por user_id) |
+| POST | /api/cilindros | Criar novo |
+| GET | /api/cilindros/{id} | Detalhes |
+| PUT | /api/cilindros/{id} | Atualizar |
+| DELETE | /api/cilindros/{id} | Deletar |
+
+### Elementos
+
+| Método | Endpoint | Descrição |
+|--------|----------|-----------|
+| GET | /api/elementos | Listar todos |
+| POST | /api/elementos | Criar novo |
+| GET | /api/elementos/{id} | Detalhes |
+| PUT | /api/elementos/{id} | Atualizar |
+| DELETE | /api/elementos/{id} | Deletar |
+
+### Amostras
+
+| Método | Endpoint | Descrição |
+|--------|----------|-----------|
+| GET | /api/amostras | Listar todas |
+| POST | /api/amostras | Criar nova |
+| GET | /api/amostras/{id} | Detalhes |
+| PUT | /api/amostras/{id} | Atualizar |
+| DELETE | /api/amostras/{id} | Deletar |
+
+### Tempo Chama
+
+| Método | Endpoint | Descrição |
+|--------|----------|-----------|
+| GET | /api/tempo-chama | Listar todos |
+| POST | /api/tempo-chama | Criar novo |
+| GET | /api/tempo-chama/{id} | Detalhes |
+| DELETE | /api/tempo-chama/{id} | Deletar |
+
+## Deploy no Railway
+
+### Backend
+
+Crie um serviço Railway com:
+- Build Command: (vazio)
+- Start Command: `gunicorn app:app`
+
+### Frontend
+
+Crie outro serviço Railway com:
+- Build Command: (vazio)
+- Start Command: `streamlit run app.py`
+
+## Fluxicação
+
+1.o de Autent Usuário faz login no Streamlit
+2. Streamlit envia credenciais para `/api/auth/login`
+3. Flask valida no Supabase Auth
+4. Supabase retorna sessão
+5. Flask gera JWT interno e retorna ao Streamlit
+6. Streamlit armazena token no session_state
+7. Requisições futuras incluem token no header `Authorization: Bearer <token>`
+
+## Regras de Negócio
+
+### Cilindro
+- Código único por usuário
+- Valores padrão: 1kg = 956L, R$290
+- Status: ativo, em_uso, esgotado, inativo
+
+### Elemento
+- Lista pré-carregada automática (20 elementos padrão)
+- Consumo em L/min
+- Nomes únicos por usuário
+
+### Amostra
+- Data/hora automática (editável)
+- Vincular a cilindro e elemento existentes
+
+### Tempo Chama
+- Registrar duração em h/min/s
+- Calcular consumo automaticamente
+- Vincular a elemento e cilindro

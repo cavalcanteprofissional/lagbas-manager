@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
-from backend.utils.supabase import get_supabase
-from backend.utils.decorators import token_required
+from utils.supabase import get_supabase
+from utils.decorators import token_required
 
 amostra_bp = Blueprint('amostra', __name__, url_prefix='/api/amostras')
 
