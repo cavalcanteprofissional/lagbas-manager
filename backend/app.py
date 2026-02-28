@@ -1,0 +1,34 @@
+from flask import Flask
+from flask_cors import CORS
+from backend.config import APP_NAME, FLASK_ENV
+from backend.routes.auth import auth_bp
+from backend.routes.cilindro import cilindro_bp
+from backend.routes.elemento import elemento_bp
+from backend.routes.amostra import amostra_bp
+from backend.routes.tempo_chama import tempo_chama_bp
+
+app = Flask(__name__)
+CORS(app)
+
+app.config['APP_NAME'] = APP_NAME
+app.config['ENV'] = FLASK_ENV
+
+app.register_blueprint(auth_bp)
+app.register_blueprint(cilindro_bp)
+app.register_blueprint(elemento_bp)
+app.register_blueprint(amostra_bp)
+app.register_blueprint(tempo_chama_bp)
+
+
+@app.route('/')
+def index():
+    return {'message': f'{APP_NAME} API', 'status': 'running'}
+
+
+@app.route('/health')
+def health():
+    return {'status': 'healthy'}
+
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5000, debug=True)
