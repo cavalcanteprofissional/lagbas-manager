@@ -12,7 +12,7 @@ def get_tempos():
     user_id = request.user_id
 
     response = (
-        supabase.table("tempo_chamas").select("*").eq("user_id", user_id).execute()
+        supabase.table("tempo_chama").select("*").eq("user_id", user_id).execute()
     )
 
     return jsonify(response.data), 200
@@ -41,7 +41,7 @@ def create_tempo():
         "user_id": user_id,
     }
 
-    response = supabase.table("tempo_chamas").insert(new_data).execute()
+    response = supabase.table("tempo_chama").insert(new_data).execute()
 
     return jsonify(
         {"message": "Tempo de chama registrado com sucesso", "data": response.data[0]}
@@ -55,7 +55,7 @@ def get_tempo(tempo_id):
     user_id = request.user_id
 
     response = (
-        supabase.table("tempo_chamas")
+        supabase.table("tempo_chama")
         .select("*")
         .eq("id", tempo_id)
         .eq("user_id", user_id)
@@ -75,7 +75,7 @@ def delete_tempo(tempo_id):
     user_id = request.user_id
 
     existing = (
-        supabase.table("tempo_chamas")
+        supabase.table("tempo_chama")
         .select("id")
         .eq("id", tempo_id)
         .eq("user_id", user_id)
@@ -84,6 +84,6 @@ def delete_tempo(tempo_id):
     if not existing.data:
         return jsonify({"message": "Tempo de chama não encontrado"}), 404
 
-    supabase.table("tempo_chamas").delete().eq("id", tempo_id).execute()
+    supabase.table("tempo_chama").delete().eq("id", tempo_id).execute()
 
     return jsonify({"message": "Tempo de chama excluído com sucesso"}), 200

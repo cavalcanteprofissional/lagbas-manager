@@ -176,7 +176,7 @@ CREATE TABLE tempo_chama (
 );
 ```
 
-**Nota**: O código usa nomes de tabelas no plural (`cilindros`, `elementos`, `amostras`, `tempo_chamas`).
+**Nota**: O código usa nomes de tabelas no singular (`cilindro`, `elemento`, `amostra`, `tempo_chama`).
 
 ## Deploy no Railway
 

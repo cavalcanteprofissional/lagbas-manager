@@ -1,7 +1,6 @@
 from flask import Blueprint, request, jsonify
 from utils.supabase import get_supabase
 from utils.decorators import token_required
-from config import ELEMENTOS_PADRAO
 
 elemento_bp = Blueprint("elemento", __name__, url_prefix="/api/elementos")
 
@@ -12,22 +11,8 @@ def get_elementos():
     supabase = get_supabase()
     user_id = request.user_id
 
-    response = supabase.table("elementos").select("*").eq("user_id", user_id).execute()
-
-    if not response.data:
-        for elemento in ELEMENTOS_PADRAO:
-            supabase.table("elementos").insert(
-                {
-                    "nome": elemento["nome"],
-                    "consumo_lpm": elemento["consumo_lpm"],
-                    "user_id": user_id,
-                }
-            ).execute()
-
-        response = (
-            supabase.table("elementos").select("*").eq("user_id", user_id).execute()
-        )
-
+    response = supabase.table("elemento").select("*").eq("user_id", user_id).execute()
+    
     return jsonify(response.data), 200
 
 
@@ -42,7 +27,7 @@ def create_elemento():
         return jsonify({"message": "Nome é obrigatório"}), 400
 
     existing = (
-        supabase.table("elementos")
+        supabase.table("elemento")
         .select("id")
         .eq("nome", data["nome"])
         .eq("user_id", user_id)
@@ -57,7 +42,7 @@ def create_elemento():
         "user_id": user_id,
     }
 
-    response = supabase.table("elementos").insert(new_data).execute()
+    response = supabase.table("elemento").insert(new_data).execute()
 
     return jsonify(
         {"message": "Elemento criado com sucesso", "data": response.data[0]}
@@ -71,7 +56,7 @@ def get_elemento(elemento_id):
     user_id = request.user_id
 
     response = (
-        supabase.table("elementos")
+        supabase.table("elemento")
         .select("*")
         .eq("id", elemento_id)
         .eq("user_id", user_id)
@@ -92,7 +77,7 @@ def update_elemento(elemento_id):
     data = request.get_json()
 
     existing = (
-        supabase.table("elementos")
+        supabase.table("elemento")
         .select("id")
         .eq("id", elemento_id)
         .eq("user_id", user_id)
@@ -103,7 +88,7 @@ def update_elemento(elemento_id):
 
     if data.get("nome"):
         duplicate = (
-            supabase.table("elementos")
+            supabase.table("elemento")
             .select("id")
             .eq("nome", data["nome"])
             .eq("user_id", user_id)
@@ -119,7 +104,7 @@ def update_elemento(elemento_id):
     }
 
     response = (
-        supabase.table("elementos").update(update_data).eq("id", elemento_id).execute()
+        supabase.table("elemento").update(update_data).eq("id", elemento_id).execute()
     )
 
     return jsonify(
@@ -134,7 +119,7 @@ def delete_elemento(elemento_id):
     user_id = request.user_id
 
     existing = (
-        supabase.table("elementos")
+        supabase.table("elemento")
         .select("id")
         .eq("id", elemento_id)
         .eq("user_id", user_id)
@@ -143,6 +128,6 @@ def delete_elemento(elemento_id):
     if not existing.data:
         return jsonify({"message": "Elemento não encontrado"}), 404
 
-    supabase.table("elementos").delete().eq("id", elemento_id).execute()
+    supabase.table("elemento").delete().eq("id", elemento_id).execute()
 
     return jsonify({"message": "Elemento excluído com sucesso"}), 200

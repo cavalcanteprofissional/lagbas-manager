@@ -12,7 +12,7 @@ def get_cilindros():
     supabase = get_supabase()
     user_id = request.user_id
 
-    response = supabase.table("cilindros").select("*").eq("user_id", user_id).execute()
+    response = supabase.table("cilindro").select("*").eq("user_id", user_id).execute()
 
     return jsonify(response.data), 200
 
@@ -31,7 +31,7 @@ def create_cilindro():
         return jsonify({"message": "Data de compra é obrigatória"}), 400
 
     existing = (
-        supabase.table("cilindros")
+        supabase.table("cilindro")
         .select("id")
         .eq("codigo", data["codigo"])
         .eq("user_id", user_id)
@@ -54,7 +54,7 @@ def create_cilindro():
         "user_id": user_id,
     }
 
-    response = supabase.table("cilindros").insert(new_data).execute()
+    response = supabase.table("cilindro").insert(new_data).execute()
 
     return jsonify(
         {"message": "Cilindro criado com sucesso", "data": response.data[0]}
@@ -68,7 +68,7 @@ def get_cilindro(cilindro_id):
     user_id = request.user_id
 
     response = (
-        supabase.table("cilindros")
+        supabase.table("cilindro")
         .select("*")
         .eq("id", cilindro_id)
         .eq("user_id", user_id)
@@ -89,7 +89,7 @@ def update_cilindro(cilindro_id):
     data = request.get_json()
 
     existing = (
-        supabase.table("cilindros")
+        supabase.table("cilindro")
         .select("id")
         .eq("id", cilindro_id)
         .eq("user_id", user_id)
@@ -100,7 +100,7 @@ def update_cilindro(cilindro_id):
 
     if data.get("codigo"):
         duplicate = (
-            supabase.table("cilindros")
+            supabase.table("cilindro")
             .select("id")
             .eq("codigo", data["codigo"])
             .eq("user_id", user_id)
@@ -123,7 +123,7 @@ def update_cilindro(cilindro_id):
     }
 
     response = (
-        supabase.table("cilindros").update(update_data).eq("id", cilindro_id).execute()
+        supabase.table("cilindro").update(update_data).eq("id", cilindro_id).execute()
     )
 
     return jsonify(
@@ -138,7 +138,7 @@ def delete_cilindro(cilindro_id):
     user_id = request.user_id
 
     existing = (
-        supabase.table("cilindros")
+        supabase.table("cilindro")
         .select("id")
         .eq("id", cilindro_id)
         .eq("user_id", user_id)
@@ -147,6 +147,6 @@ def delete_cilindro(cilindro_id):
     if not existing.data:
         return jsonify({"message": "Cilindro não encontrado"}), 404
 
-    supabase.table("cilindros").delete().eq("id", cilindro_id).execute()
+    supabase.table("cilindro").delete().eq("id", cilindro_id).execute()
 
     return jsonify({"message": "Cilindro excluído com sucesso"}), 200

@@ -11,7 +11,7 @@ def get_amostras():
     supabase = get_supabase()
     user_id = request.user_id
 
-    response = supabase.table("amostras").select("*").eq("user_id", user_id).execute()
+    response = supabase.table("amostra").select("*").eq("user_id", user_id).execute()
 
     return jsonify(response.data), 200
 
@@ -35,7 +35,7 @@ def create_amostra():
         "user_id": user_id,
     }
 
-    response = supabase.table("amostras").insert(new_data).execute()
+    response = supabase.table("amostra").insert(new_data).execute()
 
     return jsonify(
         {"message": "Amostra criada com sucesso", "data": response.data[0]}
@@ -49,7 +49,7 @@ def get_amostra(amostra_id):
     user_id = request.user_id
 
     response = (
-        supabase.table("amostras")
+        supabase.table("amostra")
         .select("*")
         .eq("id", amostra_id)
         .eq("user_id", user_id)
@@ -70,7 +70,7 @@ def update_amostra(amostra_id):
     data = request.get_json()
 
     existing = (
-        supabase.table("amostras")
+        supabase.table("amostra")
         .select("id")
         .eq("id", amostra_id)
         .eq("user_id", user_id)
@@ -90,7 +90,7 @@ def update_amostra(amostra_id):
     }
 
     response = (
-        supabase.table("amostras").update(update_data).eq("id", amostra_id).execute()
+        supabase.table("amostra").update(update_data).eq("id", amostra_id).execute()
     )
 
     return jsonify(
@@ -105,7 +105,7 @@ def delete_amostra(amostra_id):
     user_id = request.user_id
 
     existing = (
-        supabase.table("amostras")
+        supabase.table("amostra")
         .select("id")
         .eq("id", amostra_id)
         .eq("user_id", user_id)
@@ -114,6 +114,6 @@ def delete_amostra(amostra_id):
     if not existing.data:
         return jsonify({"message": "Amostra não encontrada"}), 404
 
-    supabase.table("amostras").delete().eq("id", amostra_id).execute()
+    supabase.table("amostra").delete().eq("id", amostra_id).execute()
 
     return jsonify({"message": "Amostra excluída com sucesso"}), 200
