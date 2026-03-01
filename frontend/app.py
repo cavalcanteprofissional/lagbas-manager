@@ -370,9 +370,18 @@ def amostra_list():
     if request.method == "POST":
         action = request.form.get("action")
         
+        def formatar_tempo_chama(hora, minuto, segundo):
+            h = hora.zfill(2) if hora else "00"
+            m = minuto.zfill(2) if minuto else "00"
+            s = segundo.zfill(2) if segundo else "00"
+            return f"{h}:{m}:{s}"
+        
         if action == "create":
             data = request.form.get("data")
-            tempo_chama = request.form.get("tempo_chama")
+            hora = request.form.get("hora") or "0"
+            minuto = request.form.get("minuto") or "0"
+            segundo = request.form.get("segundo") or "0"
+            tempo_chama = formatar_tempo_chama(hora, minuto, segundo)
             cilindro_id = request.form.get("cilindro_id")
             elemento_id = request.form.get("elemento_id")
             quantidade_amostras = int(request.form.get("quantidade_amostras", 1))
@@ -392,7 +401,10 @@ def amostra_list():
         elif action == "update":
             amostra_id = request.form.get("amostra_id")
             data = request.form.get("data")
-            tempo_chama = request.form.get("tempo_chama")
+            hora = request.form.get("hora") or "0"
+            minuto = request.form.get("minuto") or "0"
+            segundo = request.form.get("segundo") or "0"
+            tempo_chama = formatar_tempo_chama(hora, minuto, segundo)
             cilindro_id = request.form.get("cilindro_id")
             elemento_id = request.form.get("elemento_id")
             quantidade_amostras = int(request.form.get("quantidade_amostras", 1))

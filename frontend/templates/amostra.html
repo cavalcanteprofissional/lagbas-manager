@@ -22,7 +22,13 @@
                     </div>
                     <div class="col-md-3 mb-3">
                         <label class="form-label">Tempo de Chama *</label>
-                        <input type="text" name="tempo_chama" class="form-control" placeholder="HH:MM:SS" required>
+                        <div class="input-group">
+                            <input type="number" name="hora" class="form-control" placeholder="HH" min="0" max="23" required>
+                            <span class="input-group-text">:</span>
+                            <input type="number" name="minuto" class="form-control" placeholder="MM" min="0" max="59" required>
+                            <span class="input-group-text">:</span>
+                            <input type="number" name="segundo" class="form-control" placeholder="SS" min="0" max="59" required>
+                        </div>
                     </div>
                     <div class="col-md-3 mb-3">
                         <label class="form-label">Cilindro *</label>
@@ -108,7 +114,13 @@
                                         </div>
                                         <div class="mb-3">
                                             <label class="form-label">Tempo de Chama</label>
-                                            <input type="text" name="tempo_chama" class="form-control" value="{{ a.tempo_chama }}" placeholder="HH:MM:SS" required>
+                                            <div class="input-group">
+                                                <input type="number" name="hora" class="form-control" placeholder="HH" min="0" max="23" value="{{ a.tempo_chama.split(':')[0] if a.tempo_chama else '0' }}" required>
+                                                <span class="input-group-text">:</span>
+                                                <input type="number" name="minuto" class="form-control" placeholder="MM" min="0" max="59" value="{{ a.tempo_chama.split(':')[1] if a.tempo_chama else '0' }}" required>
+                                                <span class="input-group-text">:</span>
+                                                <input type="number" name="segundo" class="form-control" placeholder="SS" min="0" max="59" value="{{ a.tempo_chama.split(':')[2] if a.tempo_chama else '0' }}" required>
+                                            </div>
                                         </div>
                                         <div class="mb-3">
                                             <label class="form-label">Cilindro</label>
