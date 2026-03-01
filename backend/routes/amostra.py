@@ -23,15 +23,15 @@ def create_amostra():
     user_id = request.user_id
     data = request.get_json()
 
-    if not data.get("data") or not data.get("hora"):
-        return jsonify({"message": "Data e hora são obrigatórios"}), 400
+    if not data.get("data") or not data.get("tempo_chama"):
+        return jsonify({"message": "Data e tempo de chama são obrigatórios"}), 400
 
     new_data = {
         "data": data["data"],
-        "hora": data["hora"],
+        "tempo_chama": data["tempo_chama"],
         "cilindro_id": data.get("cilindro_id"),
         "elemento_id": data.get("elemento_id"),
-        "tempo_chama_segundos": data.get("tempo_chama_segundos", 0),
+        "quantidade_amostras": data.get("quantidade_amostras", 1),
         "user_id": user_id,
     }
 
@@ -81,11 +81,11 @@ def update_amostra(amostra_id):
 
     update_data = {
         "data": data.get("data", existing.data[0]["data"]),
-        "hora": data.get("hora", existing.data[0]["hora"]),
+        "tempo_chama": data.get("tempo_chama", existing.data[0]["tempo_chama"]),
         "cilindro_id": data.get("cilindro_id", existing.data[0].get("cilindro_id")),
         "elemento_id": data.get("elemento_id", existing.data[0].get("elemento_id")),
-        "tempo_chama_segundos": data.get(
-            "tempo_chama_segundos", existing.data[0].get("tempo_chama_segundos", 0)
+        "quantidade_amostras": data.get(
+            "quantidade_amostras", existing.data[0].get("quantidade_amostras", 1)
         ),
     }
 

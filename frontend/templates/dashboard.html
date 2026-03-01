@@ -70,36 +70,6 @@
         </div>
     </div>
 </div>
-
-<div class="card">
-    <div class="card-header">
-        <h5 class="mb-0"><i class="bi bi-clock-history"></i> Últimos Tempos de Chama</h5>
-    </div>
-    <div class="card-body">
-        {% if tempos_chama %}
-        <div class="table-responsive">
-            <table class="table table-hover">
-                <thead>
-                    <tr>
-                        <th>Tempo</th>
-                        <th>Data</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for tempo in tempos_chama[:10] %}
-                    <tr>
-                        <td>{{ '%02d'|format(tempo.horas) }}:{{ '%02d'|format(tempo.minutos) }}:{{ '%02d'|format(tempo.segundos) }}</td>
-                        <td>{{ tempo.created_at[:10] if tempo.created_at else '-' }}</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-        {% else %}
-        <p class="text-muted">Nenhum tempo de chama registrado.</p>
-        {% endif %}
-    </div>
-</div>
 {% endblock %}
 
 {% block extra_js %}

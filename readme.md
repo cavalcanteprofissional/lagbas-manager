@@ -40,7 +40,6 @@ labgas-manager/
 │   │   ├── cilindro.py        # CRUD Cilindros
 │   │   ├── elemento.py        # CRUD Elementos
 │   │   ├── amostra.py         # CRUD Amostras
-│   │   └── tempo_chama.py     # CRUD Tempo Chama
 │   └── utils/
 │       ├── supabase.py        # Cliente Supabase
 │       └── decorators.py      # Autenticação JWT
@@ -58,7 +57,6 @@ labgas-manager/
         ├── cilindro.html       # CRUD Cilindros
         ├── elemento.html       # CRUD Elementos
         ├── amostra.html        # CRUD Amostras
-        ├── tempo_chama.html    # CRUD Tempo Chama
         └── perfil.html        # Perfil usuário
 ```
 
@@ -150,33 +148,17 @@ CREATE TABLE elemento (
 CREATE TABLE amostra (
     id SERIAL PRIMARY KEY,
     data DATE NOT NULL,
-    hora TIME NOT NULL,
+    tempo_chama VARCHAR(8) NOT NULL,
     cilindro_id INTEGER REFERENCES cilindro(id) ON DELETE SET NULL,
     elemento_id INTEGER REFERENCES elemento(id) ON DELETE SET NULL,
-    tempo_chama_segundos INTEGER,
+    quantidade_amostras INTEGER DEFAULT 1,
     user_id UUID REFERENCES auth.users(id),
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 ```
 
-### Tabela: tempo_chama
-
-```sql
-CREATE TABLE tempo_chama (
-    id SERIAL PRIMARY KEY,
-    elemento_id INTEGER REFERENCES elemento(id) ON DELETE SET NULL,
-    cilindro_id INTEGER REFERENCES cilindro(id) ON DELETE SET NULL,
-    horas INTEGER NOT NULL,
-    minutos INTEGER NOT NULL,
-    segundos INTEGER NOT NULL,
-    user_id UUID REFERENCES auth.users(id),
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
-```
-
-**Nota**: O código usa nomes de tabelas no singular (`cilindro`, `elemento`, `amostra`, `tempo_chama`).
+**Nota**: O código usa nomes de tabelas no singular (`cilindro`, `elemento`, `amostra`).
 
 ## Deploy no Railway
 
@@ -199,7 +181,7 @@ Crie um serviço Railway com:
 ### Cilindro
 - Código único por usuário
 - Valores padrão: 1kg = 956L, R$290
-- Status: ativo, em_uso, esgotado, inativo
+- Status: ativo, em_uso, esgotado
 
 ### Elemento
 - Lista pré-carregada automática (20 elementos padrão)
@@ -207,7 +189,7 @@ Crie um serviço Railway com:
 - Nomes únicos por usuário
 
 ### Amostra
-- Data/hora editável
+- Data/tempo de chama editável
 - Vincular a cilindro e elemento existentes
 
 ### Tempo Chama

@@ -14,14 +14,15 @@
     <div class="collapse" id="formAmostra">
         <div class="card-body">
             <form method="POST">
+                <input type="hidden" name="action" value="create">
                 <div class="row">
                     <div class="col-md-3 mb-3">
                         <label class="form-label">Data *</label>
                         <input type="date" name="data" class="form-control" required>
                     </div>
                     <div class="col-md-3 mb-3">
-                        <label class="form-label">Hora *</label>
-                        <input type="time" name="hora" class="form-control" required>
+                        <label class="form-label">Tempo de Chama *</label>
+                        <input type="text" name="tempo_chama" class="form-control" placeholder="HH:MM:SS" required>
                     </div>
                     <div class="col-md-3 mb-3">
                         <label class="form-label">Cilindro *</label>
@@ -42,10 +43,10 @@
                         </select>
                     </div>
                 </div>
-                <div">
-                    <div class="row class="col-md-4 mb-3">
-                        <label class="form-label">Tempo Chama (segundos)</label>
-                        <input type="number" name="tempo_chama_segundos" class="form-control" value="0" min="0">
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Quantidade de Amostras</label>
+                        <input type="number" name="quantidade_amostras" class="form-control" value="1" min="1">
                     </div>
                 </div>
                 <button type="submit" class="btn btn-success">Registrar</button>
@@ -62,21 +63,81 @@
                 <thead>
                     <tr>
                         <th>Data</th>
-                        <th>Hora</th>
+                        <th>Tempo Chama</th>
                         <th>Cilindro</th>
                         <th>Elemento</th>
-                        <th>Tempo (s)</th>
+                        <th>Qtd Amostras</th>
+                        <th>Ações</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for a in amostras %}
                     <tr>
                         <td>{{ a.data }}</td>
-                        <td>{{ a.hora }}</td>
+                        <td>{{ a.tempo_chama }}</td>
                         <td>{{ a.cilindro_nome }}</td>
                         <td>{{ a.elemento_nome }}</td>
-                        <td>{{ a.tempo_chama_segundos }}</td>
+                        <td>{{ a.quantidade_amostras }}</td>
+                        <td>
+                            <button class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#editModal{{ a.id }}">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <form method="POST" style="display:inline;">
+                                <input type="hidden" name="action" value="delete">
+                                <input type="hidden" name="amostra_id" value="{{ a.id }}">
+                                <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Excluir?')">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </form>
+                        </td>
                     </tr>
+                    <div class="modal fade" id="editModal{{ a.id }}" tabindex="-1">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <form method="POST">
+                                    <input type="hidden" name="action" value="update">
+                                    <input type="hidden" name="amostra_id" value="{{ a.id }}">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">Editar Amostra</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <div class="mb-3">
+                                            <label class="form-label">Data</label>
+                                            <input type="date" name="data" class="form-control" value="{{ a.data }}" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Tempo de Chama</label>
+                                            <input type="text" name="tempo_chama" class="form-control" value="{{ a.tempo_chama }}" placeholder="HH:MM:SS" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Cilindro</label>
+                                            <select name="cilindro_id" class="form-select" required>
+                                                {% for c in cilindro %}
+                                                <option value="{{ c.id }}" {% if c.id == a.cilindro_id %}selected{% endif %}>{{ c.codigo }}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Elemento</label>
+                                            <select name="elemento_id" class="form-select" required>
+                                                {% for e in elementos %}
+                                                <option value="{{ e.id }}" {% if e.id == a.elemento_id %}selected{% endif %}>{{ e.nome }}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Quantidade de Amostras</label>
+                                            <input type="number" name="quantidade_amostras" class="form-control" value="{{ a.quantidade_amostras }}" min="1">
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="submit" class="btn btn-primary">Salvar</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
                     {% endfor %}
                 </tbody>
             </table>

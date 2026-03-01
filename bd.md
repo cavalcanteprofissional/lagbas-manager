@@ -26,23 +26,10 @@ CREATE TABLE elemento (
 CREATE TABLE amostra (
     id SERIAL PRIMARY KEY,
     data DATE NOT NULL,
-    hora TIME NOT NULL,
+    tempo_chama VARCHAR(8) NOT NULL,
     cilindro_id INTEGER REFERENCES cilindro(id),
     elemento_id INTEGER REFERENCES elemento(id),
-    tempo_chama_segundos INTEGER,
-    user_id UUID REFERENCES auth.users(id),
-    created_at TIMESTAMP DEFAULT NOW()
-);
-
--- Tabela de Registros de Chama
-CREATE TABLE tempo_chama (
-    id SERIAL PRIMARY KEY,
-    elemento_id INTEGER REFERENCES elemento(id),
-    cilindro_id INTEGER REFERENCES cilindro(id),
-    horas INTEGER NOT NULL,
-    minutos INTEGER NOT NULL,
-    segundos INTEGER NOT NULL,
-    total_segundos INTEGER,
+    quantidade_amostras INTEGER DEFAULT 1,
     user_id UUID REFERENCES auth.users(id),
     created_at TIMESTAMP DEFAULT NOW()
 );
@@ -51,7 +38,10 @@ CREATE TABLE tempo_chama (
 ALTER TABLE cilindro ENABLE ROW LEVEL SECURITY;
 ALTER TABLE elemento ENABLE ROW LEVEL SECURITY;
 ALTER TABLE amostra ENABLE ROW LEVEL SECURITY;
-ALTER TABLE tempo_chama ENABLE ROW LEVEL SECURITY;
+
+-- Índices únicos por usuário
+CREATE UNIQUE INDEX idx_cilindro_codigo_user ON cilindro(user_id, codigo);
+CREATE UNIQUE INDEX idx_elemento_nome_user ON elemento(user_id, nome);
 
 -- Políticas RLS para permitir acesso apenas aos dados do usuário
 CREATE POLICY "Users can manage their cilindro" ON cilindro
@@ -61,7 +51,4 @@ CREATE POLICY "Users can manage their elemento" ON elemento
     FOR ALL USING (auth.uid() = user_id);
 
 CREATE POLICY "Users can manage their amostra" ON amostra
-    FOR ALL USING (auth.uid() = user_id);
-
-CREATE POLICY "Users can manage their tempo_chama" ON tempo_chama
     FOR ALL USING (auth.uid() = user_id);

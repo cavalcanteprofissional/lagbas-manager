@@ -28,7 +28,7 @@ login_manager.login_view = "login"
 LITROS_EQUIVALENTES_KG = 956.0
 GAS_KG_DEFAULT = 1.0
 CUSTO_DEFAULT = 290.00
-CILINDRO_STATUS = ["ativo", "em_uso", "esgotado", "inativo"]
+CILINDRO_STATUS = ["ativo", "em_uso", "esgotado"]
 
 ELEMENTOS_PADRAO = [
     {"nome": "Antimônio", "consumo_lpm": 1.5},
@@ -107,6 +107,7 @@ def login():
             )
 
             session["user_id"] = response.user.id
+            session.permanent = True
             session["user_data"] = {
                 "id": response.user.id,
                 "email": response.user.email,
@@ -186,14 +187,10 @@ def dashboard():
     amostras_response = (
         supabase.table("amostra").select("*").eq("user_id", user_id).execute()
     )
-    tempos_response = (
-        supabase.table("tempo_chama").select("*").eq("user_id", user_id).execute()
-    )
 
     cilindro = cilindro_response.data or []
     elementos = elementos_response.data or []
     amostras = amostras_response.data or []
-    tempos_chama = tempos_response.data or []
 
     ativos = len([c for c in cilindro if c.get("status") == "ativo"])
 
@@ -207,7 +204,6 @@ def dashboard():
         cilindro=cilindro,
         elementos=elementos,
         amostras=amostras,
-        tempos_chama=tempos_chama,
         ativos=ativos,
         status_counts=status_counts,
     )
@@ -224,6 +220,8 @@ def cilindro_list():
         if action == "create":
             codigo = request.form.get("codigo")
             data_compra = request.form.get("data_compra")
+            data_inicio_consumo = request.form.get("data_inicio_consumo") or None
+            data_fim = request.form.get("data_fim") or None
             gas_kg = float(request.form.get("gas_kg", GAS_KG_DEFAULT))
             custo = float(request.form.get("custo", CUSTO_DEFAULT))
             status = request.form.get("status", "ativo")
@@ -242,6 +240,8 @@ def cilindro_list():
                     {
                         "codigo": codigo,
                         "data_compra": data_compra,
+                        "data_inicio_consumo": data_inicio_consumo,
+                        "data_fim": data_fim,
                         "gas_kg": gas_kg,
                         "litros_equivalentes": gas_kg * LITROS_EQUIVALENTES_KG,
                         "custo": custo,
@@ -255,6 +255,8 @@ def cilindro_list():
             cilindro_id = request.form.get("cilindro_id")
             codigo = request.form.get("codigo")
             data_compra = request.form.get("data_compra")
+            data_inicio_consumo = request.form.get("data_inicio_consumo") or None
+            data_fim = request.form.get("data_fim") or None
             gas_kg = float(request.form.get("gas_kg"))
             custo = float(request.form.get("custo"))
             status = request.form.get("status")
@@ -263,6 +265,8 @@ def cilindro_list():
                 {
                     "codigo": codigo,
                     "data_compra": data_compra,
+                    "data_inicio_consumo": data_inicio_consumo,
+                    "data_fim": data_fim,
                     "gas_kg": gas_kg,
                     "litros_equivalentes": gas_kg * LITROS_EQUIVALENTES_KG,
                     "custo": custo,
@@ -273,8 +277,14 @@ def cilindro_list():
 
         elif action == "delete":
             cilindro_id = request.form.get("cilindro_id")
-            supabase.table("cilindro").delete().eq("id", cilindro_id).execute()
-            flash("Cilindro excluído!", "success")
+            
+            amostras_response = supabase.table("amostra").select("id").eq("cilindro_id", cilindro_id).execute()
+            
+            if amostras_response.data:
+                flash("Não é possível excluir: cilindro possui amostras vinculadas.", "danger")
+            else:
+                supabase.table("cilindro").delete().eq("id", cilindro_id).execute()
+                flash("Cilindro excluído!", "success")
 
         return redirect(url_for("cilindro_list"))
 
@@ -328,8 +338,14 @@ def elemento_list():
 
         elif action == "delete":
             elemento_id = request.form.get("elemento_id")
-            supabase.table("elemento").delete().eq("id", elemento_id).execute()
-            flash("Elemento excluído!", "success")
+            
+            amostras_response = supabase.table("amostra").select("id").eq("elemento_id", elemento_id).execute()
+            
+            if amostras_response.data:
+                flash("Não é possível excluir: elemento possui amostras vinculadas.", "danger")
+            else:
+                supabase.table("elemento").delete().eq("id", elemento_id).execute()
+                flash("Elemento excluído!", "success")
 
         return redirect(url_for("elemento_list"))
 
@@ -352,23 +368,51 @@ def amostra_list():
     elementos = elementos_response.data or []
 
     if request.method == "POST":
-        data = request.form.get("data")
-        hora = request.form.get("hora")
-        cilindro_id = request.form.get("cilindro_id")
-        elemento_id = request.form.get("elemento_id")
-        tempo_chama_segundos = int(request.form.get("tempo_chama_segundos", 0))
+        action = request.form.get("action")
+        
+        if action == "create":
+            data = request.form.get("data")
+            tempo_chama = request.form.get("tempo_chama")
+            cilindro_id = request.form.get("cilindro_id")
+            elemento_id = request.form.get("elemento_id")
+            quantidade_amostras = int(request.form.get("quantidade_amostras", 1))
 
-        supabase.table("amostra").insert(
-            {
-                "data": data,
-                "hora": hora,
-                "cilindro_id": cilindro_id,
-                "elemento_id": elemento_id,
-                "tempo_chama_segundos": tempo_chama_segundos,
-                "user_id": user_id,
-            }
-        ).execute()
-        flash("Amostra registrada!", "success")
+            supabase.table("amostra").insert(
+                {
+                    "data": data,
+                    "tempo_chama": tempo_chama,
+                    "cilindro_id": cilindro_id,
+                    "elemento_id": elemento_id,
+                    "quantidade_amostras": quantidade_amostras,
+                    "user_id": user_id,
+                }
+            ).execute()
+            flash("Amostra registrada!", "success")
+            
+        elif action == "update":
+            amostra_id = request.form.get("amostra_id")
+            data = request.form.get("data")
+            tempo_chama = request.form.get("tempo_chama")
+            cilindro_id = request.form.get("cilindro_id")
+            elemento_id = request.form.get("elemento_id")
+            quantidade_amostras = int(request.form.get("quantidade_amostras", 1))
+
+            supabase.table("amostra").update(
+                {
+                    "data": data,
+                    "tempo_chama": tempo_chama,
+                    "cilindro_id": cilindro_id,
+                    "elemento_id": elemento_id,
+                    "quantidade_amostras": quantidade_amostras,
+                }
+            ).eq("id", amostra_id).execute()
+            flash("Amostra atualizada!", "success")
+            
+        elif action == "delete":
+            amostra_id = request.form.get("amostra_id")
+            supabase.table("amostra").delete().eq("id", amostra_id).execute()
+            flash("Amostra excluída!", "success")
+        
         return redirect(url_for("amostra_list"))
 
     response = (
@@ -395,75 +439,6 @@ def amostra_list():
     )
 
 
-@app.route("/tempo-chama", methods=["GET", "POST"])
-@login_required
-def tempo_chama_list():
-    user_id = get_user_id()
-
-    cilindro_response = (
-        supabase.table("cilindro").select("id,codigo").eq("user_id", user_id).execute()
-    )
-    elementos_response = (
-        supabase.table("elemento")
-        .select("id,nome,consumo_lpm")
-        .eq("user_id", user_id)
-        .execute()
-    )
-
-    cilindro = cilindro_response.data or []
-    elementos = elementos_response.data or []
-
-    if request.method == "POST":
-        horas = int(request.form.get("horas", 0))
-        minutos = int(request.form.get("minutos", 0))
-        segundos = int(request.form.get("segundos", 0))
-        cilindro_id = request.form.get("cilindro_id")
-        elemento_id = request.form.get("elemento_id")
-
-        supabase.table("tempo_chama").insert(
-            {
-                "horas": horas,
-                "minutos": minutos,
-                "segundos": segundos,
-                "cilindro_id": cilindro_id,
-                "elemento_id": elemento_id,
-                "user_id": user_id,
-            }
-        ).execute()
-        flash("Tempo de chama registrado!", "success")
-        return redirect(url_for("tempo_chama_list"))
-
-    response = (
-        supabase.table("tempo_chama")
-        .select("*")
-        .eq("user_id", user_id)
-        .order("created_at", desc=True)
-        .execute()
-    )
-    tempos = response.data or []
-
-    for tempo in tempos:
-        for c in cilindro:
-            if c.get("id") == tempo.get("cilindro_id"):
-                tempo["cilindro_nome"] = c.get("codigo")
-                break
-        for e in elementos:
-            if e.get("id") == tempo.get("elemento_id"):
-                tempo["elemento_nome"] = e.get("nome")
-                tempo["consumo_lpm"] = e.get("consumo_lpm", 0)
-                total_segundos = (
-                    tempo.get("horas", 0) * 3600
-                    + tempo.get("minutos", 0) * 60
-                    + tempo.get("segundos", 0)
-                )
-                tempo["consumo_litros"] = tempo["consumo_lpm"] * (total_segundos / 60)
-                break
-
-    return render_template(
-        "tempo_chama.html", tempos=tempos, cilindro=cilindro, elementos=elementos
-    )
-
-
 @app.route("/perfil")
 @login_required
 def perfil():
@@ -478,15 +453,11 @@ def perfil():
     amostras_response = (
         supabase.table("amostra").select("id").eq("user_id", user_id).execute()
     )
-    tempos_response = (
-        supabase.table("tempo_chama").select("id").eq("user_id", user_id).execute()
-    )
 
     stats = {
         "cilindros": len(cilindro_response.data or []),
         "elementos": len(elementos_response.data or []),
         "amostras": len(amostras_response.data or []),
-        "tempos": len(tempos_response.data or []),
     }
 
     return render_template("perfil.html", stats=stats)

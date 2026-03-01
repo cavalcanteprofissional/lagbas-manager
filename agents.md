@@ -41,8 +41,7 @@ labgas-manager/
 │   │   ├── auth.py            # Autenticação
 │   │   ├── cilindro.py        # CRUD Cilindros
 │   │   ├── elemento.py        # CRUD Elementos
-│   │   ├── amostra.py         # CRUD Amostras
-│   │   └── tempo_chama.py     # CRUD Tempo Chama
+│   │   └── amostra.py         # CRUD Amostras
 │   └── utils/
 │       ├── supabase.py        # Cliente Supabase
 │       └── decorators.py      # Autenticação JWT
@@ -60,7 +59,6 @@ labgas-manager/
         ├── cilindro.html      # CRUD Cilindros
         ├── elemento.html     # CRUD Elementos
         ├── amostra.html      # CRUD Amostras
-        ├── tempo_chama.html  # CRUD Tempo Chama
         └── perfil.html       # Perfil usuário
 ```
 
@@ -104,33 +102,17 @@ CREATE TABLE elemento (
 CREATE TABLE amostra (
     id SERIAL PRIMARY KEY,
     data DATE NOT NULL,
-    hora TIME NOT NULL,
+    tempo_chama VARCHAR(8) NOT NULL,
     cilindro_id INTEGER REFERENCES cilindro(id) ON DELETE SET NULL,
     elemento_id INTEGER REFERENCES elemento(id) ON DELETE SET NULL,
-    tempo_chama_segundos INTEGER,
+    quantidade_amostras INTEGER DEFAULT 1,
     user_id UUID REFERENCES auth.users(id),
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 ```
 
-### Tabela: tempo_chama
-
-```sql
-CREATE TABLE tempo_chama (
-    id SERIAL PRIMARY KEY,
-    elemento_id INTEGER REFERENCES elemento(id) ON DELETE SET NULL,
-    cilindro_id INTEGER REFERENCES cilindro(id) ON DELETE SET NULL,
-    horas INTEGER NOT NULL,
-    minutos INTEGER NOT NULL,
-    segundos INTEGER NOT NULL,
-    user_id UUID REFERENCES auth.users(id),
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
-```
-
-**Nota**: O código usa nomes de tabelas no singular (`cilindro`, `elemento`, `amostra`, `tempo_chama`).
+**Nota**: O código usa nomes de tabelas no singular (`cilindro`, `elemento`, `amostra`).
 
 ## Endpoints da API REST (Backend)
 
@@ -172,15 +154,6 @@ CREATE TABLE tempo_chama (
 | GET | /api/amostras/{id} | Detalhes |
 | PUT | /api/amostras/{id} | Atualizar |
 | DELETE | /api/amostras/{id} | Deletar |
-
-### Tempo Chama
-
-| Método | Endpoint | Descrição |
-|--------|----------|-----------|
-| GET | /api/tempo-chama | Listar todos |
-| POST | /api/tempo-chama | Criar novo |
-| GET | /api/tempo-chama/{id} | Detalhes |
-| DELETE | /api/tempo-chama/{id} | Deletar |
 
 ## Configuração de Ambiente
 
@@ -244,7 +217,7 @@ python -m venv venv
 ### Cilindro
 - Código único por usuário
 - Valores padrão: 1kg = 956L, R$290
-- Status: ativo, em_uso, esgotado, inativo
+- Status: ativo, em_uso, esgotado
 
 ### Elemento
 - Lista pré-carregada automática (20 elementos padrão)
@@ -252,13 +225,9 @@ python -m venv venv
 - Nomes únicos por usuário
 
 ### Amostra
-- Data/hora editável
+- Data/tempo de chama editável
 - Vincular a cilindro e elemento existentes
-
-### Tempo Chama
-- Registrar duração em h/min/s
-- Calcular consumo automaticamente
-- Vincular a elemento e cilindro
+- Quantidade de amostras (inteiro)
 
 ## Validações
 

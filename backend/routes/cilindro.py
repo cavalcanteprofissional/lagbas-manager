@@ -47,6 +47,8 @@ def create_cilindro():
     new_data = {
         "codigo": data["codigo"],
         "data_compra": data["data_compra"],
+        "data_inicio_consumo": data.get("data_inicio_consumo"),
+        "data_fim": data.get("data_fim"),
         "gas_kg": gas_kg,
         "litros_equivalentes": litros,
         "custo": custo,
@@ -116,6 +118,8 @@ def update_cilindro(cilindro_id):
     update_data = {
         "codigo": data.get("codigo", existing.data[0]["codigo"]),
         "data_compra": data.get("data_compra", existing.data[0]["data_compra"]),
+        "data_inicio_consumo": data.get("data_inicio_consumo", existing.data[0].get("data_inicio_consumo")),
+        "data_fim": data.get("data_fim", existing.data[0].get("data_fim")),
         "gas_kg": gas_kg,
         "litros_equivalentes": litros,
         "custo": data.get("custo", existing.data[0]["custo"]),

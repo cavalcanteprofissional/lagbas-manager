@@ -5,7 +5,6 @@ from routes.auth import auth_bp
 from routes.cilindro import cilindro_bp
 from routes.elemento import elemento_bp
 from routes.amostra import amostra_bp
-from routes.tempo_chama import tempo_chama_bp
 
 app = Flask(__name__)
 CORS(app)
@@ -17,7 +16,6 @@ app.register_blueprint(auth_bp)
 app.register_blueprint(cilindro_bp)
 app.register_blueprint(elemento_bp)
 app.register_blueprint(amostra_bp)
-app.register_blueprint(tempo_chama_bp)
 
 
 @app.route("/")

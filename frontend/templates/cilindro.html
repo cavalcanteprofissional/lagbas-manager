@@ -16,29 +16,37 @@
             <form method="POST">
                 <input type="hidden" name="action" value="create">
                 <div class="row">
-                    <div class="col-md-4 mb-3">
+                    <div class="col-md-3 mb-3">
                         <label class="form-label">Código *</label>
                         <input type="text" name="codigo" class="form-control" placeholder="Ex: CIL-001" required>
                     </div>
-                    <div class="col-md-4 mb-3">
+                    <div class="col-md-3 mb-3">
                         <label class="form-label">Data de Compra *</label>
                         <input type="date" name="data_compra" class="form-control" required>
                     </div>
-                    <div class="col-md-4 mb-3">
-                        <label class="form-label">Status</label>
-                        <select name="status" class="form-select">
-                            {% for status in status_options %}
-                            <option value="{{ status }}">{{ status|title }}</option>
-                            {% endfor %}
-                        </select>
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">Data Início de Uso</label>
+                        <input type="date" name="data_inicio_consumo" class="form-control">
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">Data Fim (Esgotamento)</label>
+                        <input type="date" name="data_fim" class="form-control">
                     </div>
                 </div>
                 <div class="row">
-                    <div class="col-md-4 mb-3">
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">Status</label>
+                        <select name="status" class="form-select">
+                            {% for status in status_options %}
+                            <option value="{{ status }}">{{ 'Em uso' if status == 'em_uso' else status|title }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-3 mb-3">
                         <label class="form-label">Gás (kg)</label>
                         <input type="number" name="gas_kg" class="form-control" value="1.0" step="0.1" min="0.1">
                     </div>
-                    <div class="col-md-4 mb-3">
+                    <div class="col-md-3 mb-3">
                         <label class="form-label">Custo (R$)</label>
                         <input type="number" name="custo" class="form-control" value="290.00" step="1" min="0">
                     </div>
@@ -58,6 +66,8 @@
                     <tr>
                         <th>Código</th>
                         <th>Data Compra</th>
+                        <th>Data Início</th>
+                        <th>Data Fim</th>
                         <th>Gás (kg)</th>
                         <th>Litros</th>
                         <th>Custo</th>
@@ -70,10 +80,12 @@
                     <tr>
                         <td>{{ c.codigo }}</td>
                         <td>{{ c.data_compra }}</td>
+                        <td>{{ c.data_inicio_consumo or '-' }}</td>
+                        <td>{{ c.data_fim or '-' }}</td>
                         <td>{{ "%.2f"|format(c.gas_kg) }}</td>
                         <td>{{ "%.2f"|format(c.litros_equivalentes) }}</td>
                         <td>R$ {{ "%.2f"|format(c.custo) }}</td>
-                        <td><span class="badge bg-{{ 'success' if c.status == 'ativo' else 'primary' if c.status == 'em_uso' else 'danger' if c.status == 'esgotado' else 'secondary' }}">{{ c.status }}</span></td>
+                        <td><span class="badge bg-{{ 'success' if c.status == 'ativo' else 'primary' if c.status == 'em_uso' else 'danger' if c.status == 'esgotado' else 'secondary' }}">{{ 'Em uso' if c.status == 'em_uso' else c.status|title }}</span></td>
                         <td>
                             <button class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#editModal{{ c.id }}">
                                 <i class="bi bi-pencil"></i>
@@ -107,6 +119,14 @@
                                             <input type="date" name="data_compra" class="form-control" value="{{ c.data_compra }}" required>
                                         </div>
                                         <div class="mb-3">
+                                            <label class="form-label">Data Início de Uso</label>
+                                            <input type="date" name="data_inicio_consumo" class="form-control" value="{{ c.data_inicio_consumo or '' }}">
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Data Fim (Esgotamento)</label>
+                                            <input type="date" name="data_fim" class="form-control" value="{{ c.data_fim or '' }}">
+                                        </div>
+                                        <div class="mb-3">
                                             <label class="form-label">Gás (kg)</label>
                                             <input type="number" name="gas_kg" class="form-control" value="{{ c.gas_kg }}" step="0.1">
                                         </div>
@@ -118,7 +138,7 @@
                                             <label class="form-label">Status</label>
                                             <select name="status" class="form-select">
                                                 {% for s in status_options %}
-                                                <option value="{{ s }}" {% if c.status == s %}selected{% endif %}>{{ s|title }}</option>
+                                                <option value="{{ s }}" {% if c.status == s %}selected{% endif %}>{{ 'Em uso' if s == 'em_uso' else s|title }}</option>
                                                 {% endfor %}
                                             </select>
                                         </div>
