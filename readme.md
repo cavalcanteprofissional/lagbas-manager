@@ -214,3 +214,19 @@ Crie um serviço Railway com:
 - Registrar duração em h/min/s
 - Calcular consumo automaticamente
 - Vincular a elemento e cilindro
+
+## Deploy Railway
+
+### Configuração
+1. Criar projeto no Railway com o repositório GitHub
+2. Configurar Root Directory como `frontend` ou usar `railway.json`
+3. Adicionar variáveis de ambiente:
+   - `SECRET_KEY`: chave secreta para sessões
+   - `SUPABASE_URL`: URL do projeto Supabase
+   - `SUPABASE_KEY`: chave anônima do Supabase
+
+### Build Command: (vazio)
+### Start Command: `gunicorn app:app`
+
+## Estado Atual
+- Deploy em andamento ( Railway)
