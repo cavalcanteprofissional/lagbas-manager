@@ -30,6 +30,7 @@ labgas-manager/
 ├── .gitignore
 ├── agents.md                  # Este arquivo
 ├── readme.md                  # Documentação do projeto
+├── bd.md                     # Script SQL do banco de dados
 ├── backend/                   # Flask API (opcional)
 │   ├── app.py                 # Aplicação Flask API
 │   ├── .env                   # Variáveis do backend
@@ -57,9 +58,9 @@ labgas-manager/
         ├── register.html      # Registro
         ├── dashboard.html     # Dashboard
         ├── cilindro.html      # CRUD Cilindros
-        ├── elemento.html     # CRUD Elementos
-        ├── amostra.html      # CRUD Amostras
-        └── perfil.html       # Perfil usuário
+        ├── elemento.html      # CRUD Elementos
+        ├── amostra.html       # CRUD Amostras
+        └── perfil.html        # Perfil usuário
 ```
 
 ## Modelo de Dados (Supabase)
@@ -103,12 +104,11 @@ CREATE TABLE amostra (
     id SERIAL PRIMARY KEY,
     data DATE NOT NULL,
     tempo_chama VARCHAR(8) NOT NULL,
-    cilindro_id INTEGER REFERENCES cilindro(id) ON DELETE SET NULL,
-    elemento_id INTEGER REFERENCES elemento(id) ON DELETE SET NULL,
+    cilindro_id INTEGER REFERENCES cilindro(id),
+    elemento_id INTEGER REFERENCES elemento(id),
     quantidade_amostras INTEGER DEFAULT 1,
     user_id UUID REFERENCES auth.users(id),
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+    created_at TIMESTAMP DEFAULT NOW()
 );
 ```
 
@@ -231,9 +231,9 @@ python -m venv venv
 
 ## Validações
 
-- Não permitir duplicatas
+- Não permitir duplicatas (código de cilindro, nome de elemento)
 - Validar campos obrigatórios
-- Confirmar antes de deletar
+- Cilindro e elemento não podem ser excluídos se possuírem amostras vinculadas (mensagem de erro amigável)
 - Proteger rotas com @login_required
 
 ## Deploy Railway

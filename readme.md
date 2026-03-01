@@ -28,6 +28,42 @@ labgas-manager/
 ├── .gitignore
 ├── agents.md                  # Documentação técnica
 ├── readme.md                  # Este arquivo
+├── bd.md                     # Script SQL do banco de dados
+├── backend/                   # Flask API (opcional)
+│   ├── app.py                 # Aplicação Flask API
+│   ├── .env                   # Variáveis do backend
+│   ├── requirements.txt       # Dependências Python
+│   ├── venv/                  # Virtual environment
+│   ├── Procfile               # Deploy Railway
+│   ├── config.py              # Configurações
+│   ├── routes/
+│   │   ├── auth.py            # Autenticação
+│   │   ├── cilindro.py        # CRUD Cilindros
+│   │   ├── elemento.py        # CRUD Elementos
+│   │   └── amostra.py         # CRUD Amostras
+│   └── utils/
+│       ├── supabase.py        # Cliente Supabase
+│       └── decorators.py      # Autenticação JWT
+└── frontend/                  # Flask + Jinja2 (Web)
+    ├── app.py                 # Aplicação Flask principal
+    ├── .env                   # Variáveis do frontend
+    ├── requirements.txt        # Dependências Python
+    ├── venv/                  # Virtual environment
+    ├── Procfile               # Deploy Railway
+    └── templates/              # Templates HTML
+        ├── base.html           # Layout base
+        ├── login.html          # Login
+        ├── register.html       # Registro
+        ├── dashboard.html      # Dashboard
+        ├── cilindro.html       # CRUD Cilindros
+        ├── elemento.html       # CRUD Elementos
+        ├── amostra.html        # CRUD Amostras
+        └── perfil.html        # Perfil usuário
+```
+labgas-manager/
+├── .gitignore
+├── agents.md                  # Documentação técnica
+├── readme.md                  # Este arquivo
 ├── backend/                   # Flask API (opcional)
 │   ├── app.py                 # Aplicação Flask API
 │   ├── .env                   # Variáveis do backend
@@ -149,12 +185,11 @@ CREATE TABLE amostra (
     id SERIAL PRIMARY KEY,
     data DATE NOT NULL,
     tempo_chama VARCHAR(8) NOT NULL,
-    cilindro_id INTEGER REFERENCES cilindro(id) ON DELETE SET NULL,
-    elemento_id INTEGER REFERENCES elemento(id) ON DELETE SET NULL,
+    cilindro_id INTEGER REFERENCES cilindro(id),
+    elemento_id INTEGER REFERENCES elemento(id),
     quantidade_amostras INTEGER DEFAULT 1,
     user_id UUID REFERENCES auth.users(id),
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+    created_at TIMESTAMP DEFAULT NOW()
 );
 ```
 
@@ -189,13 +224,9 @@ Crie um serviço Railway com:
 - Nomes únicos por usuário
 
 ### Amostra
-- Data/tempo de chama editável
+- Data/tempo de chama editável (HH:MM:SS)
 - Vincular a cilindro e elemento existentes
-
-### Tempo Chama
-- Registrar duração em h/min/s
-- Calcular consumo automaticamente
-- Vincular a elemento e cilindro
+- Quantidade de amostras (inteiro)
 
 ## Deploy Railway
 
@@ -211,4 +242,4 @@ Crie um serviço Railway com:
 ### Start Command: `gunicorn app:app`
 
 ## Estado Atual
-- Deploy em andamento ( Railway)
+- Projeto em produção no Railway

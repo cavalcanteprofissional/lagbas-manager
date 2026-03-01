@@ -79,10 +79,10 @@
 new Chart(document.getElementById('statusChart'), {
     type: 'doughnut',
     data: {
-        labels: {{ status_counts.keys()|list }},
+        labels: {{ status_labels|tojson }},
         datasets: [{
-            data: {{ status_counts.values()|list }},
-            backgroundColor: ['#28a745', '#007bff', '#dc3545', '#6c757d']
+            data: {{ status_values|tojson }},
+            backgroundColor: ['#28a745', '#007bff', '#dc3545']
         }]
     }
 });
@@ -92,10 +92,10 @@ new Chart(document.getElementById('statusChart'), {
 new Chart(document.getElementById('elementosChart'), {
     type: 'bar',
     data: {
-        labels: {{ elementos|map(attribute='nome')|list }},
+        labels: {{ elementos_nomes|tojson }},
         datasets: [{
             label: 'Consumo (L/min)',
-            data: {{ elementos|map(attribute='consumo_lpm')|list }},
+            data: {{ elementos_consumos|tojson }},
             backgroundColor: '#667eea'
         }]
     },

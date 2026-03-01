@@ -199,6 +199,11 @@ def dashboard():
         status = c.get("status", "desconhecido")
         status_counts[status] = status_counts.get(status, 0) + 1
 
+    status_labels = list(status_counts.keys())
+    status_values = list(status_counts.values())
+    elementos_nomes = [e.get("nome") for e in elementos]
+    elementos_consumos = [float(e.get("consumo_lpm", 0)) for e in elementos]
+
     return render_template(
         "dashboard.html",
         cilindro=cilindro,
@@ -206,6 +211,10 @@ def dashboard():
         amostras=amostras,
         ativos=ativos,
         status_counts=status_counts,
+        status_labels=status_labels,
+        status_values=status_values,
+        elementos_nomes=elementos_nomes,
+        elementos_consumos=elementos_consumos,
     )
 
 
@@ -476,4 +485,5 @@ def perfil():
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    port = int(os.getenv("PORT", 5000))
+    app.run(host="0.0.0.0", port=port, debug=True)
