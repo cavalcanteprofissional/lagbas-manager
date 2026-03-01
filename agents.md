@@ -27,13 +27,10 @@ Dashboard para gestão de cilindro de gás e elementos analisados em laboratóri
 
 ```
 labgas-manager/
-├── pyproject.toml              # Poetry config (não usado atualmente)
-├── poetry.lock
-├── .env                       # Variáveis ambiente (não commitado)
 ├── .gitignore
 ├── agents.md                  # Este arquivo
 ├── readme.md                  # Documentação do projeto
-├── backend/                   # Flask API (separado)
+├── backend/                   # Flask API (opcional)
 │   ├── app.py                 # Aplicação Flask API
 │   ├── .env                   # Variáveis do backend
 │   ├── requirements.txt       # Dependências Python
@@ -133,6 +130,8 @@ CREATE TABLE tempo_chama (
 );
 ```
 
+**Nota**: O código usa nomes de tabelas no plural (`cilindros`, `elementos`, `amostras`, `tempo_chamas`).
+
 ## Endpoints da API REST (Backend)
 
 ### Autenticação
@@ -206,7 +205,7 @@ SUPABASE_JWT_SECRET=seu_jwt_secret
 
 ## Como Rodar Local
 
-### Frontend (Flask + Jinja2)
+### Frontend (Flask + Jinja2) - Porta 5000
 
 ```bash
 cd frontend
@@ -215,7 +214,7 @@ python -m venv venv
 ./venv/Scripts/python app.py
 ```
 
-### Backend (API - opcional)
+### Backend (API - opcional) - Porta 5001
 
 ```bash
 cd backend
@@ -223,6 +222,8 @@ python -m venv venv
 ./venv/Scripts/pip install -r requirements.txt
 ./venv/Scripts/python app.py
 ```
+
+**Nota**: O frontend roda na porta 5000 e o backend na porta 5001 para evitar conflitos.
 
 ## Deploy Railway
 

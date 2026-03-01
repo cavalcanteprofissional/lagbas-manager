@@ -10,8 +10,8 @@ from routes.tempo_chama import tempo_chama_bp
 app = Flask(__name__)
 CORS(app)
 
-app.config['APP_NAME'] = APP_NAME
-app.config['ENV'] = FLASK_ENV
+app.config["APP_NAME"] = APP_NAME
+app.config["ENV"] = FLASK_ENV
 
 app.register_blueprint(auth_bp)
 app.register_blueprint(cilindro_bp)
@@ -20,15 +20,15 @@ app.register_blueprint(amostra_bp)
 app.register_blueprint(tempo_chama_bp)
 
 
-@app.route('/')
+@app.route("/")
 def index():
-    return {'message': f'{APP_NAME} API', 'status': 'running'}
+    return {"message": f"{APP_NAME} API", "status": "running"}
 
 
-@app.route('/health')
+@app.route("/health")
 def health():
-    return {'status': 'healthy'}
+    return {"status": "healthy"}
 
 
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5001, debug=True)

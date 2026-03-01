@@ -25,13 +25,10 @@ Dashboard para gestão de cilindro de gás e elementos analisados em laboratóri
 
 ```
 labgas-manager/
-├── pyproject.toml              # Poetry config (não usado atualmente)
-├── poetry.lock
-├── .env                       # Variáveis ambiente (raiz)
 ├── .gitignore
 ├── agents.md                  # Documentação técnica
 ├── readme.md                  # Este arquivo
-├── backend/                   # Flask API (separado)
+├── backend/                   # Flask API (opcional)
 │   ├── app.py                 # Aplicação Flask API
 │   ├── .env                   # Variáveis do backend
 │   ├── requirements.txt       # Dependências Python
@@ -83,7 +80,7 @@ python -m venv venv
 
 O frontend estará disponível em: `http://localhost:5000`
 
-### Backend (API - opcional, se necessário separar)
+### Backend (API - opcional) - Porta 5001
 
 ```bash
 cd backend
@@ -178,6 +175,8 @@ CREATE TABLE tempo_chama (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 ```
+
+**Nota**: O código usa nomes de tabelas no plural (`cilindros`, `elementos`, `amostras`, `tempo_chamas`).
 
 ## Deploy no Railway
 
