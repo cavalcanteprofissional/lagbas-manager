@@ -81,8 +81,52 @@ def load_user(user_id):
     return None
 
 
+@app.context_processor
+def inject_user_info():
+    return dict(is_admin=is_admin(), user_role=get_user_role())
+
+
 def get_user_id():
     return session.get("user_id")
+
+
+def is_admin():
+    """Verifica se o usuário atual é admin"""
+    user_id = get_user_id()
+    if not user_id:
+        return False
+    try:
+        response = supabase.table("perfil").select("role").eq("id", user_id).execute()
+        if response.data:
+            return response.data[0].get("role") == "admin"
+    except:
+        pass
+    return False
+
+
+def is_user_active(user_id):
+    """Verifica se o usuário está ativo"""
+    try:
+        response = supabase.table("perfil").select("ativo").eq("id", user_id).execute()
+        if response.data:
+            return response.data[0].get("ativo", True)
+    except:
+        pass
+    return True
+
+
+def get_user_role():
+    """Retorna o role do usuário atual"""
+    user_id = get_user_id()
+    if not user_id:
+        return "usuario"
+    try:
+        response = supabase.table("perfil").select("role").eq("id", user_id).execute()
+        if response.data:
+            return response.data[0].get("role", "usuario")
+    except:
+        pass
+    return "usuario"
 
 
 @app.route("/")
@@ -113,6 +157,17 @@ def login():
                 "email": response.user.email,
                 "email_confirmed_at": response.user.email_confirmed_at,
             }
+
+            try:
+                perfil = supabase.table("perfil").select("*").eq("id", response.user.id).execute()
+                if not perfil.data:
+                    supabase.table("perfil").insert({
+                        "id": response.user.id,
+                        "role": "usuario",
+                        "ativo": True
+                    }).execute()
+            except:
+                pass
 
             user = User(response.user.id, response.user.email, session["user_data"])
             login_user(user, remember=True, duration=timedelta(days=7))
@@ -222,6 +277,7 @@ def dashboard():
 @login_required
 def cilindro_list():
     user_id = get_user_id()
+    admin = is_admin()
 
     if request.method == "POST":
         action = request.form.get("action")
@@ -234,6 +290,7 @@ def cilindro_list():
             gas_kg = float(request.form.get("gas_kg", GAS_KG_DEFAULT))
             custo = float(request.form.get("custo", CUSTO_DEFAULT))
             status = request.form.get("status", "ativo")
+            compartilhado = request.form.get("compartilhado") == "on"
 
             existing = (
                 supabase.table("cilindro")
@@ -256,6 +313,7 @@ def cilindro_list():
                         "custo": custo,
                         "status": status,
                         "user_id": user_id,
+                        "compartilhado": compartilhado,
                     }
                 ).execute()
                 flash("Cilindro cadastrado!", "success")
@@ -269,6 +327,7 @@ def cilindro_list():
             gas_kg = float(request.form.get("gas_kg"))
             custo = float(request.form.get("custo"))
             status = request.form.get("status")
+            compartilhado = request.form.get("compartilhado") == "on"
 
             supabase.table("cilindro").update(
                 {
@@ -280,6 +339,7 @@ def cilindro_list():
                     "litros_equivalentes": gas_kg * LITROS_EQUIVALENTES_KG,
                     "custo": custo,
                     "status": status,
+                    "compartilhado": compartilhado,
                 }
             ).eq("id", cilindro_id).execute()
             flash("Cilindro atualizado!", "success")
@@ -297,7 +357,10 @@ def cilindro_list():
 
         return redirect(url_for("cilindro_list"))
 
-    response = supabase.table("cilindro").select("*").eq("user_id", user_id).execute()
+    if admin:
+        response = supabase.table("cilindro").select("*").order("created_at", desc=True).execute()
+    else:
+        response = supabase.table("cilindro").select("*").or_(f"user_id.eq.{user_id},compartilhado.eq.true").order("created_at", desc=True).execute()
     cilindro = response.data or []
 
     return render_template(
@@ -309,9 +372,7 @@ def cilindro_list():
 @login_required
 def elemento_list():
     user_id = get_user_id()
-
-    response = supabase.table("elemento").select("*").eq("user_id", user_id).execute()
-    elementos = response.data or []
+    admin = is_admin()
 
     if request.method == "POST":
         action = request.form.get("action")
@@ -319,6 +380,7 @@ def elemento_list():
         if action == "create":
             nome = request.form.get("nome")
             consumo_lpm = float(request.form.get("consumo_lpm"))
+            compartilhado = request.form.get("compartilhado") == "on"
 
             existing = (
                 supabase.table("elemento")
@@ -331,7 +393,7 @@ def elemento_list():
                 flash("Elemento já existe.", "danger")
             else:
                 supabase.table("elemento").insert(
-                    {"nome": nome, "consumo_lpm": consumo_lpm, "user_id": user_id}
+                    {"nome": nome, "consumo_lpm": consumo_lpm, "user_id": user_id, "compartilhado": compartilhado}
                 ).execute()
                 flash("Elemento cadastrado!", "success")
 
@@ -339,9 +401,10 @@ def elemento_list():
             elemento_id = request.form.get("elemento_id")
             nome = request.form.get("nome")
             consumo_lpm = float(request.form.get("consumo_lpm"))
+            compartilhado = request.form.get("compartilhado") == "on"
 
             supabase.table("elemento").update(
-                {"nome": nome, "consumo_lpm": consumo_lpm}
+                {"nome": nome, "consumo_lpm": consumo_lpm, "compartilhado": compartilhado}
             ).eq("id", elemento_id).execute()
             flash("Elemento atualizado!", "success")
 
@@ -358,6 +421,12 @@ def elemento_list():
 
         return redirect(url_for("elemento_list"))
 
+    if admin:
+        response = supabase.table("elemento").select("*").order("created_at", desc=True).execute()
+    else:
+        response = supabase.table("elemento").select("*").or_(f"user_id.eq.{user_id},compartilhado.eq.true").order("created_at", desc=True).execute()
+    elementos = response.data or []
+
     return render_template("elemento.html", elementos=elementos)
 
 
@@ -365,13 +434,17 @@ def elemento_list():
 @login_required
 def amostra_list():
     user_id = get_user_id()
+    admin = is_admin()
 
-    cilindro_response = (
-        supabase.table("cilindro").select("id,codigo").eq("user_id", user_id).execute()
-    )
-    elementos_response = (
-        supabase.table("elemento").select("id,nome").eq("user_id", user_id).execute()
-    )
+    cilindro_base = supabase.table("cilindro").select("id,codigo").execute().data or []
+    elementos_base = supabase.table("elemento").select("id,nome").execute().data or []
+    
+    if admin:
+        cilindro_response = supabase.table("cilindro").select("id,codigo").execute()
+        elementos_response = supabase.table("elemento").select("id,nome").execute()
+    else:
+        cilindro_response = supabase.table("cilindro").select("id,codigo").or_(f"user_id.eq.{user_id},compartilhado.eq.true").execute()
+        elementos_response = supabase.table("elemento").select("id,nome").or_(f"user_id.eq.{user_id},compartilhado.eq.true").execute()
 
     cilindro = cilindro_response.data or []
     elementos = elementos_response.data or []
@@ -394,6 +467,7 @@ def amostra_list():
             cilindro_id = request.form.get("cilindro_id")
             elemento_id = request.form.get("elemento_id")
             quantidade_amostras = int(request.form.get("quantidade_amostras", 1))
+            compartilhado = request.form.get("compartilhado") == "on"
 
             supabase.table("amostra").insert(
                 {
@@ -403,6 +477,7 @@ def amostra_list():
                     "elemento_id": elemento_id,
                     "quantidade_amostras": quantidade_amostras,
                     "user_id": user_id,
+                    "compartilhado": compartilhado,
                 }
             ).execute()
             flash("Amostra registrada!", "success")
@@ -417,6 +492,7 @@ def amostra_list():
             cilindro_id = request.form.get("cilindro_id")
             elemento_id = request.form.get("elemento_id")
             quantidade_amostras = int(request.form.get("quantidade_amostras", 1))
+            compartilhado = request.form.get("compartilhado") == "on"
 
             supabase.table("amostra").update(
                 {
@@ -425,6 +501,7 @@ def amostra_list():
                     "cilindro_id": cilindro_id,
                     "elemento_id": elemento_id,
                     "quantidade_amostras": quantidade_amostras,
+                    "compartilhado": compartilhado,
                 }
             ).eq("id", amostra_id).execute()
             flash("Amostra atualizada!", "success")
@@ -436,13 +513,10 @@ def amostra_list():
         
         return redirect(url_for("amostra_list"))
 
-    response = (
-        supabase.table("amostra")
-        .select("*")
-        .eq("user_id", user_id)
-        .order("data", desc=True)
-        .execute()
-    )
+    if admin:
+        response = supabase.table("amostra").select("*").order("data", desc=True).execute()
+    else:
+        response = supabase.table("amostra").select("*").or_(f"user_id.eq.{user_id},compartilhado.eq.true").order("data", desc=True).execute()
     amostras = response.data or []
 
     for amostra in amostras:
@@ -482,6 +556,123 @@ def perfil():
     }
 
     return render_template("perfil.html", stats=stats)
+
+
+@app.route("/admin")
+@login_required
+def admin_panel():
+    if not is_admin():
+        flash("Acesso restrito a administradores.", "danger")
+        return redirect(url_for("dashboard"))
+    
+    users_response = supabase.table("perfil").select("*").execute()
+    users = users_response.data or []
+    
+    for user in users:
+        user_id = user.get("id")
+        
+        cilindro_count = supabase.table("cilindro").select("id", count="exact").eq("user_id", user_id).execute()
+        elemento_count = supabase.table("elemento").select("id", count="exact").eq("user_id", user_id).execute()
+        amostra_count = supabase.table("amostra").select("id", count="exact").eq("user_id", user_id).execute()
+        
+        user["cilindros"] = cilindro_count.count or 0
+        user["elementos"] = elemento_count.count or 0
+        user["amostras"] = amostra_count.count or 0
+    
+    return render_template("admin.html", users=users)
+
+
+@app.route("/admin/toggle-user", methods=["POST"])
+@login_required
+def admin_toggle_user():
+    if not is_admin():
+        flash("Acesso restrito a administradores.", "danger")
+        return redirect(url_for("dashboard"))
+    
+    user_id = request.form.get("user_id")
+    ativo = request.form.get("ativo") == "true"
+    
+    if user_id == get_user_id():
+        flash("Você não pode desativar seu próprio usuário.", "warning")
+        return redirect(url_for("admin_panel"))
+    
+    supabase.table("perfil").update({"ativo": ativo}).eq("id", user_id).execute()
+    flash(f"Usuário {'ativado' if ativo else 'desativado'} com sucesso!", "success")
+    
+    return redirect(url_for("admin_panel"))
+
+
+@app.route("/admin/set-role", methods=["POST"])
+@login_required
+def admin_set_role():
+    if not is_admin():
+        flash("Acesso restrito a administradores.", "danger")
+        return redirect(url_for("dashboard"))
+    
+    user_id = request.form.get("user_id")
+    role = request.form.get("role")
+    
+    if user_id == get_user_id():
+        flash("Você não pode alterar sua própria função.", "warning")
+        return redirect(url_for("admin_panel"))
+    
+    supabase.table("perfil").update({"role": role}).eq("id", user_id).execute()
+    flash(f"Função do usuário alterada para {role}!", "success")
+    
+    return redirect(url_for("admin_panel"))
+
+
+@app.route("/admin/delete-user", methods=["POST"])
+@login_required
+def admin_delete_user():
+    if not is_admin():
+        flash("Acesso restrito a administradores.", "danger")
+        return redirect(url_for("dashboard"))
+    
+    user_id = request.form.get("user_id")
+    
+    if user_id == get_user_id():
+        flash("Você não pode excluir seu próprio usuário.", "warning")
+        return redirect(url_for("admin_panel"))
+    
+    try:
+        supabase.table("cilindro").delete().eq("user_id", user_id).execute()
+        supabase.table("elemento").delete().eq("user_id", user_id).execute()
+        supabase.table("amostra").delete().eq("user_id", user_id).execute()
+        supabase.table("perfil").delete().eq("id", user_id).execute()
+        
+        flash("Usuário e todos os seus dados foram excluídos!", "success")
+    except Exception as e:
+        flash(f"Erro ao excluir usuário: {str(e)}", "danger")
+    
+    return redirect(url_for("admin_panel"))
+
+
+@app.route("/admin/user-data/<target_user_id>")
+@login_required
+def admin_user_data(target_user_id):
+    if not is_admin():
+        flash("Acesso restrito a administradores.", "danger")
+        return redirect(url_for("dashboard"))
+    
+    cilindro = supabase.table("cilindro").select("*").eq("user_id", target_user_id).execute().data or []
+    elementos = supabase.table("elemento").select("*").eq("user_id", target_user_id).execute().data or []
+    amostras = supabase.table("amostra").select("*").eq("user_id", target_user_id).execute().data or []
+    
+    perfil = supabase.table("perfil").select("*").eq("id", target_user_id).execute().data
+    target_user = perfil[0] if perfil else {"id": target_user_id, "role": "unknown"}
+    
+    user_email_response = supabase.auth.admin.get_user(target_user_id)
+    if user_email_response and user_email_response.user:
+        target_user["email"] = user_email_response.user.email
+    
+    return render_template(
+        "admin_user_data.html",
+        target_user=target_user,
+        cilindro=cilindro,
+        elementos=elementos,
+        amostras=amostras
+    )
 
 
 if __name__ == "__main__":

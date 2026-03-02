@@ -190,6 +190,11 @@
             <a href="{{ url_for('perfil') }}" class="{% if request.endpoint == 'perfil' %}active{% endif %}">
                 <i class="bi bi-person me-2"></i> <span>Perfil</span>
             </a>
+            {% if is_admin %}
+            <a href="{{ url_for('admin_panel') }}" class="{% if request.endpoint == 'admin_panel' or request.endpoint == 'admin_user_data' %}active{% endif %}">
+                <i class="bi bi-gear me-2"></i> <span>Administração</span>
+            </a>
+            {% endif %}
             <a href="{{ url_for('logout') }}" class="mt-4">
                 <i class="bi bi-box-arrow-right me-2"></i> <span>Sair</span>
             </a>

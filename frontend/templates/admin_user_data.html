@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+
+{% block title %}Dados do Usuário - LabGas Manager{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="bi bi-person"></i> Dados do Usuário</h2>
+    <a href="{{ url_for('admin_panel') }}" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left"></i> Voltar
+    </a>
+</div>
+
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="mb-0"><i class="bi bi-person-circle"></i> Informações do Usuário</h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6">
+                <p><strong>Email:</strong> {{ target_user.email if target_user.email else 'N/A' }}</p>
+                <p><strong>ID:</strong> <code class="small">{{ target_user.id }}</code></p>
+            </div>
+            <div class="col-md-6">
+                <p><strong>Função:</strong> 
+                    <span class="badge bg-{{ 'danger' if target_user.role == 'admin' else 'secondary' }}">
+                        {{ target_user.role|title }}
+                    </span>
+                </p>
+                <p><strong>Status:</strong> 
+                    <span class="badge bg-{{ 'success' if target_user.ativo else 'warning' }}">
+                        {{ 'Ativo' if target_user.ativo else 'Inativo' }}
+                    </span>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12 col-lg-4 mb-4">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-box-seam"></i> Cilindros ({{ cilindro|length }})</h5>
+            </div>
+            <div class="card-body p-0">
+                {% if cilindro %}
+                <div class="table-responsive">
+                    <table class="table table-sm mb-0">
+                        <thead>
+                            <tr>
+                                <th>Código</th>
+                                <th>Status</th>
+                                <th>Compartilhado</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for c in cilindro %}
+                            <tr>
+                                <td>{{ c.codigo }}</td>
+                                <td><span class="badge bg-{{ 'success' if c.status == 'ativo' else 'primary' if c.status == 'em_uso' else 'danger' }}">{{ c.status }}</span></td>
+                                <td><span class="badge bg-{{ 'info' if c.compartilhado else 'secondary' }}">{{ 'Sim' if c.compartilhado else 'Não' }}</span></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted p-3">Nenhum cilindro.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 col-lg-4 mb-4">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-droplet"></i> Elementos ({{ elementos|length }})</h5>
+            </div>
+            <div class="card-body p-0">
+                {% if elementos %}
+                <div class="table-responsive">
+                    <table class="table table-sm mb-0">
+                        <thead>
+                            <tr>
+                                <th>Nome</th>
+                                <th>Consumo</th>
+                                <th>Comp.</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for e in elementos %}
+                            <tr>
+                                <td>{{ e.nome }}</td>
+                                <td>{{ e.consumo_lpm }}</td>
+                                <td><span class="badge bg-{{ 'info' if e.compartilhado else 'secondary' }}">{{ 'Sim' if e.compartilhado else 'Não' }}</span></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted p-3">Nenhum elemento.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 col-lg-4 mb-4">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-graph-up"></i> Amostras ({{ amostras|length }})</h5>
+            </div>
+            <div class="card-body p-0">
+                {% if amostras %}
+                <div class="table-responsive">
+                    <table class="table table-sm mb-0">
+                        <thead>
+                            <tr>
+                                <th>Data</th>
+                                <th>Qtd</th>
+                                <th>Comp.</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for a in amostras %}
+                            <tr>
+                                <td>{{ a.data }}</td>
+                                <td>{{ a.quantidade_amostras }}</td>
+                                <td><span class="badge bg-{{ 'info' if a.compartilhado else 'secondary' }}">{{ 'Sim' if a.compartilhado else 'Não' }}</span></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted p-3">Nenhuma amostra.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

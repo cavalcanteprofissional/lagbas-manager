@@ -1,6 +1,14 @@
 # LabGas Manager
 
+**Versão: 1.1.0**
+
 Dashboard para gestão de cilindro de gás e elementos analisados em laboratório de química, utilizando **Flask** com **Jinja2** para o frontend e **Supabase** como banco de dados.
+
+## Novidades v1.1.0
+
+- **Sistema de Administração**: Painel admin para gerenciar usuários
+- **Compartilhamento de Dados**: возможность compartilhar cilindro, elemento e amostra entre usuários
+- **UI Mobile Otimizada**: Interface responsiva com sidebar colapsável
 
 ## Arquitetura do Sistema
 
@@ -250,4 +258,4 @@ O projeto utiliza Dockerfile para deploy no Railway.
 ## Estado Atual
 
 ### Pendências
-- Deploy no Railway em andamento - config Dockerfile adicionada
+- Sistema de admin implementado - executar SQL no Supabase (arquivo bd_admin.md)

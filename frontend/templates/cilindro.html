@@ -51,6 +51,16 @@
                         <input type="number" name="custo" class="form-control form-control-lg" value="290.00" step="1" min="0">
                     </div>
                     <div class="col-12 col-lg-3 d-flex align-items-end">
+                        <div class="form-check form-switch w-100 p-3 border rounded">
+                            <input class="form-check-input" type="checkbox" name="compartilhado" id="compartilhado">
+                            <label class="form-check-label" for="compartilhado">
+                                <i class="bi bi-share"></i> Compartilhar com outros usuários
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="row g-2 mt-2">
+                    <div class="col-12">
                         <button type="submit" class="btn btn-success btn-lg w-100">
                             <i class="bi bi-check-lg"></i> Cadastrar
                         </button>
@@ -76,6 +86,7 @@
                         <th class="d-none d-lg-table-cell">Litros</th>
                         <th class="d-none d-lg-table-cell">Custo</th>
                         <th>Status</th>
+                        <th class="d-none d-sm-table-cell">Comp.</th>
                         <th>Ações</th>
                     </tr>
                 </thead>
@@ -97,6 +108,11 @@
                         <td>
                             <span class="badge bg-{{ 'success' if c.status == 'ativo' else 'primary' if c.status == 'em_uso' else 'danger' if c.status == 'esgotado' else 'secondary' }}">
                                 {{ 'Em uso' if c.status == 'em_uso' else c.status|title }}
+                            </span>
+                        </td>
+                        <td class="d-none d-sm-table-cell">
+                            <span class="badge bg-{{ 'info' if c.compartilhado else 'secondary' }}">
+                                {{ 'Sim' if c.compartilhado else 'Não' }}
                             </span>
                         </td>
                         <td>
@@ -156,6 +172,14 @@
                                                 <option value="{{ s }}" {% if c.status == s %}selected{% endif %}>{{ 'Em uso' if s == 'em_uso' else s|title }}</option>
                                                 {% endfor %}
                                             </select>
+                                        </div>
+                                        <div class="mb-3">
+                                            <div class="form-check form-switch">
+                                                <input class="form-check-input" type="checkbox" name="compartilhado" id="editCompartilhado{{ c.id }}" {% if c.compartilhado %}checked{% endif %}>
+                                                <label class="form-check-label" for="editCompartilhado{{ c.id }}">
+                                                    <i class="bi bi-share"></i> Compartilhar com outros usuários
+                                                </label>
+                                            </div>
                                         </div>
                                     </div>
                                     <div class="modal-footer">

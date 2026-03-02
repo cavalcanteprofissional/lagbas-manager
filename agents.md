@@ -31,6 +31,7 @@ labgas-manager/
 ├── agents.md                  # Este arquivo
 ├── readme.md                  # Documentação do projeto
 ├── bd.md                     # Script SQL do banco de dados
+├── bd_admin.md               # Script SQL admin (tabela perfil, compartilhamento)
 ├── backend/                   # Flask API (opcional)
 │   ├── app.py                 # Aplicação Flask API
 │   ├── .env                   # Variáveis do backend
@@ -113,6 +114,53 @@ CREATE TABLE amostra (
 ```
 
 **Nota**: O código usa nomes de tabelas no singular (`cilindro`, `elemento`, `amostra`).
+
+### Tabela: perfil
+
+```sql
+CREATE TABLE perfil (
+    id UUID PRIMARY KEY REFERENCES auth.users(id),
+    role VARCHAR(20) DEFAULT 'usuario',
+    ativo BOOLEAN DEFAULT true,
+    criado_em TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+```
+
+### Campos compartilhado
+
+```sql
+ALTER TABLE cilindro ADD COLUMN compartilhado BOOLEAN DEFAULT false;
+ALTER TABLE elemento ADD COLUMN compartilhado BOOLEAN DEFAULT false;
+ALTER TABLE amostra ADD COLUMN compartilhado BOOLEAN DEFAULT false;
+```
+
+## Sistema de Administração
+
+### Funcionalidades Admin
+
+| Recurso | Descrição |
+|---------|-----------|
+| Painel Admin | Lista todos os usuários com estatísticas |
+| Ativar/Desativar usuário | Bloqueia acesso de usuários |
+| Promover/Demover admin | Altera role do usuário |
+| Deletar usuário | Remove usuário e todos os dados |
+| Ver dados de qualquer usuário | Visualiza cilindro, elemento, amostra |
+
+### Compartilhamento de Dados
+
+- Usuários podem compartilharcilindros, elementos e amostras
+- Dados compartilhados ficam visíveis para todos os usuários ativos
+- Admins veem todos os dados (próprios + compartilhados + outros usuários)
+
+### Rotas Admin
+
+| Método | Endpoint | Descrição |
+|--------|----------|-----------|
+| GET | /admin | Painel de administração |
+| POST | /admin/toggle-user | Ativar/Desativar usuário |
+| POST | /admin/set-role | Definir role (admin/usuario) |
+| POST | /admin/delete-user | Deletar usuário e dados |
+| GET | /admin/user-data/<id> | Ver dados de um usuário |
 
 ## Endpoints da API REST (Backend)
 
@@ -263,4 +311,7 @@ O projeto utiliza Dockerfile para deploy no Railway.
 ## Estado Atual
 
 ### Pendências
-- Deploy no Railway em andamento - config railway.json adicionada
+- Sistema de admin implementado - pendente execução do SQL no Supabase
+
+### Versão
+- v1.1.0 - Sistema de Administração

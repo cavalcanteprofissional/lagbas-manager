@@ -25,6 +25,16 @@
                         <input type="number" name="consumo_lpm" class="form-control form-control-lg" value="1.5" step="0.1" min="0" required>
                     </div>
                     <div class="col-12 col-md-2 d-flex align-items-end">
+                        <div class="form-check form-switch w-100 p-3 border rounded">
+                            <input class="form-check-input" type="checkbox" name="compartilhado" id="compartilhado">
+                            <label class="form-check-label" for="compartilhado">
+                                <i class="bi bi-share"></i> Compartilhar
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="row g-2 mt-2">
+                    <div class="col-12">
                         <button type="submit" class="btn btn-success btn-lg w-100">
                             <i class="bi bi-check-lg"></i> Cadastrar
                         </button>
@@ -44,6 +54,7 @@
                     <tr>
                         <th>Nome</th>
                         <th>Consumo (L/min)</th>
+                        <th class="d-none d-sm-table-cell">Comp.</th>
                         <th>Ações</th>
                     </tr>
                 </thead>
@@ -52,6 +63,11 @@
                     <tr>
                         <td><strong>{{ e.nome }}</strong></td>
                         <td><span class="badge bg-info">{{ "%.2f"|format(e.consumo_lpm) }}</span></td>
+                        <td class="d-none d-sm-table-cell">
+                            <span class="badge bg-{{ 'info' if e.compartilhado else 'secondary' }}">
+                                {{ 'Sim' if e.compartilhado else 'Não' }}
+                            </span>
+                        </td>
                         <td>
                             <div class="btn-group" role="group">
                                 <button class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#editModal{{ e.id }}">
@@ -85,6 +101,14 @@
                                         <div class="mb-3">
                                             <label class="form-label">Consumo (L/min)</label>
                                             <input type="number" name="consumo_lpm" class="form-control" value="{{ e.consumo_lpm }}" step="0.1" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <div class="form-check form-switch">
+                                                <input class="form-check-input" type="checkbox" name="compartilhado" id="editCompartilhado{{ e.id }}" {% if e.compartilhado %}checked{% endif %}>
+                                                <label class="form-check-label" for="editCompartilhado{{ e.id }}">
+                                                    <i class="bi bi-share"></i> Compartilhar com outros usuários
+                                                </label>
+                                            </div>
                                         </div>
                                     </div>
                                     <div class="modal-footer">
