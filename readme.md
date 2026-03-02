@@ -197,11 +197,17 @@ CREATE TABLE amostra (
 
 ## Deploy no Railway
 
-### Frontend (Flask Web)
+### Configuração Atual (Dockerfile)
+O projeto utiliza Dockerfile para deploy no Railway.
 
-Crie um serviço Railway com:
-- Build Command: (vazio)
-- Start Command: `gunicorn app:app`
+1. Criar projeto no Railway com o repositório GitHub
+2. O Railway detecta automaticamente o Dockerfile
+3. Adicionar variáveis de ambiente no Railway:
+   - `SECRET_KEY`: chave secreta para sessões
+   - `SUPABASE_URL`: URL do projeto Supabase
+   - `SUPABASE_KEY`: chave anônima do Supabase
+
+**Nota**: O deploy pode apresentar desafios dependendo da configuração do Railway. Verifique os logs de build em caso de erros.
 
 ## Fluxo de Autenticação
 
@@ -242,4 +248,6 @@ Crie um serviço Railway com:
 ### Start Command: `gunicorn app:app`
 
 ## Estado Atual
-- Projeto em produção no Railway
+
+### Pendências
+- Deploy no Railway em andamento - config Dockerfile adicionada

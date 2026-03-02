@@ -200,9 +200,20 @@ python -m venv venv
 
 ## Deploy Railway
 
-### Frontend (Flask Web)
-- Build Command: (vazio)
-- Start Command: `gunicorn app:app`
+### Configuração Atual (Dockerfile)
+O projeto utiliza Dockerfile para deploy no Railway.
+
+1. Criar projeto no Railway com o repositório GitHub
+2. O Railway detecta automaticamente o Dockerfile
+3. Adicionar variáveis de ambiente:
+   - `SECRET_KEY`: chave secreta para sessões
+   - `SUPABASE_URL`: URL do projeto Supabase
+   - `SUPABASE_KEY`: chave anônima do Supabase
+
+### Build Command: (vazio)
+### Start Command: `gunicorn app:app`
+
+**Nota**: O deploy pode apresentar desafios dependendo da configuração do Railway. Verifique os logs de build em caso de erros.
 
 ## Fluxo de Autenticação
 
