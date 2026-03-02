@@ -122,6 +122,8 @@ CREATE TABLE perfil (
     id UUID PRIMARY KEY REFERENCES auth.users(id),
     role VARCHAR(20) DEFAULT 'usuario',
     ativo BOOLEAN DEFAULT true,
+    nome VARCHAR(100),
+    email VARCHAR(255),
     criado_em TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 ```
@@ -132,6 +134,60 @@ CREATE TABLE perfil (
 ALTER TABLE cilindro ADD COLUMN compartilhado BOOLEAN DEFAULT false;
 ALTER TABLE elemento ADD COLUMN compartilhado BOOLEAN DEFAULT false;
 ALTER TABLE amostra ADD COLUMN compartilhado BOOLEAN DEFAULT false;
+```
+
+### Políticas RLS
+
+Devido a problemas de recursão infinita, as políticas RLS para admin foram removidas. O sistema agora usa service_role key para operações de admin (bypass RLS).
+
+### Configuração SQL Admin (execute no Supabase SQL Editor)
+
+```sql
+-- Criar tabela perfil
+CREATE TABLE IF NOT EXISTS perfil (
+    id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+    role VARCHAR(20) DEFAULT 'usuario' CHECK (role IN ('admin', 'usuario')),
+    ativo BOOLEAN DEFAULT true,
+    nome VARCHAR(100),
+    email VARCHAR(255),
+    criado_em TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Adicionar campos compartilhado
+ALTER TABLE cilindro ADD COLUMN IF NOT EXISTS compartilhado BOOLEAN DEFAULT false;
+ALTER TABLE elemento ADD COLUMN IF NOT EXISTS compartilhado BOOLEAN DEFAULT false;
+ALTER TABLE amostra ADD COLUMN IF NOT EXISTS compartilhado BOOLEAN DEFAULT false;
+
+-- Habilitar RLS
+ALTER TABLE perfil ENABLE ROW LEVEL SECURITY;
+
+-- Políticas RLS (apenas para operações não-admin)
+DROP POLICY IF EXISTS "Users can view own perfil" ON perfil;
+CREATE POLICY "Users can view own perfil" ON perfil
+    FOR SELECT USING (auth.uid() = id);
+
+DROP POLICY IF EXISTS "Users can update own perfil" ON perfil;
+CREATE POLICY "Users can update own perfil" ON perfil
+    FOR UPDATE USING (auth.uid() = id);
+
+-- Tornar primeiro usuário admin (substitua pelo email desejado)
+INSERT INTO perfil (id, role, ativo)
+SELECT id, 'admin', true 
+FROM auth.users 
+WHERE email = 'seu-email@exemplo.com'
+ON CONFLICT (id) DO UPDATE SET role = 'admin', ativo = true;
+
+-- Criar perfis para usuários existentes
+INSERT INTO perfil (id, role, ativo, nome, email)
+SELECT 
+    u.id,
+    'usuario',
+    true,
+    COALESCE(u.raw_user_meta_data->>'nome', ''),
+    u.email
+FROM auth.users u
+LEFT JOIN perfil p ON u.id = p.id
+WHERE p.id IS NULL;
 ```
 
 ## Sistema de Administração
@@ -211,7 +267,10 @@ ALTER TABLE amostra ADD COLUMN compartilhado BOOLEAN DEFAULT false;
 SECRET_KEY=sua_chave_secreta_aqui
 SUPABASE_URL=https://seu-projeto.supabase.co
 SUPABASE_KEY=sua_chave_anon
+SUPABASE_SERVICE_KEY=sua_service_role_key
 ```
+
+**Nota**: A service_role key é armazenada no .env para operações de admin.
 
 ### Variáveis de Ambiente (Backend - backend/.env)
 
@@ -310,8 +369,10 @@ O projeto utiliza Dockerfile para deploy no Railway.
 
 ## Estado Atual
 
-### Pendências
-- Sistema de admin implementado - pendente execução do SQL no Supabase
+### Funcionalidades Implementadas
+- Sistema de admin com todas as funcionalidades operacionais
+- Perfil de usuário mostra role corretamente
+- Nome e email armazenados na tabela perfil
 
 ### Versão
-- v1.1.0 - Sistema de Administração
+- v1.1.2 - Service_role key movida para .env por segurança

@@ -1,12 +1,13 @@
 # LabGas Manager
 
-**Versão: 1.1.1**
+**Versão: 1.1.2**
 
 Dashboard para gestão de cilindro de gás e elementos analisados em laboratório de química, utilizando **Flask** com **Jinja2** para o frontend e **Supabase** como banco de dados.
 
-## Novidades v1.1.1
+## Novidades v1.1.2
 
-- **Sistema de Administração corrigido**: Painel admin para gerenciar usuários
+- **Segurança**: service_role key movida para arquivo .env
+- **Sistema de Administração**: Painel admin para gerenciar usuários
 - **Perfis com nome e email**: Armazenados na tabela perfil
 - **Perfil mostra role**: A aba perfil exibe corretamente Administrador ou Usuário
 - **Compartilhamento de Dados**: Possibilidade de compartilhar cilindro, elemento e amostra entre usuários
