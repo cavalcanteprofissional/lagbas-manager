@@ -27,7 +27,7 @@
                     {% for user in users %}
                     <tr class="{% if not user.ativo %}table-secondary{% endif %}">
                         <td>
-                            <strong>{{ user.email if user.email else user.id }}</strong>
+                            <strong>{{ user.nome }}</strong>
                             <div class="small text-muted">{{ user.id }}</div>
                         </td>
                         <td>

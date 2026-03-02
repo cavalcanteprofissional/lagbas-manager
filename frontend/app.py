@@ -18,6 +18,7 @@ app.secret_key = os.getenv("SECRET_KEY", "dev-secret-key-change-in-production")
 
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")
+SUPABASE_SERVICE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlwbnlzcHJpbmtkd2Nma2lmdHZmIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MjI4MDkzMiwiZXhwIjoyMDg3ODU2OTMyfQ.SkmPHPTWzl_aAuZ22m8T9HY6lpOw5VKrkGz87ub64iI"
 
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
@@ -96,7 +97,8 @@ def is_admin():
     if not user_id:
         return False
     try:
-        response = supabase.table("perfil").select("role").eq("id", user_id).execute()
+        client = get_authenticated_client()
+        response = client.table("perfil").select("role").eq("id", user_id).execute()
         if response.data:
             return response.data[0].get("role") == "admin"
     except:
@@ -129,6 +131,21 @@ def get_user_role():
     return "usuario"
 
 
+def get_authenticated_client():
+    """Retorna cliente Supabase autenticado com token JWT do usuário"""
+    token = session.get("supabase_token")
+    if token:
+        client = create_client(SUPABASE_URL, SUPABASE_KEY)
+        client.auth.set_session(token, "")
+        return client
+    return supabase
+
+
+def get_admin_client():
+    """Retorna cliente Supabase com service_role (bypass RLS)"""
+    return create_client(SUPABASE_URL, SUPABASE_SERVICE_KEY)
+
+
 @app.route("/")
 def index():
     if current_user.is_authenticated:
@@ -151,6 +168,7 @@ def login():
             )
 
             session["user_id"] = response.user.id
+            session["supabase_token"] = response.session.access_token
             session.permanent = True
             session["user_data"] = {
                 "id": response.user.id,
@@ -160,12 +178,18 @@ def login():
 
             try:
                 perfil = supabase.table("perfil").select("*").eq("id", response.user.id).execute()
+                nome = response.user.user_metadata.get("nome", "") if response.user.user_metadata else ""
+                email = response.user.email
                 if not perfil.data:
                     supabase.table("perfil").insert({
                         "id": response.user.id,
                         "role": "usuario",
-                        "ativo": True
+                        "ativo": True,
+                        "nome": nome,
+                        "email": email
                     }).execute()
+                else:
+                    supabase.table("perfil").update({"nome": nome, "email": email}).eq("id", response.user.id).execute()
             except:
                 pass
 
@@ -549,13 +573,16 @@ def perfil():
         supabase.table("amostra").select("id").eq("user_id", user_id).execute()
     )
 
+    perfil_response = supabase.table("perfil").select("role").eq("id", user_id).execute()
+    user_role = perfil_response.data[0].get("role", "usuario") if perfil_response.data else "usuario"
+
     stats = {
         "cilindros": len(cilindro_response.data or []),
         "elementos": len(elementos_response.data or []),
         "amostras": len(amostras_response.data or []),
     }
 
-    return render_template("perfil.html", stats=stats)
+    return render_template("perfil.html", stats=stats, user_role=user_role)
 
 
 @app.route("/admin")
@@ -565,16 +592,18 @@ def admin_panel():
         flash("Acesso restrito a administradores.", "danger")
         return redirect(url_for("dashboard"))
     
-    users_response = supabase.table("perfil").select("*").execute()
+    client = get_admin_client()
+    users_response = client.table("perfil").select("*").execute()
     users = users_response.data or []
     
     for user in users:
         user_id = user.get("id")
         
-        cilindro_count = supabase.table("cilindro").select("id", count="exact").eq("user_id", user_id).execute()
-        elemento_count = supabase.table("elemento").select("id", count="exact").eq("user_id", user_id).execute()
-        amostra_count = supabase.table("amostra").select("id", count="exact").eq("user_id", user_id).execute()
+        cilindro_count = client.table("cilindro").select("id", count="exact").eq("user_id", user_id).execute()
+        elemento_count = client.table("elemento").select("id", count="exact").eq("user_id", user_id).execute()
+        amostra_count = client.table("amostra").select("id", count="exact").eq("user_id", user_id).execute()
         
+        user["nome"] = user.get("nome") or user.get("email") or user_id
         user["cilindros"] = cilindro_count.count or 0
         user["elementos"] = elemento_count.count or 0
         user["amostras"] = amostra_count.count or 0
@@ -596,7 +625,8 @@ def admin_toggle_user():
         flash("Você não pode desativar seu próprio usuário.", "warning")
         return redirect(url_for("admin_panel"))
     
-    supabase.table("perfil").update({"ativo": ativo}).eq("id", user_id).execute()
+    client = get_admin_client()
+    client.table("perfil").update({"ativo": ativo}).eq("id", user_id).execute()
     flash(f"Usuário {'ativado' if ativo else 'desativado'} com sucesso!", "success")
     
     return redirect(url_for("admin_panel"))
@@ -616,7 +646,8 @@ def admin_set_role():
         flash("Você não pode alterar sua própria função.", "warning")
         return redirect(url_for("admin_panel"))
     
-    supabase.table("perfil").update({"role": role}).eq("id", user_id).execute()
+    client = get_admin_client()
+    client.table("perfil").update({"role": role}).eq("id", user_id).execute()
     flash(f"Função do usuário alterada para {role}!", "success")
     
     return redirect(url_for("admin_panel"))
@@ -636,10 +667,11 @@ def admin_delete_user():
         return redirect(url_for("admin_panel"))
     
     try:
-        supabase.table("cilindro").delete().eq("user_id", user_id).execute()
-        supabase.table("elemento").delete().eq("user_id", user_id).execute()
-        supabase.table("amostra").delete().eq("user_id", user_id).execute()
-        supabase.table("perfil").delete().eq("id", user_id).execute()
+        client = get_admin_client()
+        client.table("cilindro").delete().eq("user_id", user_id).execute()
+        client.table("elemento").delete().eq("user_id", user_id).execute()
+        client.table("amostra").delete().eq("user_id", user_id).execute()
+        client.table("perfil").delete().eq("id", user_id).execute()
         
         flash("Usuário e todos os seus dados foram excluídos!", "success")
     except Exception as e:
@@ -655,16 +687,13 @@ def admin_user_data(target_user_id):
         flash("Acesso restrito a administradores.", "danger")
         return redirect(url_for("dashboard"))
     
-    cilindro = supabase.table("cilindro").select("*").eq("user_id", target_user_id).execute().data or []
-    elementos = supabase.table("elemento").select("*").eq("user_id", target_user_id).execute().data or []
-    amostras = supabase.table("amostra").select("*").eq("user_id", target_user_id).execute().data or []
+    client = get_admin_client()
+    cilindro = client.table("cilindro").select("*").eq("user_id", target_user_id).execute().data or []
+    elementos = client.table("elemento").select("*").eq("user_id", target_user_id).execute().data or []
+    amostras = client.table("amostra").select("*").eq("user_id", target_user_id).execute().data or []
     
-    perfil = supabase.table("perfil").select("*").eq("id", target_user_id).execute().data
+    perfil = client.table("perfil").select("*").eq("id", target_user_id).execute().data
     target_user = perfil[0] if perfil else {"id": target_user_id, "role": "unknown"}
-    
-    user_email_response = supabase.auth.admin.get_user(target_user_id)
-    if user_email_response and user_email_response.user:
-        target_user["email"] = user_email_response.user.email
     
     return render_template(
         "admin_user_data.html",
