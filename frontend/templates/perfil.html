@@ -5,36 +5,59 @@
 {% block content %}
 <h2 class="mb-4"><i class="bi bi-person"></i> Perfil do Usuário</h2>
 
-<div class="row">
-    <div class="col-md-6">
-        <div class="card mb-4">
+<div class="row g-3">
+    <div class="col-12 col-lg-6">
+        <div class="card h-100">
             <div class="card-header">
-                <h5 class="mb-0">Informações do Usuário</h5>
+                <h5 class="mb-0"><i class="bi bi-person-circle me-2"></i>Informações do Usuário</h5>
             </div>
             <div class="card-body">
-                <p><strong>Email:</strong> {{ current_user.email }}</p>
-                <p><strong>Função:</strong> Usuário</p>
+                <div class="d-flex align-items-center mb-3">
+                    <div class="bg-primary bg-opacity-10 rounded-circle p-3 me-3">
+                        <i class="bi bi-envelope fs-4 text-primary"></i>
+                    </div>
+                    <div>
+                        <small class="text-muted d-block">Email</small>
+                        <strong>{{ current_user.email }}</strong>
+                    </div>
+                </div>
+                <hr>
+                <div class="d-flex align-items-center">
+                    <div class="bg-success bg-opacity-10 rounded-circle p-3 me-3">
+                        <i class="bi bi-shield-check fs-4 text-success"></i>
+                    </div>
+                    <div>
+                        <small class="text-muted d-block">Função</small>
+                        <strong>Usuário</strong>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
-    <div class="col-md-6">
-        <div class="card mb-4">
+    <div class="col-12 col-lg-6">
+        <div class="card h-100">
             <div class="card-header">
-                <h5 class="mb-0">Estatísticas</h5>
+                <h5 class="mb-0"><i class="bi bi-bar-chart me-2"></i>Estatísticas</h5>
             </div>
             <div class="card-body">
-                <div class="row text-center">
-                    <div class="col-6 mb-3">
-                        <h3>{{ stats.cilindros }}</h3>
-                        <small>Cilindros</small>
+                <div class="row text-center g-3">
+                    <div class="col-4">
+                        <div class="stat-box p-3 rounded bg-primary bg-opacity-10">
+                            <h3 class="text-primary mb-1">{{ stats.cilindros }}</h3>
+                            <small class="text-muted">Cilindros</small>
+                        </div>
                     </div>
-                    <div class="col-6 mb-3">
-                        <h3>{{ stats.elementos }}</h3>
-                        <small>Elementos</small>
+                    <div class="col-4">
+                        <div class="stat-box p-3 rounded bg-success bg-opacity-10">
+                            <h3 class="text-success mb-1">{{ stats.elementos }}</h3>
+                            <small class="text-muted">Elementos</small>
+                        </div>
                     </div>
-                    <div class="col-6">
-                        <h3>{{ stats.amostras }}</h3>
-                        <small>Amostras</small>
+                    <div class="col-4">
+                        <div class="stat-box p-3 rounded bg-info bg-opacity-10">
+                            <h3 class="text-info mb-1">{{ stats.amostras }}</h3>
+                            <small class="text-muted">Amostras</small>
+                        </div>
                     </div>
                 </div>
             </div>
