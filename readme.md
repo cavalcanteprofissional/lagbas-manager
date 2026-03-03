@@ -1,8 +1,12 @@
 # LabGas Manager
 
-**Versão: 1.2.0**
+**Versão: 1.2.1**
 
 Dashboard para gestão de cilindro de gás e elementos analisados em laboratório de química, utilizando **Flask** com **Jinja2** para o frontend e **Supabase** como banco de dados.
+
+## Novidades v1.2.1
+
+- **Admin**: Painel agora lista todos os usuários cadastrados (usa service_role key para bypass RLS)
 
 ## Novidades v1.2.0
 
@@ -108,7 +112,10 @@ python -m venv venv
 SECRET_KEY=sua_chave_secreta
 SUPABASE_URL=https://seu-projeto.supabase.co
 SUPABASE_KEY=sua_chave_anon
+SUPABASE_SERVICE_KEY=sua_service_role_key
 ```
+
+**Nota**: A service_role key é necessária para operações de admin (bypass RLS).
 
 ### backend/.env
 
@@ -227,10 +234,11 @@ O projeto utiliza Dockerfile para deploy no Railway.
 ## Estado Atual
 
 ### Funcionalidades Implementadas
-- Sistema de admin com todas as funcionalidades operacionais
+- Sistema de admin com todas as funcionalidades operacionais (usa service_role key para bypass RLS)
+- Painel admin lista todos os usuários cadastrados
 - Perfil de usuário mostra role corretamente
 - Nome e email armazenados na tabela perfil
-- Sistema de segurança com JWT (removido service_role key do frontend)
+- Sistema de segurança com JWT validation
 - Paginação em todas as listas (10 itens por página)
 - Otimização de consultas (separação dados próprios vs compartilhados)
 - Sistema de cache (5 minutos)

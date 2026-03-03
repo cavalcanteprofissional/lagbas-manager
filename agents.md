@@ -270,7 +270,7 @@ SUPABASE_KEY=sua_chave_anon
 SUPABASE_SERVICE_KEY=sua_service_role_key
 ```
 
-**Nota**: A service_role key é armazenada no .env para operações de admin.
+**Nota**: A service_role key é necessária para operações de admin (bypass RLS).
 
 ### Variáveis de Ambiente (Backend - backend/.env)
 
@@ -370,10 +370,11 @@ O projeto utiliza Dockerfile para deploy no Railway.
 ## Estado Atual
 
 ### Funcionalidades Implementadas
-- Sistema de admin com todas as funcionalidades operacionais
+- Sistema de admin com todas as funcionalidades operacionais (usa service_role key para bypass RLS)
+- Painel admin lista todos os usuários cadastrados
 - Perfil de usuário mostra role corretamente
 - Nome e email armazenados na tabela perfil
-- Sistema de segurança com JWT (removido service_role key do frontend)
+- Sistema de segurança com JWT validation
 - Paginação em todas as listas (10 itens por página)
 - Otimização de consultas (separação dados próprios vs compartilhados)
 - Sistema de cache (5 minutos)
@@ -385,4 +386,4 @@ O projeto utiliza Dockerfile para deploy no Railway.
 - Criação automática de perfil no registro
 
 ### Versão
-- v1.2.0 - Segurança, performance e UX aprimorados
+- v1.2.1 - Admin visualiza todos os usuários (service_role key)

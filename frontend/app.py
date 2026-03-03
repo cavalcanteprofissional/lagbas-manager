@@ -979,7 +979,7 @@ def admin_panel():
         return redirect(url_for("login"))
     
     # Operações admin com validação JWT
-    client = get_authenticated_client()
+    client = get_admin_client()
     users_response = client.table("perfil").select("*").execute()
     users = users_response.data or []
     
@@ -1028,7 +1028,7 @@ def admin_toggle_user():
         flash("Token inválido.", "danger")
         return redirect(url_for("login"))
     
-    client = get_authenticated_client()
+    client = get_admin_client()
     client.table("perfil").update({"ativo": ativo}).eq("id", user_id).execute()
     flash(f"Usuário {'ativado' if ativo else 'desativado'} com sucesso!", "success")
     
@@ -1063,7 +1063,7 @@ def admin_set_role():
         flash("Token inválido.", "danger")
         return redirect(url_for("login"))
     
-    client = get_authenticated_client()
+    client = get_admin_client()
     client.table("perfil").update({"role": role}).eq("id", user_id).execute()
     flash(f"Função do usuário alterada para {role}!", "success")
     
@@ -1097,7 +1097,7 @@ def admin_delete_user():
         flash("Token inválido.", "danger")
         return redirect(url_for("login"))
     
-    client = get_authenticated_client()
+    client = get_admin_client()
     client.table("cilindro").delete().eq("user_id", user_id).execute()
     client.table("elemento").delete().eq("user_id", user_id).execute()
     client.table("amostra").delete().eq("user_id", user_id).execute()
@@ -1129,7 +1129,7 @@ def admin_user_data(target_user_id):
         flash("Token inválido.", "danger")
         return redirect(url_for("login"))
     
-    client = get_authenticated_client()
+    client = get_admin_client()
     cilindro = client.table("cilindro").select("*").eq("user_id", target_user_id).execute().data or []
     elementos = client.table("elemento").select("*").eq("user_id", target_user_id).execute().data or []
     amostras = client.table("amostra").select("*").eq("user_id", target_user_id).execute().data or []
