@@ -353,6 +353,8 @@ O projeto utiliza Dockerfile para deploy no Railway.
 - Validar campos obrigatórios
 - Cilindro e elemento não podem ser excluídos se possuírem amostras vinculadas (mensagem de erro amigável)
 - Proteger rotas com @login_required
+- **Cilindro**: Código deve seguir formato CIL-XXX (ex: CIL-001, CIL-002)
+- **Elemento**: Nomes são normalizados com primeira letra maiúscula (ex: "Sodio", "Potassio")
 
 ## Deploy Railway
 
@@ -384,6 +386,8 @@ O projeto utiliza Dockerfile para deploy no Railway.
 - Toast notifications (feedback melhor ao usuário)
 - Edição de perfil (nome) funcionando corretamente
 - Criação automática de perfil no registro
+- Validação de código de cilindro (CIL-XXX)
+- Normalização de nomes de elementos (primeira maiúscula)
 
 ### Versão
-- v1.2.1 - Admin visualiza todos os usuários (service_role key)
+- v1.2.2 - Validação de código CIL-XXX e normalização de elementos

@@ -1,4 +1,5 @@
 import os
+import re
 from datetime import datetime, timedelta
 from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify, abort
 from flask_login import (
@@ -388,6 +389,11 @@ def cilindro_list():
                 flash("Código e data de compra são obrigatórios", "danger")
                 return redirect(url_for("cilindro_list"))
             
+            # Validar formato do código (CIL-XXX onde X é dígito)
+            if not re.match(r'^CIL-\d{3}$', codigo):
+                flash("Código deve seguir o formato CIL-XXX (ex: CIL-001, CIL-002)", "danger")
+                return redirect(url_for("cilindro_list"))
+            
             # Validar formato da data
             try:
                 datetime.strptime(data_compra, "%Y-%m-%d")
@@ -451,6 +457,11 @@ def cilindro_list():
             # Validações
             if not cilindro_id or not codigo or not data_compra:
                 flash("ID do cilindro, código e data de compra são obrigatórios", "danger")
+                return redirect(url_for("cilindro_list"))
+            
+            # Validar formato do código (CIL-XXX onde X é dígito)
+            if not re.match(r'^CIL-\d{3}$', codigo):
+                flash("Código deve seguir o formato CIL-XXX (ex: CIL-001, CIL-002)", "danger")
                 return redirect(url_for("cilindro_list"))
             
             # Validar valores numéricos
@@ -588,7 +599,7 @@ def elemento_list():
         
         if action == "create":
             # Criar novo elemento
-            nome = request.form.get("nome").strip()
+            nome = request.form.get("nome").strip().title()
             consumo_lpm = request.form.get("consumo_lpm")
             compartilhado = request.form.get("compartilhado", "false").lower() == "true"
             
@@ -620,7 +631,7 @@ def elemento_list():
         elif action == "update":
             # Atualizar elemento existente
             elemento_id = request.form.get("elemento_id")
-            nome = request.form.get("nome").strip()
+            nome = request.form.get("nome").strip().title()
             consumo_lpm = request.form.get("consumo_lpm")
             compartilhado = request.form.get("compartilhado", "false").lower() == "true"
             

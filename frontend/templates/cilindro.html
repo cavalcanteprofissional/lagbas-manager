@@ -18,7 +18,7 @@
                 <div class="row g-2">
                     <div class="col-12 col-md-6 col-lg-3">
                         <label class="form-label">Código *</label>
-                        <input type="text" name="codigo" class="form-control form-control-lg" placeholder="Ex: CIL-001" required>
+                        <input type="text" name="codigo" class="form-control form-control-lg" placeholder="Ex: CIL-001" pattern="CIL-\d{3}" title="Formato: CIL-001" required>
                     </div>
                     <div class="col-12 col-md-6 col-lg-3">
                         <label class="form-label">Data de Compra *</label>
@@ -173,7 +173,7 @@
                                     <div class="modal-body">
                                         <div class="mb-3">
                                             <label class="form-label">Código</label>
-                                            <input type="text" name="codigo" class="form-control" value="{{ c.codigo }}" required>
+                                            <input type="text" name="codigo" class="form-control" value="{{ c.codigo }}" pattern="CIL-\d{3}" title="Formato: CIL-001" required>
                                         </div>
                                         <div class="mb-3">
                                             <label class="form-label">Data de Compra</label>

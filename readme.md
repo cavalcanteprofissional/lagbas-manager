@@ -1,8 +1,13 @@
 # LabGas Manager
 
-**Versão: 1.2.1**
+**Versão: 1.2.2**
 
 Dashboard para gestão de cilindro de gás e elementos analisados em laboratório de química, utilizando **Flask** com **Jinja2** para o frontend e **Supabase** como banco de dados.
+
+## Novidades v1.2.2
+
+- **Validação de Cilindro**: Código deve seguir formato CIL-XXX (ex: CIL-001, CIL-002)
+- **Normalização de Elementos**: Nomes salvos com primeira letra maiúscula (ex: "Sodio", "Potassio")
 
 ## Novidades v1.2.1
 
@@ -205,6 +210,7 @@ O projeto utiliza Dockerfile para deploy no Railway.
 
 ### Cilindro
 - Código único por usuário
+- Código deve seguir formato CIL-XXX (ex: CIL-001, CIL-002)
 - Valores padrão: 1kg = 956L, R$290
 - Status: ativo, em_uso, esgotado
 

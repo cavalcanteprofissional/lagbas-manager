@@ -85,12 +85,17 @@ function filterHistory() {
     const rows = document.querySelectorAll('tbody tr');
     rows.forEach(row => {
         const cells = row.cells;
-        const rowType = cells[1].textContent.trim().toLowerCase();
-        const rowAction = cells[2].textContent.trim().toLowerCase();
-        const rowItem = cells[3].textContent.toLowerCase();
+        let rowType = cells[1].textContent.trim().toLowerCase();
+        let rowAction = cells[2].textContent.trim().toLowerCase();
+        
+        const typeMap = { 'cilindros': 'cilindro', 'elementos': 'elemento', 'amostras': 'amostra' };
+        rowType = typeMap[rowType] || rowType;
+        
+        const actionMap = { 'criados': 'criado', 'atualizados': 'atualizado' };
+        rowAction = actionMap[rowAction] || rowAction;
         
         let show = true;
-        if (search && !rowItem.includes(search)) show = false;
+        if (search && !cells[3].textContent.toLowerCase().includes(search)) show = false;
         if (type && !rowType.includes(type)) show = false;
         if (action && !rowAction.includes(action)) show = false;
         

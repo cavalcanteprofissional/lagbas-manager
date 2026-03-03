@@ -241,8 +241,8 @@ function filterAmostra() {
     const rows = document.querySelectorAll('tbody tr');
     rows.forEach(row => {
         const rowData = row.cells[0].textContent.trim();
-        const rowCilindro = row.cells[1].textContent.trim().toLowerCase();
-        const rowElemento = row.cells[2].textContent.trim().toLowerCase();
+        const rowCilindro = row.cells[2].textContent.trim().toLowerCase();
+        const rowElemento = row.cells[3].textContent.trim().toLowerCase();
         
         let show = true;
         if (data && rowData !== data) show = false;
