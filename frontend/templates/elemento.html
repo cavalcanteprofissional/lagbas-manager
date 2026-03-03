@@ -45,6 +45,28 @@
     </div>
 </div>
 
+<div class="card mb-4">
+    <div class="card-header bg-light">
+        <div class="row g-2 align-items-center">
+            <div class="col-md-5">
+                <input type="text" id="searchElemento" class="form-control" placeholder="Buscar por nome...">
+            </div>
+            <div class="col-md-4">
+                <select id="filterCompartilhado" class="form-select">
+                    <option value="">Todos</option>
+                    <option value="true">Compartilhados</option>
+                    <option value="false">Apenas meus</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <button class="btn btn-outline-secondary w-100" onclick="filterElemento()">
+                    <i class="bi bi-funnel"></i> Filtrar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="card">
     <div class="card-body p-0">
         {% if elementos %}
@@ -130,4 +152,25 @@
         {% endif %}
     </div>
 </div>
+
+<script>
+function filterElemento() {
+    const search = document.getElementById('searchElemento').value.toLowerCase();
+    const compartilhado = document.getElementById('filterCompartilhado').value;
+    
+    const rows = document.querySelectorAll('tbody tr');
+    rows.forEach(row => {
+        const nome = row.cells[0].textContent.toLowerCase();
+        const rowComp = row.cells[2].textContent.trim().toLowerCase();
+        
+        let show = true;
+        if (search && !nome.includes(search)) show = false;
+        if (compartilhado && rowComp !== (compartilhado === 'true' ? 'sim' : 'não')) show = false;
+        
+        row.style.display = show ? '' : 'none';
+    });
+}
+
+document.getElementById('searchElemento').addEventListener('keyup', filterElemento);
+</script>
 {% endblock %}

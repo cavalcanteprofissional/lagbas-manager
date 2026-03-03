@@ -75,6 +75,42 @@
     </div>
 </div>
 
+<div class="card mb-4">
+    <div class="card-header bg-light">
+        <div class="row g-2 align-items-center">
+            <div class="col-md-3">
+                <input type="date" id="filterData" class="form-control" placeholder="Filtrar por data...">
+            </div>
+            <div class="col-md-3">
+                <select id="filterCilindro" class="form-select">
+                    <option value="">Todos os Cilindros</option>
+                    {% for c in cilindro %}
+                    <option value="{{ c.codigo }}">{{ c.codigo }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <select id="filterElemento" class="form-select">
+                    <option value="">Todos os Elementos</option>
+                    {% for e in elementos %}
+                    <option value="{{ e.nome }}">{{ e.nome }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button class="btn btn-outline-secondary w-100" onclick="filterAmostra()">
+                    <i class="bi bi-funnel"></i> Filtrar
+                </button>
+            </div>
+            <div class="col-md-1">
+                <button class="btn btn-outline-secondary w-100" onclick="clearFilters()">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="card">
     <div class="card-body p-0">
         {% if amostras %}
@@ -195,4 +231,35 @@
         {% endif %}
     </div>
 </div>
+
+<script>
+function filterAmostra() {
+    const data = document.getElementById('filterData').value;
+    const cilindro = document.getElementById('filterCilindro').value;
+    const elemento = document.getElementById('filterElemento').value;
+    
+    const rows = document.querySelectorAll('tbody tr');
+    rows.forEach(row => {
+        const rowData = row.cells[0].textContent.trim();
+        const rowCilindro = row.cells[1].textContent.trim().toLowerCase();
+        const rowElemento = row.cells[2].textContent.trim().toLowerCase();
+        
+        let show = true;
+        if (data && rowData !== data) show = false;
+        if (cilindro && !rowCilindro.includes(cilindro.toLowerCase())) show = false;
+        if (elemento && !rowElemento.includes(elemento.toLowerCase())) show = false;
+        
+        row.style.display = show ? '' : 'none';
+    });
+}
+
+function clearFilters() {
+    document.getElementById('filterData').value = '';
+    document.getElementById('filterCilindro').value = '';
+    document.getElementById('filterElemento').value = '';
+    filterAmostra();
+}
+
+document.getElementById('filterData').addEventListener('change', filterAmostra);
+</script>
 {% endblock %}

@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+
+{% block title %}Histórico - LabGas Manager{% endblock %}
+
+{% block content %}
+<h2 class="mb-4"><i class="bi bi-clock-history"></i> Histórico de Atividades</h2>
+
+<div class="card">
+    <div class="card-header bg-light">
+        <div class="row g-2 align-items-center">
+            <div class="col-md-4">
+                <input type="text" id="searchHistory" class="form-control" placeholder="Buscar...">
+            </div>
+            <div class="col-md-3">
+                <select id="filterType" class="form-select">
+                    <option value="">Todos os Tipos</option>
+                    <option value="cilindro">Cilindros</option>
+                    <option value="elemento">Elementos</option>
+                    <option value="amostra">Amostras</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <select id="filterAction" class="form-select">
+                    <option value="">Todas as Ações</option>
+                    <option value="criado">Criado</option>
+                    <option value="atualizado">Atualizado</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button class="btn btn-outline-secondary w-100" onclick="filterHistory()">
+                    <i class="bi bi-funnel"></i> Filtrar
+                </button>
+            </div>
+        </div>
+    </div>
+    <div class="card-body p-0">
+        {% if history %}
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Data/Hora</th>
+                        <th>Tipo</th>
+                        <th>Ação</th>
+                        <th>Item</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for h in history %}
+                    <tr>
+                        <td>
+                            <small>{{ h.data[:19]|replace('T', ' ') if h.data else '-' }}</small>
+                        </td>
+                        <td>
+                            <span class="badge bg-{{ 'success' if h.tipo == 'cilindro' else 'primary' if h.tipo == 'elemento' else 'info' }}">
+                                {{ h.tipo|title }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="badge bg-{{ 'success' if h.acao == 'criado' else 'warning' }}">
+                                {{ h.acao|title }}
+                            </span>
+                        </td>
+                        <td><strong>{{ h.nome }}</strong></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-5 text-muted">
+            <i class="bi bi-clock-history fs-1"></i>
+            <p class="mt-2">Nenhuma atividade registrada.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+function filterHistory() {
+    const search = document.getElementById('searchHistory').value.toLowerCase();
+    const type = document.getElementById('filterType').value;
+    const action = document.getElementById('filterAction').value;
+    
+    const rows = document.querySelectorAll('tbody tr');
+    rows.forEach(row => {
+        const cells = row.cells;
+        const rowType = cells[1].textContent.trim().toLowerCase();
+        const rowAction = cells[2].textContent.trim().toLowerCase();
+        const rowItem = cells[3].textContent.toLowerCase();
+        
+        let show = true;
+        if (search && !rowItem.includes(search)) show = false;
+        if (type && !rowType.includes(type)) show = false;
+        if (action && !rowAction.includes(action)) show = false;
+        
+        row.style.display = show ? '' : 'none';
+    });
+}
+
+document.getElementById('searchHistory').addEventListener('keyup', filterHistory);
+</script>
+{% endblock %}

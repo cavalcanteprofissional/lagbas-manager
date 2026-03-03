@@ -1,17 +1,17 @@
 # LabGas Manager
 
-**Versão: 1.1.2**
+**Versão: 1.2.0**
 
 Dashboard para gestão de cilindro de gás e elementos analisados em laboratório de química, utilizando **Flask** com **Jinja2** para o frontend e **Supabase** como banco de dados.
 
-## Novidades v1.1.2
+## Novidades v1.2.0
 
-- **Segurança**: service_role key movida para arquivo .env
-- **Sistema de Administração**: Painel admin para gerenciar usuários
-- **Perfis com nome e email**: Armazenados na tabela perfil
-- **Perfil mostra role**: A aba perfil exibe corretamente Administrador ou Usuário
-- **Compartilhamento de Dados**: Possibilidade de compartilhar cilindro, elemento e amostra entre usuários
-- **UI Mobile Otimizada**: Interface responsiva com sidebar colapsável
+- **Segurança**: JWT validation em vez de service_role key
+- **Performance**: Paginação (10 itens por página) e cache (5 minutos)
+- **UX Aprimorada**: Filtros em listas, toast notifications, cards visuais no dashboard
+- **Histórico**: Nova página de histórico de atividades
+- **Edição de Perfil**: Usuários podem editar seu nome
+- **Otimização de Queries**: Separação de dados próprios vs compartilhados
 
 ## Arquitetura do Sistema
 
@@ -61,50 +61,16 @@ labgas-manager/
     ├── requirements.txt        # Dependências Python
     ├── venv/                  # Virtual environment
     ├── Procfile               # Deploy Railway
-    └── templates/              # Templates HTML
+└── templates/              # Templates HTML
         ├── base.html           # Layout base
         ├── login.html          # Login
         ├── register.html       # Registro
         ├── dashboard.html      # Dashboard
         ├── cilindro.html       # CRUD Cilindros
         ├── elemento.html       # CRUD Elementos
-        ├── amostra.html        # CRUD Amostras
-        └── perfil.html        # Perfil usuário
-```
-labgas-manager/
-├── .gitignore
-├── agents.md                  # Documentação técnica
-├── readme.md                  # Este arquivo
-├── backend/                   # Flask API (opcional)
-│   ├── app.py                 # Aplicação Flask API
-│   ├── .env                   # Variáveis do backend
-│   ├── requirements.txt       # Dependências Python
-│   ├── venv/                  # Virtual environment
-│   ├── Procfile               # Deploy Railway
-│   ├── config.py              # Configurações
-│   ├── routes/
-│   │   ├── auth.py            # Autenticação
-│   │   ├── cilindro.py        # CRUD Cilindros
-│   │   ├── elemento.py        # CRUD Elementos
-│   │   ├── amostra.py         # CRUD Amostras
-│   └── utils/
-│       ├── supabase.py        # Cliente Supabase
-│       └── decorators.py      # Autenticação JWT
-└── frontend/                  # Flask + Jinja2 (Web)
-    ├── app.py                 # Aplicação Flask principal
-    ├── .env                   # Variáveis do frontend
-    ├── requirements.txt        # Dependências Python
-    ├── venv/                  # Virtual environment
-    ├── Procfile               # Deploy Railway
-    └── templates/              # Templates HTML
-        ├── base.html           # Layout base
-        ├── login.html          # Login
-        ├── register.html       # Registro
-        ├── dashboard.html      # Dashboard
-        ├── cilindro.html       # CRUD Cilindros
-        ├── elemento.html       # CRUD Elementos
-        ├── amostra.html        # CRUD Amostras
-        └── perfil.html        # Perfil usuário
+        ├── amostra.html       # CRUD Amostras
+        ├── perfil.html        # Perfil usuário
+        └── historico.html     # Histórico de atividades
 ```
 
 ## Como Rodar Local
@@ -264,3 +230,13 @@ O projeto utiliza Dockerfile para deploy no Railway.
 - Sistema de admin com todas as funcionalidades operacionais
 - Perfil de usuário mostra role corretamente
 - Nome e email armazenados na tabela perfil
+- Sistema de segurança com JWT (removido service_role key do frontend)
+- Paginação em todas as listas (10 itens por página)
+- Otimização de consultas (separação dados próprios vs compartilhados)
+- Sistema de cache (5 minutos)
+- Filtros em listas de cilindro, elemento e amostra
+- Página de histórico
+- Cards visuais no dashboard
+- Toast notifications (feedback melhor ao usuário)
+- Edição de perfil (nome) funcionando corretamente
+- Criação automática de perfil no registro

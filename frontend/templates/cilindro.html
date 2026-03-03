@@ -71,6 +71,36 @@
     </div>
 </div>
 
+<div class="card mb-4">
+    <div class="card-header bg-light">
+        <div class="row g-2 align-items-center">
+            <div class="col-md-4">
+                <input type="text" id="searchCilindro" class="form-control" placeholder="Buscar por código...">
+            </div>
+            <div class="col-md-3">
+                <select id="filterStatus" class="form-select">
+                    <option value="">Todos os Status</option>
+                    <option value="ativo">Ativo</option>
+                    <option value="em_uso">Em Uso</option>
+                    <option value="esgotado">Esgotado</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <select id="filterCompartilhado" class="form-select">
+                    <option value="">Todos</option>
+                    <option value="true">Compartilhados</option>
+                    <option value="false">Apenas meus</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button class="btn btn-outline-secondary w-100" onclick="filterCilindro()">
+                    <i class="bi bi-funnel"></i> Filtrar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="card">
     <div class="card-body p-0">
         {% if cilindro %}
@@ -201,4 +231,28 @@
         {% endif %}
     </div>
 </div>
+
+<script>
+function filterCilindro() {
+    const search = document.getElementById('searchCilindro').value.toLowerCase();
+    const status = document.getElementById('filterStatus').value;
+    const compartilhado = document.getElementById('filterCompartilhado').value;
+    
+    const rows = document.querySelectorAll('tbody tr');
+    rows.forEach(row => {
+        const codigo = row.cells[0].textContent.toLowerCase();
+        const rowStatus = row.cells[7].textContent.trim().toLowerCase();
+        const rowComp = row.cells[8].textContent.trim().toLowerCase();
+        
+        let show = true;
+        if (search && !codigo.includes(search)) show = false;
+        if (status && !rowStatus.includes(status === 'em_uso' ? 'em uso' : status)) show = false;
+        if (compartilhado && rowComp !== (compartilhado === 'true' ? 'sim' : 'não')) show = false;
+        
+        row.style.display = show ? '' : 'none';
+    });
+}
+
+document.getElementById('searchCilindro').addEventListener('keyup', filterCilindro);
+</script>
 {% endblock %}

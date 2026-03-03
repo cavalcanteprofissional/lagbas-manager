@@ -373,6 +373,16 @@ O projeto utiliza Dockerfile para deploy no Railway.
 - Sistema de admin com todas as funcionalidades operacionais
 - Perfil de usuário mostra role corretamente
 - Nome e email armazenados na tabela perfil
+- Sistema de segurança com JWT (removido service_role key do frontend)
+- Paginação em todas as listas (10 itens por página)
+- Otimização de consultas (separação dados próprios vs compartilhados)
+- Sistema de cache (5 minutos)
+- Filtros em listas de cilindro, elemento e amostra
+- Página de histórico
+- Cards visuais no dashboard
+- Toast notifications (feedback melhor ao usuário)
+- Edição de perfil (nome) funcionando corretamente
+- Criação automática de perfil no registro
 
 ### Versão
-- v1.1.2 - Service_role key movida para .env por segurança
+- v1.2.0 - Segurança, performance e UX aprimorados

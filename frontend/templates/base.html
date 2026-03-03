@@ -187,6 +187,9 @@
             <a href="{{ url_for('amostra_list') }}" class="{% if request.endpoint == 'amostra_list' %}active{% endif %}">
                 <i class="bi bi-graph-up me-2"></i> <span>Amostras</span>
             </a>
+            <a href="{{ url_for('historico') }}" class="{% if request.endpoint == 'historico' %}active{% endif %}">
+                <i class="bi bi-clock-history me-2"></i> <span>Histórico</span>
+            </a>
             <a href="{{ url_for('perfil') }}" class="{% if request.endpoint == 'perfil' %}active{% endif %}">
                 <i class="bi bi-person me-2"></i> <span>Perfil</span>
             </a>
@@ -204,12 +207,22 @@
     <div class="container-fluid px-3 px-lg-4 py-3 page-content">
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
+            <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1100;">
                 {% for category, message in messages %}
-                    <div class="alert alert-{{ 'danger' if category == 'danger' else 'success' if category == 'success' else 'info' }} alert-dismissible fade show" role="alert">
-                        {{ message }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                <div class="toast show" role="alert" aria-live="assertive" aria-atomic="true">
+                    <div class="toast-header bg-{{ 'danger' if category == 'danger' else 'success' if category == 'success' else 'info' }} text-white">
+                        <strong class="me-auto">
+                            <i class="bi bi-{{ 'exclamation-circle' if category == 'danger' else 'check-circle' if category == 'success' else 'info-circle' }}"></i>
+                            {{ 'Erro' if category == 'danger' else 'Sucesso' if category == 'success' else 'Info' }}
+                        </strong>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button>
                     </div>
+                    <div class="toast-body">
+                        {{ message }}
+                    </div>
+                </div>
                 {% endfor %}
+            </div>
             {% endif %}
         {% endwith %}
         
@@ -221,6 +234,18 @@
             document.querySelector('.sidebar').classList.toggle('show');
             document.querySelector('.sidebar-overlay').classList.toggle('show');
         }
+        
+        // Auto-dismiss toasts after 5 seconds
+        document.addEventListener('DOMContentLoaded', function() {
+            var toasts = document.querySelectorAll('.toast');
+            toasts.forEach(function(toast) {
+                var bsToast = new bootstrap.Toast(toast, {
+                    autohide: true,
+                    delay: 5000
+                });
+                bsToast.show();
+            });
+        });
     </script>
     {% else %}
         {% block login_content %}{% endblock %}

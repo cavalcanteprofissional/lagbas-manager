@@ -74,6 +74,98 @@
         </div>
     </div>
 </div>
+
+<div class="row g-3 mb-4">
+    <div class="col-12">
+        <h4 class="mb-3"><i class="bi bi-clock-history"></i> Atividade Recente</h4>
+    </div>
+    
+    <div class="col-12 col-lg-4">
+        <div class="card h-100">
+            <div class="card-header bg-success text-white">
+                <h6 class="mb-0"><i class="bi bi-box-seam"></i> Últimos Cilindros</h6>
+            </div>
+            <div class="card-body p-0">
+                {% if cilindro[:5] %}
+                <div class="list-group list-group-flush">
+                    {% for c in cilindro[:5] %}
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>{{ c.codigo }}</strong>
+                            <small class="d-block text-muted">{{ c.data_compra }}</small>
+                        </div>
+                        <span class="badge bg-{{ 'success' if c.status == 'ativo' else 'primary' if c.status == 'em_uso' else 'danger' }}">
+                            {{ c.status|title }}
+                        </span>
+                    </div>
+                    {% endfor %}
+                </div>
+                <div class="card-footer text-center">
+                    <a href="{{ url_for('cilindro_list') }}" class="btn btn-sm btn-outline-success">Ver todos</a>
+                </div>
+                {% else %}
+                <p class="text-muted text-center py-4">Nenhum cilindro</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-12 col-lg-4">
+        <div class="card h-100">
+            <div class="card-header bg-primary text-white">
+                <h6 class="mb-0"><i class="bi bi-droplet"></i> Últimos Elementos</h6>
+            </div>
+            <div class="card-body p-0">
+                {% if elementos[:5] %}
+                <div class="list-group list-group-flush">
+                    {% for e in elementos[:5] %}
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>{{ e.nome }}</strong>
+                            <small class="d-block text-muted">{{ "%.1f"|format(e.consumo_lpm) }} L/min</small>
+                        </div>
+                        <span class="badge bg-info">{{ "%.1f"|format(e.consumo_lpm) }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+                <div class="card-footer text-center">
+                    <a href="{{ url_for('elemento_list') }}" class="btn btn-sm btn-outline-primary">Ver todos</a>
+                </div>
+                {% else %}
+                <p class="text-muted text-center py-4">Nenhum elemento</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-12 col-lg-4">
+        <div class="card h-100">
+            <div class="card-header bg-info text-white">
+                <h6 class="mb-0"><i class="bi bi-graph-up"></i> Últimas Amostras</h6>
+            </div>
+            <div class="card-body p-0">
+                {% if amostras[:5] %}
+                <div class="list-group list-group-flush">
+                    {% for a in amostras[:5] %}
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>{{ a.cilindro_nome or a.cilindro_id }}</strong>
+                            <small class="d-block text-muted">{{ a.elemento_nome or a.elemento_id }}</small>
+                        </div>
+                        <small class="text-muted">{{ a.data }}</small>
+                    </div>
+                    {% endfor %}
+                </div>
+                <div class="card-footer text-center">
+                    <a href="{{ url_for('amostra_list') }}" class="btn btn-sm btn-outline-info">Ver todos</a>
+                </div>
+                {% else %}
+                <p class="text-muted text-center py-4">Nenhuma amostra</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
 
 {% block extra_js %}
