@@ -50,14 +50,6 @@
                         <label class="form-label">Custo (R$)</label>
                         <input type="number" name="custo" class="form-control form-control-lg" value="290.00" step="1" min="0">
                     </div>
-                    <div class="col-12 col-lg-3 d-flex align-items-end">
-                        <div class="form-check form-switch w-100 p-3 border rounded">
-                            <input class="form-check-input" type="checkbox" name="compartilhado" id="compartilhado">
-                            <label class="form-check-label" for="compartilhado">
-                                <i class="bi bi-share"></i> Compartilhar com outros usuários
-                            </label>
-                        </div>
-                    </div>
                 </div>
                 <div class="row g-2 mt-2">
                     <div class="col-12">
@@ -74,22 +66,15 @@
 <div class="card mb-4">
     <div class="card-header bg-light">
         <div class="row g-2 align-items-center">
-            <div class="col-md-4">
+            <div class="col-md-5">
                 <input type="text" id="searchCilindro" class="form-control" placeholder="Buscar por código...">
             </div>
-            <div class="col-md-3">
+            <div class="col-md-5">
                 <select id="filterStatus" class="form-select">
                     <option value="">Todos os Status</option>
                     <option value="ativo">Ativo</option>
                     <option value="em_uso">Em Uso</option>
                     <option value="esgotado">Esgotado</option>
-                </select>
-            </div>
-            <div class="col-md-3">
-                <select id="filterCompartilhado" class="form-select">
-                    <option value="">Todos</option>
-                    <option value="true">Compartilhados</option>
-                    <option value="false">Apenas meus</option>
                 </select>
             </div>
             <div class="col-md-2">
@@ -116,7 +101,6 @@
                         <th class="d-none d-lg-table-cell">Litros</th>
                         <th class="d-none d-lg-table-cell">Custo</th>
                         <th>Status</th>
-                        <th class="d-none d-sm-table-cell">Comp.</th>
                         <th>Ações</th>
                     </tr>
                 </thead>
@@ -138,11 +122,6 @@
                         <td>
                             <span class="badge bg-{{ 'success' if c.status == 'ativo' else 'primary' if c.status == 'em_uso' else 'danger' if c.status == 'esgotado' else 'secondary' }}">
                                 {{ 'Em uso' if c.status == 'em_uso' else c.status|title }}
-                            </span>
-                        </td>
-                        <td class="d-none d-sm-table-cell">
-                            <span class="badge bg-{{ 'info' if c.compartilhado else 'secondary' }}">
-                                {{ 'Sim' if c.compartilhado else 'Não' }}
                             </span>
                         </td>
                         <td>
@@ -203,14 +182,6 @@
                                                 {% endfor %}
                                             </select>
                                         </div>
-                                        <div class="mb-3">
-                                            <div class="form-check form-switch">
-                                                <input class="form-check-input" type="checkbox" name="compartilhado" id="editCompartilhado{{ c.id }}" {% if c.compartilhado %}checked{% endif %}>
-                                                <label class="form-check-label" for="editCompartilhado{{ c.id }}">
-                                                    <i class="bi bi-share"></i> Compartilhar com outros usuários
-                                                </label>
-                                            </div>
-                                        </div>
                                     </div>
                                     <div class="modal-footer">
                                         <button type="submit" class="btn btn-primary btn-lg w-100">Salvar</button>
@@ -236,18 +207,15 @@
 function filterCilindro() {
     const search = document.getElementById('searchCilindro').value.toLowerCase();
     const status = document.getElementById('filterStatus').value;
-    const compartilhado = document.getElementById('filterCompartilhado').value;
     
     const rows = document.querySelectorAll('tbody tr');
     rows.forEach(row => {
         const codigo = row.cells[0].textContent.toLowerCase();
         const rowStatus = row.cells[7].textContent.trim().toLowerCase();
-        const rowComp = row.cells[8].textContent.trim().toLowerCase();
         
         let show = true;
         if (search && !codigo.includes(search)) show = false;
         if (status && !rowStatus.includes(status === 'em_uso' ? 'em uso' : status)) show = false;
-        if (compartilhado && rowComp !== (compartilhado === 'true' ? 'sim' : 'não')) show = false;
         
         row.style.display = show ? '' : 'none';
     });

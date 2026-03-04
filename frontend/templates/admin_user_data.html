@@ -50,7 +50,6 @@
                             <tr>
                                 <th>Código</th>
                                 <th>Status</th>
-                                <th>Compartilhado</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -58,7 +57,6 @@
                             <tr>
                                 <td>{{ c.codigo }}</td>
                                 <td><span class="badge bg-{{ 'success' if c.status == 'ativo' else 'primary' if c.status == 'em_uso' else 'danger' }}">{{ c.status }}</span></td>
-                                <td><span class="badge bg-{{ 'info' if c.compartilhado else 'secondary' }}">{{ 'Sim' if c.compartilhado else 'Não' }}</span></td>
                             </tr>
                             {% endfor %}
                         </tbody>
@@ -84,7 +82,6 @@
                             <tr>
                                 <th>Nome</th>
                                 <th>Consumo</th>
-                                <th>Comp.</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -92,7 +89,6 @@
                             <tr>
                                 <td>{{ e.nome }}</td>
                                 <td>{{ e.consumo_lpm }}</td>
-                                <td><span class="badge bg-{{ 'info' if e.compartilhado else 'secondary' }}">{{ 'Sim' if e.compartilhado else 'Não' }}</span></td>
                             </tr>
                             {% endfor %}
                         </tbody>
@@ -118,7 +114,6 @@
                             <tr>
                                 <th>Data</th>
                                 <th>Qtd</th>
-                                <th>Comp.</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -126,7 +121,6 @@
                             <tr>
                                 <td>{{ a.data }}</td>
                                 <td>{{ a.quantidade_amostras }}</td>
-                                <td><span class="badge bg-{{ 'info' if a.compartilhado else 'secondary' }}">{{ 'Sim' if a.compartilhado else 'Não' }}</span></td>
                             </tr>
                             {% endfor %}
                         </tbody>

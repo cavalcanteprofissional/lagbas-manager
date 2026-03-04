@@ -1,26 +1,25 @@
 # LabGas Manager
 
-**Versão: 1.2.2**
+**Versão: 1.3.0**
 
 Dashboard para gestão de cilindro de gás e elementos analisados em laboratório de química, utilizando **Flask** com **Jinja2** para o frontend e **Supabase** como banco de dados.
+
+## Novidades v1.3.0
+
+- **Histórico de Atividades**: Sistema completo de registro de todas as operações CRUD na tabela `historico_log`
+- **Filtros Aprimorados**: Removido seletor de compartilhamento nas abas Elementos e Cilindros
+- **Melhorias UX**: Data default como hoje no registro de amostras
+- **Ordenação**: Seletores de Cilindro/Elemento em ordem alfabética
+- **Correções**: Bugs no filtro do Histórico, duplicação de elementos, exclusão de cilindro/elemento
 
 ## Novidades v1.2.2
 
 - **Validação de Cilindro**: Código deve seguir formato CIL-XXX (ex: CIL-001, CIL-002)
-- **Normalização de Elementos**: Nomes salvos com primeira letra maiúscula (ex: "Sodio", "Potassio")
+- **Normalização de Elementos**: Nomes salvos com primeira letra maiúscula
 
 ## Novidades v1.2.1
 
-- **Admin**: Painel agora lista todos os usuários cadastrados (usa service_role key para bypass RLS)
-
-## Novidades v1.2.0
-
-- **Segurança**: JWT validation em vez de service_role key
-- **Performance**: Paginação (10 itens por página) e cache (5 minutos)
-- **UX Aprimorada**: Filtros em listas, toast notifications, cards visuais no dashboard
-- **Histórico**: Nova página de histórico de atividades
-- **Edição de Perfil**: Usuários podem editar seu nome
-- **Otimização de Queries**: Separação de dados próprios vs compartilhados
+- **Admin**: Painel agora lista todos os usuários cadastrados
 
 ## Arquitetura do Sistema
 
@@ -48,7 +47,8 @@ labgas-manager/
 ├── .gitignore
 ├── agents.md                  # Documentação técnica
 ├── readme.md                  # Este arquivo
-├── bd.md                     # Script SQL do banco de dados
+├── database.md               # Schema completo do banco de dados
+├── bd_admin.md               # Script SQL admin
 ├── backend/                   # Flask API (opcional)
 │   ├── app.py                 # Aplicação Flask API
 │   ├── .env                   # Variáveis do backend
@@ -70,16 +70,17 @@ labgas-manager/
     ├── requirements.txt        # Dependências Python
     ├── venv/                  # Virtual environment
     ├── Procfile               # Deploy Railway
-└── templates/              # Templates HTML
-        ├── base.html           # Layout base
-        ├── login.html          # Login
-        ├── register.html       # Registro
-        ├── dashboard.html      # Dashboard
-        ├── cilindro.html       # CRUD Cilindros
-        ├── elemento.html       # CRUD Elementos
+    └── templates/             # Templates HTML
+        ├── base.html          # Layout base
+        ├── login.html         # Login
+        ├── register.html      # Registro
+        ├── dashboard.html     # Dashboard
+        ├── cilindro.html      # CRUD Cilindros
+        ├── elemento.html      # CRUD Elementos
         ├── amostra.html       # CRUD Amostras
+        ├── historico.html     # Histórico de atividades
         ├── perfil.html        # Perfil usuário
-        └── historico.html     # Histórico de atividades
+        └── admin.html         # Painel admin
 ```
 
 ## Como Rodar Local
@@ -140,7 +141,7 @@ SUPABASE_JWT_SECRET=seu_jwt_secret
 ```sql
 CREATE TABLE cilindro (
     id SERIAL PRIMARY KEY,
-    codigo VARCHAR(50) UNIQUE NOT NULL,
+    codigo VARCHAR(50) NOT NULL,
     data_compra DATE NOT NULL,
     data_inicio_consumo DATE,
     data_fim DATE,
@@ -148,9 +149,9 @@ CREATE TABLE cilindro (
     litros_equivalentes DECIMAL(10,2) DEFAULT 956.0,
     custo DECIMAL(10,2) DEFAULT 290.00,
     status VARCHAR(20) DEFAULT 'ativo',
+    compartilhado BOOLEAN DEFAULT false,
     user_id UUID REFERENCES auth.users(id),
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+    created_at TIMESTAMP DEFAULT NOW()
 );
 ```
 
@@ -159,11 +160,11 @@ CREATE TABLE cilindro (
 ```sql
 CREATE TABLE elemento (
     id SERIAL PRIMARY KEY,
-    nome VARCHAR(100) UNIQUE NOT NULL,
+    nome VARCHAR(100) NOT NULL,
     consumo_lpm DECIMAL(5,2) NOT NULL,
+    compartilhado BOOLEAN DEFAULT false,
     user_id UUID REFERENCES auth.users(id),
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+    created_at TIMESTAMP DEFAULT NOW()
 );
 ```
 
@@ -177,6 +178,20 @@ CREATE TABLE amostra (
     cilindro_id INTEGER REFERENCES cilindro(id),
     elemento_id INTEGER REFERENCES elemento(id),
     quantidade_amostras INTEGER DEFAULT 1,
+    compartilhado BOOLEAN DEFAULT false,
+    user_id UUID REFERENCES auth.users(id),
+    created_at TIMESTAMP DEFAULT NOW()
+);
+```
+
+### Tabela: historico_log
+
+```sql
+CREATE TABLE historico_log (
+    id SERIAL PRIMARY KEY,
+    tipo VARCHAR(20) NOT NULL,
+    acao VARCHAR(20) NOT NULL,
+    nome VARCHAR(100) NOT NULL,
     user_id UUID REFERENCES auth.users(id),
     created_at TIMESTAMP DEFAULT NOW()
 );
@@ -186,7 +201,7 @@ CREATE TABLE amostra (
 
 ## Deploy no Railway
 
-### Configuração Atual (Dockerfile)
+### Configuração
 O projeto utiliza Dockerfile para deploy no Railway.
 
 1. Criar projeto no Railway com o repositório GitHub
@@ -196,7 +211,8 @@ O projeto utiliza Dockerfile para deploy no Railway.
    - `SUPABASE_URL`: URL do projeto Supabase
    - `SUPABASE_KEY`: chave anônima do Supabase
 
-**Nota**: O deploy pode apresentar desafios dependendo da configuração do Railway. Verifique os logs de build em caso de erros.
+### Build Command: (vazio)
+### Start Command: `gunicorn app:app`
 
 ## Fluxo de Autenticação
 
@@ -220,27 +236,16 @@ O projeto utiliza Dockerfile para deploy no Railway.
 - Nomes únicos por usuário
 
 ### Amostra
-- Data/tempo de chama editável (HH:MM:SS)
+- Data default como data atual
+- Tempo de chama editável (HH:MM:SS)
 - Vincular a cilindro e elemento existentes
 - Quantidade de amostras (inteiro)
-
-## Deploy Railway
-
-### Configuração
-1. Criar projeto no Railway com o repositório GitHub
-2. Configurar Root Directory como `frontend` ou usar `railway.json`
-3. Adicionar variáveis de ambiente:
-   - `SECRET_KEY`: chave secreta para sessões
-   - `SUPABASE_URL`: URL do projeto Supabase
-   - `SUPABASE_KEY`: chave anônima do Supabase
-
-### Build Command: (vazio)
-### Start Command: `gunicorn app:app`
 
 ## Estado Atual
 
 ### Funcionalidades Implementadas
-- Sistema de admin com todas as funcionalidades operacionais (usa service_role key para bypass RLS)
+- Sistema de admin com todas as funcionalidades operacionais
+- Sistema de registro de histórico de atividades
 - Painel admin lista todos os usuários cadastrados
 - Perfil de usuário mostra role corretamente
 - Nome e email armazenados na tabela perfil
@@ -249,8 +254,17 @@ O projeto utiliza Dockerfile para deploy no Railway.
 - Otimização de consultas (separação dados próprios vs compartilhados)
 - Sistema de cache (5 minutos)
 - Filtros em listas de cilindro, elemento e amostra
-- Página de histórico
+- Página de histórico com filtros por tipo e ação
+- Coluna "Usuário" no histórico de atividades
 - Cards visuais no dashboard
-- Toast notifications (feedback melhor ao usuário)
+- Toast notifications
 - Edição de perfil (nome) funcionando corretamente
 - Criação automática de perfil no registro
+- Validação de código de cilindro (CIL-XXX)
+- Normalização de nomes de elementos
+- Data default como hoje no registro de amostras
+- Ordenação alfabética nos seletores de Cilindro/Elemento
+- Remoção de elementos duplicados nos seletores de amostra
+
+### Versão
+- v1.3.0 - Sistema de histórico, filtros aprimorados, correções de bugs

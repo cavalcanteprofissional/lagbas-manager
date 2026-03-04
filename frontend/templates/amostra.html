@@ -54,14 +54,6 @@
                         <label class="form-label">Quantidade de Amostras</label>
                         <input type="number" name="quantidade_amostras" class="form-control form-control-lg" value="1" min="1">
                     </div>
-                    <div class="col-12 col-md-8 col-lg-9 d-flex align-items-end">
-                        <div class="form-check form-switch w-100 p-3 border rounded">
-                            <input class="form-check-input" type="checkbox" name="compartilhado" id="compartilhado">
-                            <label class="form-check-label" for="compartilhado">
-                                <i class="bi bi-share"></i> Compartilhar com outros usuários
-                            </label>
-                        </div>
-                    </div>
                 </div>
                 <div class="row g-2 mt-2">
                     <div class="col-12">
@@ -123,7 +115,6 @@
                         <th>Cilindro</th>
                         <th class="d-none d-lg-table-cell">Elemento</th>
                         <th>Qtd</th>
-                        <th class="d-none d-sm-table-cell">Comp.</th>
                         <th>Ações</th>
                     </tr>
                 </thead>
@@ -138,11 +129,6 @@
                         <td><span class="badge bg-primary">{{ a.cilindro_nome }}</span></td>
                         <td class="d-none d-lg-table-cell">{{ a.elemento_nome }}</td>
                         <td><span class="badge bg-info">{{ a.quantidade_amostras }}</span></td>
-                        <td class="d-none d-sm-table-cell">
-                            <span class="badge bg-{{ 'info' if a.compartilhado else 'secondary' }}">
-                                {{ 'Sim' if a.compartilhado else 'Não' }}
-                            </span>
-                        </td>
                         <td>
                             <div class="btn-group" role="group">
                                 <button class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#editModal{{ a.id }}">
@@ -203,14 +189,6 @@
                                             <label class="form-label">Quantidade de Amostras</label>
                                             <input type="number" name="quantidade_amostras" class="form-control" value="{{ a.quantidade_amostras }}" min="1">
                                         </div>
-                                        <div class="mb-3">
-                                            <div class="form-check form-switch">
-                                                <input class="form-check-input" type="checkbox" name="compartilhado" id="editCompartilhado{{ a.id }}" {% if a.compartilhado %}checked{% endif %}>
-                                                <label class="form-check-label" for="editCompartilhado{{ a.id }}">
-                                                    <i class="bi bi-share"></i> Compartilhar com outros usuários
-                                                </label>
-                                            </div>
-                                        </div>
                                     </div>
                                     <div class="modal-footer">
                                         <button type="submit" class="btn btn-primary btn-lg w-100">Salvar</button>
@@ -261,5 +239,17 @@ function clearFilters() {
 }
 
 document.getElementById('filterData').addEventListener('change', filterAmostra);
+
+// Definir data de hoje como default no campo de data da amostra
+document.addEventListener('DOMContentLoaded', function() {
+    const dataInput = document.querySelector('input[name="data"]');
+    if (dataInput && !dataInput.value) {
+        const hoje = new Date();
+        const ano = hoje.getFullYear();
+        const mes = String(hoje.getMonth() + 1).padStart(2, '0');
+        const dia = String(hoje.getDate()).padStart(2, '0');
+        dataInput.value = `${ano}-${mes}-${dia}`;
+    }
+});
 </script>
 {% endblock %}

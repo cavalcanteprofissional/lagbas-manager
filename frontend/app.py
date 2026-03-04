@@ -191,6 +191,20 @@ def get_admin_client():
     return create_client(SUPABASE_URL, SUPABASE_SERVICE_KEY)
 
 
+def registrar_historico(tipo, acao, nome, user_id):
+    """Registra uma ação no histórico"""
+    try:
+        client = supabase_client()
+        client.table("historico_log").insert({
+            "tipo": tipo,
+            "acao": acao,
+            "nome": nome,
+            "user_id": user_id
+        }).execute()
+    except Exception:
+        pass
+
+
 @app.route("/")
 def index():
     if current_user.is_authenticated:
@@ -361,7 +375,6 @@ def dashboard():
 
 
 # Otimizar queries para performance
-# Separar dados próprios vs compartilhados para queries mais eficientes
 @app.route("/cilindros", methods=["GET", "POST"])
 @login_required
 def cilindro_list():
@@ -382,7 +395,6 @@ def cilindro_list():
             gas_kg = request.form.get("gas_kg", "")
             custo = request.form.get("custo", "")
             status = request.form.get("status", "ativo")
-            compartilhado = request.form.get("compartilhado", "false").lower() == "true"
             
             # Validações
             if not codigo or not data_compra:
@@ -431,13 +443,16 @@ def cilindro_list():
                     "litros_equivalentes": gas_kg_val * LITROS_EQUIVALENTES_KG,
                     "custo": custo_val,
                     "status": status,
-                    "compartilhado": compartilhado
+                    "user_id": user_id
                 }
                 
-                if not admin:
-                    data["user_id"] = user_id
+                if admin:
+                    client = get_admin_client()
+                else:
+                    client = supabase_client()
                 
-                supabase.table("cilindro").insert(data).execute()
+                client.table("cilindro").insert(data).execute()
+                registrar_historico("cilindro", "criado", codigo, user_id)
                 flash("Cilindro criado com sucesso!", "success")
             except Exception as e:
                 flash(f"Erro ao criar cilindro: {str(e)}", "danger")
@@ -452,7 +467,6 @@ def cilindro_list():
             gas_kg = request.form.get("gas_kg", "")
             custo = request.form.get("custo", "")
             status = request.form.get("status", "ativo")
-            compartilhado = request.form.get("compartilhado", "false").lower() == "true"
             
             # Validações
             if not cilindro_id or not codigo or not data_compra:
@@ -495,8 +509,7 @@ def cilindro_list():
                     "gas_kg": gas_kg_val,
                     "litros_equivalentes": gas_kg_val * LITROS_EQUIVALENTES_KG,
                     "custo": custo_val,
-                    "status": status,
-                    "compartilhado": compartilhado
+                    "status": status
                 }
                 
                 if not admin:
@@ -504,6 +517,7 @@ def cilindro_list():
                 else:
                     supabase.table("cilindro").update(data).eq("id", cilindro_id).execute()
                 
+                registrar_historico("cilindro", "atualizado", codigo, user_id)
                 flash("Cilindro atualizado com sucesso!", "success")
             except Exception as e:
                 flash(f"Erro ao atualizar cilindro: {str(e)}", "danger")
@@ -518,18 +532,21 @@ def cilindro_list():
             
             # Verificar se cilindro possui amostras vinculadas
             try:
-                if not admin:
-                    amostra_count = supabase.table("amostra").select("id", count="exact").eq("cilindro_id", cilindro_id).execute()
-                    if amostra_count.count and amostra_count.count > 0:
-                        flash("Não é possível excluir este cilindro pois existem amostras vinculadas a ele", "danger")
-                        return redirect(url_for("cilindro_list"))
+                amostra_count = supabase.table("amostra").select("id", count="exact").eq("cilindro_id", cilindro_id).execute()
+                if amostra_count.count and amostra_count.count > 0:
+                    flash("Não é possível excluir este cilindro pois existem amostras vinculadas a ele", "danger")
+                    return redirect(url_for("cilindro_list"))
                 
                 # Deletar cilindro
+                cilindro_info = supabase.table("cilindro").select("codigo").eq("id", cilindro_id).execute().data
+                cilindro_codigo = cilindro_info[0].get("codigo") if cilindro_info else "N/A"
+                
                 if not admin:
                     supabase.table("cilindro").delete().eq("id", cilindro_id).eq("user_id", user_id).execute()
                 else:
                     supabase.table("cilindro").delete().eq("id", cilindro_id).execute()
                 
+                registrar_historico("cilindro", "excluido", cilindro_codigo, user_id)
                 flash("Cilindro excluído com sucesso!", "success")
             except Exception as e:
                 flash(f"Erro ao excluir cilindro: {str(e)}", "danger")
@@ -539,37 +556,20 @@ def cilindro_list():
         response = supabase.table("cilindro").select("*").order("created_at", desc=True).execute()
         cilindro = response.data or []
     else:
-        # Usuário vê apenas seus dados + dados compartilhados
-        # Otimizado: duas queries separadas para melhor performance
-        own_query = supabase.table("cilindro").select("*").eq("user_id", user_id).order("created_at", desc=True)
-        shared_query = supabase.table("cilindro").select("*").eq("compartilhado", True).order("created_at", desc=True)
-        
-        # Executar queries em paralelo
-        own_response = own_query.execute()
-        shared_response = shared_query.execute()
-        
-        # Combinar resultados (remover duplicatas se usuário compartilhou seus próprios dados)
-        own_data = own_response.data or []
-        shared_data = shared_response.data or []
-        
-        # Remover duplicatas (se usuário compartilhou seus próprios dados)
-        shared_ids = {c["id"] for c in shared_data}
-        unique_own_data = [c for c in own_data if c["id"] not in shared_ids]
-        
-        # Combinar e ordenar
-        all_data = unique_own_data + shared_data
-        all_data.sort(key=lambda x: x.get("created_at", ""), reverse=True)
-        
-        # Aplicar paginação
-        total = len(all_data)
-        start = (page - 1) * per_page
-        end = start + per_page
-        paginated_data = all_data[start:end]
-        
-        cilindro = paginated_data
-        
-        # Preparar dados para template com paginação
-        pages = (total + per_page - 1) // per_page
+        # Todos os usuários veem todos os cilindro
+        response = supabase.table("cilindro").select("*").order("created_at", desc=True).execute()
+        cilindro = response.data or []
+    
+    # Aplicar paginação
+    total = len(cilindro)
+    start = (page - 1) * per_page
+    end = start + per_page
+    paginated_data = cilindro[start:end]
+    
+    cilindro = paginated_data
+    
+    # Preparar dados para template com paginação
+    pages = (total + per_page - 1) // per_page
         
     return render_template(
         "cilindro.html", 
@@ -582,8 +582,6 @@ def cilindro_list():
     )
 
 
-# Otimizar queries para performance
-# Separar dados próprios vs compartilhados para queries mais eficientes
 @app.route("/elementos", methods=["GET", "POST"])
 @login_required
 def elemento_list():
@@ -601,31 +599,35 @@ def elemento_list():
             # Criar novo elemento
             nome = request.form.get("nome").strip().title()
             consumo_lpm = request.form.get("consumo_lpm")
-            compartilhado = request.form.get("compartilhado", "false").lower() == "true"
             
             # Validações
             if not nome or not consumo_lpm:
                 flash("Nome e consumo são obrigatórios", "danger")
                 return redirect(url_for("elemento_list"))
             
-            # Verificar se nome já existe para este usuário
-            if not admin:
-                existing = supabase.table("elemento").select("id").eq("user_id", user_id).eq("nome", nome).execute()
-                if existing.data:
+            # Verificar se nome já existe
+            existing = supabase.table("elemento").select("id").eq("nome", nome).execute()
+            if existing.data:
+                if admin:
+                    flash(f"Elemento '{nome}' já existe no sistema", "danger")
+                else:
                     flash("Elemento com este nome já existe para este usuário", "danger")
-                    return redirect(url_for("elemento_list"))
+                return redirect(url_for("elemento_list"))
             
             # Criar elemento
             data = {
                 "nome": nome,
                 "consumo_lpm": float(consumo_lpm) if consumo_lpm else 0,
-                "compartilhado": compartilhado
+                "user_id": user_id
             }
             
-            if not admin:
-                data["user_id"] = user_id
+            if admin:
+                client = get_admin_client()
+            else:
+                client = supabase_client()
             
-            supabase.table("elemento").insert(data).execute()
+            client.table("elemento").insert(data).execute()
+            registrar_historico("elemento", "criado", nome, user_id)
             flash("Elemento criado com sucesso!", "success")
             
         elif action == "update":
@@ -633,7 +635,6 @@ def elemento_list():
             elemento_id = request.form.get("elemento_id")
             nome = request.form.get("nome").strip().title()
             consumo_lpm = request.form.get("consumo_lpm")
-            compartilhado = request.form.get("compartilhado", "false").lower() == "true"
             
             # Validações
             if not elemento_id or not nome or not consumo_lpm:
@@ -650,8 +651,7 @@ def elemento_list():
             # Atualizar elemento
             data = {
                 "nome": nome,
-                "consumo_lpm": float(consumo_lpm) if consumo_lpm else 0,
-                "compartilhado": compartilhado
+                "consumo_lpm": float(consumo_lpm) if consumo_lpm else 0
             }
             
             if not admin:
@@ -659,6 +659,7 @@ def elemento_list():
             else:
                 supabase.table("elemento").update(data).eq("id", elemento_id).execute()
             
+            registrar_historico("elemento", "atualizado", nome, user_id)
             flash("Elemento atualizado com sucesso!", "success")
             
         elif action == "delete":
@@ -670,62 +671,50 @@ def elemento_list():
                 return redirect(url_for("elemento_list"))
             
             # Verificar se elemento possui amostras vinculadas
-            if not admin:
-                amostra_count = supabase.table("amostra").select("id", count="exact").eq("elemento_id", elemento_id).execute()
-                if amostra_count.count and amostra_count.count > 0:
-                    flash("Não é possível excluir este elemento pois existem amostras vinculadas a ele", "danger")
-                    return redirect(url_for("elemento_list"))
+            amostra_count = supabase.table("amostra").select("id", count="exact").eq("elemento_id", elemento_id).execute()
+            if amostra_count.count and amostra_count.count > 0:
+                flash("Não é possível excluir este elemento pois existem amostras vinculadas a ele", "danger")
+                return redirect(url_for("elemento_list"))
             
             # Deletar elemento
-            if not admin:
-                supabase.table("elemento").delete().eq("id", elemento_id).eq("user_id", user_id).execute()
-            else:
-                supabase.table("elemento").delete().eq("id", elemento_id).execute()
-            
-            flash("Elemento excluído com sucesso!", "success")
+            try:
+                elemento_info = supabase.table("elemento").select("nome").eq("id", elemento_id).execute().data
+                elemento_nome = elemento_info[0].get("nome") if elemento_info else "N/A"
+                
+                if not admin:
+                    supabase.table("elemento").delete().eq("id", elemento_id).eq("user_id", user_id).execute()
+                else:
+                    supabase.table("elemento").delete().eq("id", elemento_id).execute()
+                
+                registrar_historico("elemento", "excluido", elemento_nome, user_id)
+                flash("Elemento excluído com sucesso!", "success")
+            except Exception as e:
+                flash(f"Erro ao excluir elemento: {str(e)}", "danger")
     
     if admin:
         # Admin vê todos os dados (com validação JWT)
         response = supabase.table("elemento").select("*").order("created_at", desc=True).execute()
         elementos = response.data or []
     else:
-        # Usuário vê apenas seus dados + dados compartilhados
-        # Otimizado: duas queries separadas para melhor performance
-        own_query = supabase.table("elemento").select("*").eq("user_id", user_id).order("created_at", desc=True)
-        shared_query = supabase.table("elemento").select("*").eq("compartilhado", True).order("created_at", desc=True)
-        
-        # Executar queries em paralelo
-        own_response = own_query.execute()
-        shared_response = shared_query.execute()
-        
-        # Combinar resultados (remover duplicatas se usuário compartilhou seus próprios dados)
-        own_data = own_response.data or []
-        shared_data = shared_response.data or []
-        
-        # Remover duplicatas (se usuário compartilhou seus próprios dados)
-        shared_ids = {e["id"] for e in shared_data}
-        unique_own_data = [e for e in own_data if e["id"] not in shared_ids]
-        
-        # Combinar e ordenar
-        all_data = unique_own_data + shared_data
-        all_data.sort(key=lambda x: x.get("created_at", ""), reverse=True)
-        
-        # Aplicar paginação
-        total = len(all_data)
-        start = (page - 1) * per_page
-        end = start + per_page
-        paginated_data = all_data[start:end]
-        
-        elementos = paginated_data
-        
-        # Preparar dados para template com paginação
-        pages = (total + per_page - 1) // per_page
+        # Todos os usuários veem todos os elementos
+        response = supabase.table("elemento").select("*").order("created_at", desc=True).execute()
+        elementos = response.data or []
+    
+    # Aplicar paginação
+    total = len(elementos)
+    start = (page - 1) * per_page
+    end = start + per_page
+    paginated_data = elementos[start:end]
+    
+    elementos = paginated_data
+    
+    # Preparar dados para template com paginação
+    pages = (total + per_page - 1) // per_page
     
     return render_template("elemento.html", elementos=elementos, page=page, per_page=per_page, total=total if 'pages' in locals() else None, pages=pages if 'pages' in locals() else None)
 
 
 # Otimizar queries para performance
-# Separar dados próprios vs compartilhados para queries mais eficientes
 @app.route("/amostras", methods=["GET", "POST"])
 @login_required
 def amostra_list():
@@ -736,18 +725,26 @@ def amostra_list():
     page = request.args.get("page", 1, type=int)
     per_page = request.args.get("per_page", ITEMS_PER_PAGE, type=int)
     
-    cilindro_base = supabase.table("cilindro").select("id,codigo").execute().data or []
-    elementos_base = supabase.table("elemento").select("id,nome").execute().data or []
     
     if admin:
-        cilindro_response = supabase.table("cilindro").select("id,codigo").execute()
-        elementos_response = supabase.table("elemento").select("id,nome").execute()
+        cilindro_response = supabase.table("cilindro").select("id,codigo").order("codigo").execute()
+        elementos_response = supabase.table("elemento").select("id,nome").order("nome").execute()
     else:
-        cilindro_response = supabase.table("cilindro").select("id,codigo").or_(f"user_id.eq.{user_id},compartilhado.eq.true").execute()
-        elementos_response = supabase.table("elemento").select("id,nome").or_(f"user_id.eq.{user_id},compartilhado.eq.true").execute()
+        cilindro_response = supabase.table("cilindro").select("id,codigo").order("codigo").execute()
+        elementos_response = supabase.table("elemento").select("id,nome").order("nome").execute()
     
     cilindro = cilindro_response.data or []
     elementos = elementos_response.data or []
+    
+    # Remover duplicatas por nome (manter apenas o primeiro de cada nome)
+    elementos_unicos = []
+    nomes_vistos = set()
+    for e in elementos:
+        nome = e.get("nome", "").lower()
+        if nome not in nomes_vistos:
+            nomes_vistos.add(nome)
+            elementos_unicos.append(e)
+    elementos = elementos_unicos
     
     if request.method == "POST":
         action = request.form.get("action")
@@ -767,7 +764,6 @@ def amostra_list():
             cilindro_id = request.form.get("cilindro_id")
             elemento_id = request.form.get("elemento_id")
             quantidade = request.form.get("quantidade_amostras", 1)
-            compartilhado = request.form.get("compartilhado", "false").lower() == "true"
             
             # Validações
             if not data_amostra or not cilindro_id or not elemento_id:
@@ -783,13 +779,20 @@ def amostra_list():
                 "cilindro_id": int(cilindro_id),
                 "elemento_id": int(elemento_id),
                 "quantidade_amostras": int(quantidade) if quantidade else 1,
-                "compartilhado": compartilhado
+                "user_id": user_id
             }
             
-            if not admin:
-                data["user_id"] = user_id
+            if admin:
+                client = get_admin_client()
+            else:
+                client = supabase_client()
             
-            supabase.table("amostra").insert(data).execute()
+            client.table("amostra").insert(data).execute()
+            
+            cilindro_nome = supabase.table("cilindro").select("codigo").eq("id", cilindro_id).execute().data
+            elemento_nome = supabase.table("elemento").select("nome").eq("id", elemento_id).execute().data
+            nome_amostra = f"{cilindro_nome[0]['codigo'] if cilindro_nome else 'N/A'} - {elemento_nome[0]['nome'] if elemento_nome else 'N/A'}"
+            registrar_historico("amostra", "criado", nome_amostra, user_id)
             flash("Amostra criada com sucesso!", "success")
             
         elif action == "update":
@@ -802,7 +805,6 @@ def amostra_list():
             cilindro_id = request.form.get("cilindro_id")
             elemento_id = request.form.get("elemento_id")
             quantidade = request.form.get("quantidade_amostras", 1)
-            compartilhado = request.form.get("compartilhado", "false").lower() == "true"
             
             # Validações
             if not amostra_id or not data_amostra or not cilindro_id or not elemento_id:
@@ -817,8 +819,7 @@ def amostra_list():
                 "tempo_chama": tempo_chama,
                 "cilindro_id": int(cilindro_id),
                 "elemento_id": int(elemento_id),
-                "quantidade_amostras": int(quantidade) if quantidade else 1,
-                "compartilhado": compartilhado
+                "quantidade_amostras": int(quantidade) if quantidade else 1
             }
             
             if not admin:
@@ -826,6 +827,14 @@ def amostra_list():
             else:
                 supabase.table("amostra").update(data).eq("id", amostra_id).execute()
             
+            amostra_info = supabase.table("amostra").select("cilindro_id,elemento_id").eq("id", amostra_id).execute().data
+            nome_amostra = "N/A"
+            if amostra_info:
+                cilindro_nome = supabase.table("cilindro").select("codigo").eq("id", amostra_info[0]["cilindro_id"]).execute().data
+                elemento_nome = supabase.table("elemento").select("nome").eq("id", amostra_info[0]["elemento_id"]).execute().data
+                nome_amostra = f"{cilindro_nome[0]['codigo'] if cilindro_nome else 'N/A'} - {elemento_nome[0]['nome'] if elemento_nome else 'N/A'}"
+            
+            registrar_historico("amostra", "atualizado", nome_amostra, user_id)
             flash("Amostra atualizada com sucesso!", "success")
             
         elif action == "delete":
@@ -837,11 +846,19 @@ def amostra_list():
                 return redirect(url_for("amostra_list"))
             
             # Deletar amostra
+            amostra_info = supabase.table("amostra").select("cilindro_id,elemento_id").eq("id", amostra_id).execute().data
+            nome_amostra = "N/A"
+            if amostra_info:
+                cilindro_nome = supabase.table("cilindro").select("codigo").eq("id", amostra_info[0]["cilindro_id"]).execute().data
+                elemento_nome = supabase.table("elemento").select("nome").eq("id", amostra_info[0]["elemento_id"]).execute().data
+                nome_amostra = f"{cilindro_nome[0]['codigo'] if cilindro_nome else 'N/A'} - {elemento_nome[0]['nome'] if elemento_nome else 'N/A'}"
+            
             if not admin:
                 supabase.table("amostra").delete().eq("id", amostra_id).eq("user_id", user_id).execute()
             else:
                 supabase.table("amostra").delete().eq("id", amostra_id).execute()
             
+            registrar_historico("amostra", "excluido", nome_amostra, user_id)
             flash("Amostra excluída com sucesso!", "success")
     
     if admin:
@@ -849,37 +866,20 @@ def amostra_list():
         response = supabase.table("amostra").select("*").order("data", desc=True).execute()
         amostras = response.data or []
     else:
-        # Usuário vê apenas seus dados + dados compartilhados
-        # Otimizado: duas queries separadas para melhor performance
-        own_query = supabase.table("amostra").select("*").eq("user_id", user_id).order("data", desc=True)
-        shared_query = supabase.table("amostra").select("*").eq("compartilhado", True).order("data", desc=True)
-        
-        # Executar queries em paralelo
-        own_response = own_query.execute()
-        shared_response = shared_query.execute()
-        
-        # Combinar resultados (remover duplicatas se usuário compartilhou seus próprios dados)
-        own_data = own_response.data or []
-        shared_data = shared_response.data or []
-        
-        # Remover duplicatas (se usuário compartilhou seus próprios dados)
-        shared_ids = {a["id"] for a in shared_data}
-        unique_own_data = [a for a in own_data if a["id"] not in shared_ids]
-        
-        # Combinar e ordenar
-        all_data = unique_own_data + shared_data
-        all_data.sort(key=lambda x: x.get("data", ""), reverse=True)
-        
-        # Aplicar paginação
-        total = len(all_data)
-        start = (page - 1) * per_page
-        end = start + per_page
-        paginated_data = all_data[start:end]
-        
-        amostras = paginated_data
-        
-        # Preparar dados para template com paginação
-        pages = (total + per_page - 1) // per_page
+        # Todos os usuários veem todas as amostras
+        response = supabase.table("amostra").select("*").order("data", desc=True).execute()
+        amostras = response.data or []
+    
+    # Aplicar paginação
+    total = len(amostras)
+    start = (page - 1) * per_page
+    end = start + per_page
+    paginated_data = amostras[start:end]
+    
+    amostras = paginated_data
+    
+    # Preparar dados para template com paginação
+    pages = (total + per_page - 1) // per_page
     
     for amostra in amostras:
         for c in cilindro:
@@ -1165,49 +1165,37 @@ def historico():
     
     limit = 20
     
+    # Buscar do log de histórico
     if admin:
-        cilindro_history = supabase.table("cilindro").select("*").order("created_at", desc=True).limit(limit).execute().data or []
-        elemento_history = supabase.table("elemento").select("*").order("created_at", desc=True).limit(limit).execute().data or []
-        amostra_history = supabase.table("amostra").select("*").order("created_at", desc=True).limit(limit).execute().data or []
+        historico_log = supabase.table("historico_log").select("*").order("created_at", desc=True).limit(limit).execute().data or []
     else:
-        cilindro_history = supabase.table("cilindro").select("*").eq("user_id", user_id).order("created_at", desc=True).limit(limit).execute().data or []
-        elemento_history = supabase.table("elemento").select("*").eq("user_id", user_id).order("created_at", desc=True).limit(limit).execute().data or []
-        amostra_history = supabase.table("amostra").select("*").eq("user_id", user_id).order("created_at", desc=True).limit(limit).execute().data or []
+        historico_log = supabase.table("historico_log").select("*").order("created_at", desc=True).limit(limit).execute().data or []
     
-    cilindro_map = {c["id"]: c["codigo"] for c in (supabase.table("cilindro").select("id,codigo").execute().data or [])}
-    elemento_map = {e["id"]: e["nome"] for e in (supabase.table("elemento").select("id,nome").execute().data or [])}
+    # Buscar nomes dos usuários
+    all_user_ids = set()
+    for h in historico_log:
+        if h.get("user_id"): all_user_ids.add(h.get("user_id"))
+    
+    user_map = {}
+    if all_user_ids:
+        for uid in all_user_ids:
+            perfil = supabase.table("perfil").select("nome").eq("id", uid).execute().data
+            if perfil and perfil[0].get("nome"):
+                user_map[uid] = perfil[0]["nome"]
+            else:
+                user_map[uid] = uid
     
     history = []
     
-    for c in cilindro_history:
+    for h in historico_log:
         history.append({
-            "tipo": "cilindro",
-            "acao": "criado" if c.get("created_at") else "atualizado",
-            "nome": c.get("codigo"),
-            "data": c.get("created_at") or c.get("updated_at"),
-            "user_id": c.get("user_id")
+            "tipo": h.get("tipo"),
+            "acao": h.get("acao"),
+            "nome": h.get("nome"),
+            "data": h.get("created_at"),
+            "user_id": h.get("user_id"),
+            "usuario_nome": user_map.get(h.get("user_id"), '-')
         })
-    
-    for e in elemento_history:
-        history.append({
-            "tipo": "elemento",
-            "acao": "criado" if e.get("created_at") else "atualizado",
-            "nome": e.get("nome"),
-            "data": e.get("created_at") or e.get("updated_at"),
-            "user_id": e.get("user_id")
-        })
-    
-    for a in amostra_history:
-        history.append({
-            "tipo": "amostra",
-            "acao": "criado" if a.get("created_at") else "atualizado",
-            "nome": f"{cilindro_map.get(a.get('cilindro_id'), 'N/A')} - {elemento_map.get(a.get('elemento_id'), 'N/A')}",
-            "data": a.get("created_at"),
-            "user_id": a.get("user_id")
-        })
-    
-    history.sort(key=lambda x: x.get("data", ""), reverse=True)
-    history = history[:limit]
     
     return render_template("historico.html", history=history)
 

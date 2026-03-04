@@ -24,6 +24,7 @@
                     <option value="">Todas as Ações</option>
                     <option value="criado">Criado</option>
                     <option value="atualizado">Atualizado</option>
+                    <option value="excluido">Excluído</option>
                 </select>
             </div>
             <div class="col-md-2">
@@ -43,6 +44,7 @@
                         <th>Tipo</th>
                         <th>Ação</th>
                         <th>Item</th>
+                        <th>Usuário</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -57,11 +59,12 @@
                             </span>
                         </td>
                         <td>
-                            <span class="badge bg-{{ 'success' if h.acao == 'criado' else 'warning' }}">
+                            <span class="badge bg-{{ 'success' if h.acao == 'criado' else 'warning' if h.acao == 'atualizado' else 'danger' }}">
                                 {{ h.acao|title }}
                             </span>
                         </td>
                         <td><strong>{{ h.nome }}</strong></td>
+                        <td><small>{{ h.usuario_nome }}</small></td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -88,10 +91,10 @@ function filterHistory() {
         let rowType = cells[1].textContent.trim().toLowerCase();
         let rowAction = cells[2].textContent.trim().toLowerCase();
         
-        const typeMap = { 'cilindros': 'cilindro', 'elementos': 'elemento', 'amostras': 'amostra' };
+        const typeMap = { 'cilindro': 'cilindro', 'elemento': 'elemento', 'amostra': 'amostra' };
         rowType = typeMap[rowType] || rowType;
         
-        const actionMap = { 'criados': 'criado', 'atualizados': 'atualizado' };
+        const actionMap = { 'criado': 'criado', 'atualizado': 'atualizado', 'excluído': 'excluido' };
         rowAction = actionMap[rowAction] || rowAction;
         
         let show = true;
