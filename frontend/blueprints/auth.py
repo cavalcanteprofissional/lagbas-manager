@@ -1,0 +1,172 @@
+# Auth blueprint - Login, register, logout
+from flask import Blueprint, render_template, request, redirect, url_for, flash, session
+from flask_login import login_user, logout_user, current_user
+from datetime import timedelta
+import jwt
+import logging
+
+from utils.supabase_utils import get_supabase_client, get_admin_client
+
+auth_bp = Blueprint('auth', __name__)
+logger = logging.getLogger(__name__)
+
+
+class User:
+    def __init__(self, id, email, user_data=None):
+        self.id = id
+        self.email = email
+        self.user_data = user_data or {}
+
+    def is_authenticated(self):
+        return True
+
+    def is_active(self):
+        return True
+
+    def is_anonymous(self):
+        return False
+
+    def get_id(self):
+        return self.id
+
+
+def generate_jwt_token(user_id, secret_key):
+    from datetime import datetime, timedelta
+    payload = {
+        "user_id": user_id,
+        "exp": datetime.utcnow() + timedelta(hours=24),
+        "iat": datetime.utcnow()
+    }
+    return jwt.encode(payload, secret_key, algorithm="HS256")
+
+
+@auth_bp.route("/login", methods=["GET", "POST"])
+def login():
+    if current_user.is_authenticated:
+        return redirect(url_for("dashboard"))
+
+    if request.method == "POST":
+        email = request.form.get("email")
+        password = request.form.get("password")
+
+        if not email or not password:
+            flash("Email e senha são obrigatórios", "danger")
+            return redirect(url_for("auth.login"))
+
+        supabase = get_supabase_client()
+
+        try:
+            response = supabase.auth.sign_in_with_password({
+                "email": email,
+                "password": password
+            })
+
+            if response.user:
+                from flask import current_app
+                secret_key = current_app.secret_key
+
+                session["user_id"] = response.user.id
+                session["supabase_token"] = response.session.access_token
+                session["jwt_token"] = generate_jwt_token(response.user.id, secret_key)
+                session.permanent = True
+                session["user_data"] = {
+                    "id": response.user.id,
+                    "email": response.user.email,
+                    "email_confirmed_at": response.user.email_confirmed_at,
+                }
+
+                try:
+                    perfil = supabase.table("perfil").select("*").eq("id", response.user.id).execute()
+                    nome = response.user.user_metadata.get("nome", "") if response.user.user_metadata else ""
+                    
+                    if not perfil.data:
+                        supabase.table("perfil").insert({
+                            "id": response.user.id,
+                            "role": "usuario",
+                            "ativo": True,
+                            "nome": nome,
+                            "email": email
+                        }).execute()
+                        flash("Perfil criado com sucesso!", "success")
+
+                except Exception as e:
+                    flash(f"Erro ao criar/atualizar perfil: {str(e)}", "warning")
+
+                user = User(response.user.id, response.user.email, session["user_data"])
+                login_user(user, remember=True, duration=timedelta(days=7))
+
+                flash("Login realizado com sucesso!", "success")
+                return redirect(url_for("dashboard"))
+
+        except Exception as e:
+            flash(f"Erro no login: {str(e)}", "danger")
+
+    return render_template("login.html")
+
+
+@auth_bp.route("/register", methods=["GET", "POST"])
+def register():
+    if current_user.is_authenticated:
+        return redirect(url_for("dashboard"))
+
+    if request.method == "POST":
+        email = request.form.get("email")
+        password = request.form.get("password")
+        confirm_password = request.form.get("confirm_password")
+        nome = request.form.get("nome", "")
+
+        if not email or not password:
+            flash("Email e senha são obrigatórios", "danger")
+            return redirect(url_for("auth.register"))
+
+        if password != confirm_password:
+            flash("Senhas não conferem.", "danger")
+            return redirect(url_for("auth.register"))
+
+        if len(password) < 6:
+            flash("A senha deve ter pelo menos 6 caracteres", "danger")
+            return redirect(url_for("auth.register"))
+
+        supabase = get_supabase_client()
+
+        try:
+            response = supabase.auth.sign_up({
+                "email": email,
+                "password": password,
+                "options": {"data": {"nome": nome}},
+            })
+
+            if response.user:
+                try:
+                    supabase.table("perfil").insert({
+                        "id": response.user.id,
+                        "role": "usuario",
+                        "ativo": True,
+                        "nome": nome,
+                        "email": email
+                    }).execute()
+                except Exception as perfil_error:
+                    flash(f"Conta criada! Mas erro ao criar perfil: {str(perfil_error)}", "warning")
+                    return redirect(url_for("auth.login"))
+
+                flash("Conta criada! Verifique seu email para confirmação.", "success")
+                return redirect(url_for("auth.login"))
+
+        except Exception as e:
+            flash(f"Erro no registro: {str(e)}", "danger")
+
+    return render_template("register.html")
+
+
+@auth_bp.route("/logout")
+def logout():
+    supabase = get_supabase_client()
+    try:
+        supabase.auth.sign_out()
+    except:
+        pass
+    
+    session.clear()
+    logout_user()
+    flash("Logout realizado com sucesso!", "success")
+    return redirect(url_for("auth.login"))

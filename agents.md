@@ -7,17 +7,16 @@ Dashboard para gestão de cilindro de gás e elementos analisados em laboratóri
 ## Arquitetura do Sistema
 
 ```
-┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
-│   Flask+Jinja2  │     │    Flask API    │     │    Supabase     │
-│  (Frontend Web) │────▶│  (CRUDs + Auth) │────▶│  (PostgreSQL)   │
-│                 │     │                 │     │                 │
-└─────────────────┘     └─────────────────┘     └─────────────────┘
+┌─────────────────┐     ┌─────────────────┐
+│   Flask+Jinja2  │────▶│    Supabase    │
+│  (Frontend Web) │     │  (PostgreSQL)  │
+│   + Blueprints  │     │                │
+└─────────────────┘     └─────────────────┘
 ```
 
 ## Tecnologias
 
 - **Frontend**: Flask 3.0 + Jinja2 + Bootstrap 5
-- **Backend API**: Flask 3.0 + Flask-RESTX
 - **Banco de Dados**: Supabase (PostgreSQL)
 - **Autenticação**: Supabase Auth (via Flask-Login)
 - **Gerenciamento de Dependências**: pip + venv
@@ -28,42 +27,72 @@ Dashboard para gestão de cilindro de gás e elementos analisados em laboratóri
 ```
 labgas-manager/
 ├── .gitignore
-├── agents.md                  # Este arquivo
-├── readme.md                  # Documentação do projeto
-├── database.md                # Schema completo do banco de dados
-├── bd_admin.md                # Script SQL admin (tabela perfil, compartilhamento)
-├── backend/                   # Flask API (opcional)
-│   ├── app.py                 # Aplicação Flask API
-│   ├── .env                   # Variáveis do backend
-│   ├── requirements.txt       # Dependências Python
-│   ├── venv/                  # Virtual environment
-│   ├── Procfile               # Deploy Railway
-│   ├── config.py              # Configurações
+├── AGENTS.md                    # Este arquivo
+├── readme.md                    # Documentação do projeto
+├── database.md                  # Schema completo do banco de dados
+├── todo.md                      # Tarefas e histórico de alterações
+├── backend/                     # Flask API (opcional)
+│   ├── app.py
+│   ├── .env
+│   ├── requirements.txt
+│   ├── venv/
+│   ├── Procfile
+│   ├── config.py
 │   ├── routes/
-│   │   ├── auth.py            # Autenticação
-│   │   ├── cilindro.py        # CRUD Cilindros
-│   │   ├── elemento.py        # CRUD Elementos
-│   │   └── amostra.py         # CRUD Amostras
 │   └── utils/
-│       ├── supabase.py        # Cliente Supabase
-│       └── decorators.py      # Autenticação JWT
-└── frontend/                   # Flask + Jinja2 (Web)
-    ├── app.py                 # Aplicação Flask principal
-    ├── .env                   # Variáveis do frontend
-    ├── requirements.txt        # Dependências Python
-    ├── venv/                  # Virtual environment
-    ├── Procfile               # Deploy Railway
-    └── templates/              # Templates HTML Jinja2
-        ├── base.html          # Layout base
-        ├── login.html         # Login
-        ├── register.html      # Registro
-        ├── dashboard.html     # Dashboard
-        ├── cilindro.html      # CRUD Cilindros
-        ├── elemento.html      # CRUD Elementos
-        ├── amostra.html       # CRUD Amostras
-        ├── historico.html     # Histórico de atividades
-        └── perfil.html        # Perfil usuário
+└── frontend/                    # Flask + Jinja2 (Web)
+    ├── app.py                   # Aplicação Flask principal (~130 linhas)
+    ├── .env
+    ├── requirements.txt
+    ├── venv/
+    ├── Procfile
+    ├── blueprints/              # Blueprints Flask
+    │   ├── __init__.py
+    │   ├── auth.py             # Login, register, logout
+    │   ├── cilindro.py         # CRUD Cilindros
+    │   ├── elemento.py         # CRUD Elementos
+    │   ├── amostra.py          # CRUD Amostras
+    │   ├── admin.py            # Funções admin
+    │   ├── historico.py        # Histórico de atividades
+    │   └── helpers.py          # Funções auxiliares
+    ├── utils/                   # Utilitários
+    │   ├── __init__.py
+    │   ├── supabase_utils.py   # Cliente Supabase
+    │   ├── validators.py       # Validações
+    │   └── constants.py        # Constantes
+    └── templates/                # Templates HTML Jinja2
+        ├── base.html
+        ├── login.html
+        ├── register.html
+        ├── dashboard.html
+        ├── cilindro.html
+        ├── elemento.html
+        ├── amostra.html
+        ├── historico.html
+        ├── perfil.html
+        ├── admin.html
+        └── admin_user_data.html
 ```
+
+## Blueprints
+
+| Blueprint | Arquivo | Rotas |
+|-----------|---------|--------|
+| Auth | auth.py | /login, /register, /logout |
+| Cilindro | cilindro.py | /cilindros (GET, POST) |
+| Elemento | elemento.py | /elementos (GET, POST) |
+| Amostra | amostra.py | /amostras (GET, POST) |
+| Admin | admin.py | /admin, /admin/toggle-user, /admin/set-role, /admin/delete-user, /admin/user-data/<id> |
+| Historico | historico.py | /historico |
+
+## Utils
+
+| Arquivo | Funções |
+|---------|---------|
+| supabase_utils.py | get_supabase_client(), get_admin_client(), buscar_perfis_usuarios() |
+| validators.py | safe_int(), safe_float(), validar_codigo_cilindro(), formatar_tempo_chama(), remover_duplicatas_por_campo() |
+| constants.py | ITEMS_PER_PAGE, LITROS_EQUIVALENTES_KG, GAS_KG_DEFAULT, CUSTO_DEFAULT, CILINDRO_STATUS, ELEMENTOS_PADRAO |
+| helpers.py | get_user_id(), is_admin(), is_user_active(), get_user_role(), get_authenticated_client(), get_admin_client(), registrar_historico() |
 
 ## Modelo de Dados (Supabase)
 
@@ -141,8 +170,6 @@ CREATE TABLE historico_log (
 );
 ```
 
-**Nota**: O código usa nomes de tabelas no singular (`cilindro`, `elemento`, `amostra`).
-
 ## Políticas RLS
 
 O sistema usa políticas RLS (Row Level Security) para controle de acesso:
@@ -165,12 +192,6 @@ Consulte o arquivo `database.md` para o SQL completo das políticas RLS.
 | Deletar usuário | Remove usuário e todos os dados |
 | Ver dados de qualquer usuário | Visualiza cilindro, elemento, amostra |
 
-### Compartilhamento de Dados
-
-- Usuários podem compartilhar cilindro, elemento e amostra
-- Dados compartilhados ficam visíveis para todos os usuários ativos
-- Admins veem todos os dados (próprios + compartilhados + outros usuários)
-
 ### Rotas Admin
 
 | Método | Endpoint | Descrição |
@@ -190,55 +211,9 @@ O sistema registra todas as operações CRUD na tabela `historico_log`:
 - **Nome**: identificação do item
 - **User**: usuário que executou a ação
 
-O histórico pode ser filtrado por:
-- Tipo (Cilindros, Elementos, Amostras)
-- Ação (Criado, Atualizado, Excluído)
-- Texto de busca
-
-## Endpoints da API REST (Backend)
-
-### Autenticação
-
-| Método | Endpoint | Descrição |
-|--------|----------|-----------|
-| POST | /api/auth/login | Login com email/senha |
-| POST | /api/auth/register | Registro de novo usuário |
-| POST | /api/auth/logout | Logout |
-| GET | /api/auth/me | Dados do usuário atual |
-
-### Cilindros
-
-| Método | Endpoint | Descrição |
-|--------|----------|-----------|
-| GET | /api/cilindros | Listar todos |
-| POST | /api/cilindros | Criar novo |
-| GET | /api/cilindros/{id} | Detalhes |
-| PUT | /api/cilindros/{id} | Atualizar |
-| DELETE | /api/cilindros/{id} | Deletar |
-
-### Elementos
-
-| Método | Endpoint | Descrição |
-|--------|----------|-----------|
-| GET | /api/elementos | Listar todos |
-| POST | /api/elementos | Criar novo |
-| GET | /api/elementos/{id} | Detalhes |
-| PUT | /api/elementos/{id} | Atualizar |
-| DELETE | /api/elementos/{id} | Deletar |
-
-### Amostras
-
-| Método | Endpoint | Descrição |
-|--------|----------|-----------|
-| GET | /api/amostras | Listar todas |
-| POST | /api/amostras | Criar nova |
-| GET | /api/amostras/{id} | Detalhes |
-| PUT | /api/amostras/{id} | Atualizar |
-| DELETE | /api/amostras/{id} | Deletar |
-
 ## Configuração de Ambiente
 
-### Variáveis de Ambiente (Frontend - frontend/.env)
+### Variáveis de Ambiente (frontend/.env)
 
 ```env
 SECRET_KEY=sua_chave_secreta_aqui
@@ -248,17 +223,6 @@ SUPABASE_SERVICE_KEY=sua_service_role_key
 ```
 
 **Nota**: A service_role key é necessária para operações de admin (bypass RLS).
-
-### Variáveis de Ambiente (Backend - backend/.env)
-
-```env
-FLASK_ENV=development
-FLASK_DEBUG=1
-SECRET_KEY=sua_chave_secreta_aqui
-SUPABASE_URL=https://seu-projeto.supabase.co
-SUPABASE_KEY=sua_chave_anon
-SUPABASE_JWT_SECRET=seu_jwt_secret
-```
 
 ## Como Rodar Local
 
@@ -271,33 +235,16 @@ python -m venv venv
 ./venv/Scripts/python app.py
 ```
 
-### Backend (API - opcional) - Porta 5001
-
-```bash
-cd backend
-python -m venv venv
-./venv/Scripts/pip install -r requirements.txt
-./venv/Scripts/python app.py
-```
-
-**Nota**: O frontend roda na porta 5000 e o backend na porta 5001 para evitar conflitos.
-
 ## Deploy Railway
 
-### Configuração Atual (Dockerfile)
-O projeto utiliza Dockerfile para deploy no Railway.
-
 1. Criar projeto no Railway com o repositório GitHub
-2. O Railway detecta automaticamente o Dockerfile
-3. Adicionar variáveis de ambiente:
+2. Adicionar variáveis de ambiente:
    - `SECRET_KEY`: chave secreta para sessões
    - `SUPABASE_URL`: URL do projeto Supabase
    - `SUPABASE_KEY`: chave anônima do Supabase
 
-### Build Command: (vazio)
-### Start Command: `gunicorn app:app`
-
-**Nota**: O deploy pode apresentar desafios dependendo da configuração do Railway. Verifique os logs de build em caso de erros.
+### Start Command
+`gunicorn app:app`
 
 ## Fluxo de Autenticação
 
@@ -360,6 +307,7 @@ O projeto utiliza Dockerfile para deploy no Railway.
 - Data default como hoje no registro de amostras
 - Ordenação alfabética nos seletores de Cilindro/Elemento
 - Remoção de elementos duplicados nos seletores de amostra
+- **Refatoração para Blueprints** - Código organizado por domínio
 
 ### Versão
-- v1.3.0 - Sistema de histórico, filtros aprimorados, correções de bugs
+- v1.4.0 - Refatoração para Blueprints, código modular

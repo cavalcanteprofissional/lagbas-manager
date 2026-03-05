@@ -101,7 +101,7 @@
                     {% endfor %}
                 </div>
                 <div class="card-footer text-center">
-                    <a href="{{ url_for('cilindro_list') }}" class="btn btn-sm btn-outline-success">Ver todos</a>
+                    <a href="{{ url_for('cilindro.list') }}" class="btn btn-sm btn-outline-success">Ver todos</a>
                 </div>
                 {% else %}
                 <p class="text-muted text-center py-4">Nenhum cilindro</p>
@@ -129,7 +129,7 @@
                     {% endfor %}
                 </div>
                 <div class="card-footer text-center">
-                    <a href="{{ url_for('elemento_list') }}" class="btn btn-sm btn-outline-primary">Ver todos</a>
+                    <a href="{{ url_for('elemento.list') }}" class="btn btn-sm btn-outline-primary">Ver todos</a>
                 </div>
                 {% else %}
                 <p class="text-muted text-center py-4">Nenhum elemento</p>
@@ -157,7 +157,7 @@
                     {% endfor %}
                 </div>
                 <div class="card-footer text-center">
-                    <a href="{{ url_for('amostra_list') }}" class="btn btn-sm btn-outline-info">Ver todos</a>
+                    <a href="{{ url_for('amostra.list') }}" class="btn btn-sm btn-outline-info">Ver todos</a>
                 </div>
                 {% else %}
                 <p class="text-muted text-center py-4">Nenhuma amostra</p>

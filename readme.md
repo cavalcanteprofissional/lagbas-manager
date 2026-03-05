@@ -1,40 +1,30 @@
 # LabGas Manager
 
-**Versão: 1.3.0**
+**Versão: 1.4.0**
 
 Dashboard para gestão de cilindro de gás e elementos analisados em laboratório de química, utilizando **Flask** com **Jinja2** para o frontend e **Supabase** como banco de dados.
 
-## Novidades v1.3.0
+## Novidades v1.4.0
 
-- **Histórico de Atividades**: Sistema completo de registro de todas as operações CRUD na tabela `historico_log`
-- **Filtros Aprimorados**: Removido seletor de compartilhamento nas abas Elementos e Cilindros
-- **Melhorias UX**: Data default como hoje no registro de amostras
-- **Ordenação**: Seletores de Cilindro/Elemento em ordem alfabética
-- **Correções**: Bugs no filtro do Histórico, duplicação de elementos, exclusão de cilindro/elemento
-
-## Novidades v1.2.2
-
-- **Validação de Cilindro**: Código deve seguir formato CIL-XXX (ex: CIL-001, CIL-002)
-- **Normalização de Elementos**: Nomes salvos com primeira letra maiúscula
-
-## Novidades v1.2.1
-
-- **Admin**: Painel agora lista todos os usuários cadastrados
+- **Refatoração para Blueprints**: Código organizado por domínio
+- **app.py reduzido**: De ~1250 linhas para ~130 linhas
+- **Separação por domínio**: auth, cilindro, elemento, amostra, admin, historico
+- **Funções auxiliares**: Centralizadas em helpers.py
+- **Constantes**: Centralizadas em constants.py
 
 ## Arquitetura do Sistema
 
 ```
-┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
-│   Flask+Jinja2  │     │    Flask API    │     │    Supabase     │
-│  (Frontend Web) │────▶│  (CRUDs + Auth) │────▶│  (PostgreSQL)   │
-│                 │     │                 │     │                 │
-└─────────────────┘     └─────────────────┘     └─────────────────┘
+┌─────────────────┐     ┌─────────────────┐
+│   Flask+Jinja2  │────▶│    Supabase    │
+│  (Frontend Web) │     │  (PostgreSQL)  │
+│   + Blueprints  │     │                │
+└─────────────────┘     └─────────────────┘
 ```
 
 ## Tecnologias
 
 - **Frontend**: Flask 3.0 + Jinja2 + Bootstrap 5
-- **Backend API**: Flask 3.0 + Flask-RESTX
 - **Banco de Dados**: Supabase (PostgreSQL)
 - **Autenticação**: Supabase Auth
 - **Gerenciamento de Dependências**: pip + venv
@@ -45,42 +35,26 @@ Dashboard para gestão de cilindro de gás e elementos analisados em laboratóri
 ```
 labgas-manager/
 ├── .gitignore
-├── agents.md                  # Documentação técnica
+├── AGENTS.md                  # Documentação técnica
 ├── readme.md                  # Este arquivo
 ├── database.md               # Schema completo do banco de dados
-├── bd_admin.md               # Script SQL admin
+├── todo.md                  # Tarefas e histórico
 ├── backend/                   # Flask API (opcional)
-│   ├── app.py                 # Aplicação Flask API
-│   ├── .env                   # Variáveis do backend
-│   ├── requirements.txt       # Dependências Python
-│   ├── venv/                  # Virtual environment
-│   ├── Procfile               # Deploy Railway
-│   ├── config.py              # Configurações
-│   ├── routes/
-│   │   ├── auth.py            # Autenticação
-│   │   ├── cilindro.py        # CRUD Cilindros
-│   │   ├── elemento.py        # CRUD Elementos
-│   │   └── amostra.py         # CRUD Amostras
-│   └── utils/
-│       ├── supabase.py        # Cliente Supabase
-│       └── decorators.py      # Autenticação JWT
 └── frontend/                  # Flask + Jinja2 (Web)
-    ├── app.py                 # Aplicação Flask principal
-    ├── .env                   # Variáveis do frontend
-    ├── requirements.txt        # Dependências Python
-    ├── venv/                  # Virtual environment
-    ├── Procfile               # Deploy Railway
-    └── templates/             # Templates HTML
-        ├── base.html          # Layout base
-        ├── login.html         # Login
-        ├── register.html      # Registro
-        ├── dashboard.html     # Dashboard
-        ├── cilindro.html      # CRUD Cilindros
-        ├── elemento.html      # CRUD Elementos
-        ├── amostra.html       # CRUD Amostras
-        ├── historico.html     # Histórico de atividades
-        ├── perfil.html        # Perfil usuário
-        └── admin.html         # Painel admin
+    ├── app.py                 # Aplicação Flask principal (~130 linhas)
+    ├── blueprints/            # Blueprints Flask
+    │   ├── auth.py           # Login, register, logout
+    │   ├── cilindro.py       # CRUD Cilindros
+    │   ├── elemento.py       # CRUD Elementos
+    │   ├── amostra.py        # CRUD Amostras
+    │   ├── admin.py          # Funções admin
+    │   ├── historico.py      # Histórico de atividades
+    │   └── helpers.py        # Funções auxiliares
+    ├── utils/                # Utilitários
+    │   ├── supabase_utils.py # Cliente Supabase
+    │   ├── validators.py     # Validações
+    │   └── constants.py      # Constantes
+    └── templates/            # Templates HTML
 ```
 
 ## Como Rodar Local
@@ -101,15 +75,6 @@ python -m venv venv
 
 O frontend estará disponível em: `http://localhost:5000`
 
-### Backend (API - opcional) - Porta 5001
-
-```bash
-cd backend
-python -m venv venv
-./venv/Scripts/pip install -r requirements.txt
-./venv/Scripts/python app.py
-```
-
 ## Variáveis de Ambiente
 
 ### frontend/.env
@@ -123,90 +88,12 @@ SUPABASE_SERVICE_KEY=sua_service_role_key
 
 **Nota**: A service_role key é necessária para operações de admin (bypass RLS).
 
-### backend/.env
-
-```env
-FLASK_ENV=development
-FLASK_DEBUG=1
-SECRET_KEY=sua_chave_secreta
-SUPABASE_URL=https://seu-projeto.supabase.co
-SUPABASE_KEY=sua_chave_anon
-SUPABASE_JWT_SECRET=seu_jwt_secret
-```
-
-## Modelo de Dados (Supabase)
-
-### Tabela: cilindro
-
-```sql
-CREATE TABLE cilindro (
-    id SERIAL PRIMARY KEY,
-    codigo VARCHAR(50) NOT NULL,
-    data_compra DATE NOT NULL,
-    data_inicio_consumo DATE,
-    data_fim DATE,
-    gas_kg DECIMAL(5,2) DEFAULT 1.0,
-    litros_equivalentes DECIMAL(10,2) DEFAULT 956.0,
-    custo DECIMAL(10,2) DEFAULT 290.00,
-    status VARCHAR(20) DEFAULT 'ativo',
-    compartilhado BOOLEAN DEFAULT false,
-    user_id UUID REFERENCES auth.users(id),
-    created_at TIMESTAMP DEFAULT NOW()
-);
-```
-
-### Tabela: elemento
-
-```sql
-CREATE TABLE elemento (
-    id SERIAL PRIMARY KEY,
-    nome VARCHAR(100) NOT NULL,
-    consumo_lpm DECIMAL(5,2) NOT NULL,
-    compartilhado BOOLEAN DEFAULT false,
-    user_id UUID REFERENCES auth.users(id),
-    created_at TIMESTAMP DEFAULT NOW()
-);
-```
-
-### Tabela: amostra
-
-```sql
-CREATE TABLE amostra (
-    id SERIAL PRIMARY KEY,
-    data DATE NOT NULL,
-    tempo_chama VARCHAR(8) NOT NULL,
-    cilindro_id INTEGER REFERENCES cilindro(id),
-    elemento_id INTEGER REFERENCES elemento(id),
-    quantidade_amostras INTEGER DEFAULT 1,
-    compartilhado BOOLEAN DEFAULT false,
-    user_id UUID REFERENCES auth.users(id),
-    created_at TIMESTAMP DEFAULT NOW()
-);
-```
-
-### Tabela: historico_log
-
-```sql
-CREATE TABLE historico_log (
-    id SERIAL PRIMARY KEY,
-    tipo VARCHAR(20) NOT NULL,
-    acao VARCHAR(20) NOT NULL,
-    nome VARCHAR(100) NOT NULL,
-    user_id UUID REFERENCES auth.users(id),
-    created_at TIMESTAMP DEFAULT NOW()
-);
-```
-
-**Nota**: O código usa nomes de tabelas no singular (`cilindro`, `elemento`, `amostra`).
-
 ## Deploy no Railway
 
 ### Configuração
-O projeto utiliza Dockerfile para deploy no Railway.
 
 1. Criar projeto no Railway com o repositório GitHub
-2. O Railway detecta automaticamente o Dockerfile
-3. Adicionar variáveis de ambiente no Railway:
+2. Adicionar variáveis de ambiente no Railway:
    - `SECRET_KEY`: chave secreta para sessões
    - `SUPABASE_URL`: URL do projeto Supabase
    - `SUPABASE_KEY`: chave anônima do Supabase
@@ -265,6 +152,7 @@ O projeto utiliza Dockerfile para deploy no Railway.
 - Data default como hoje no registro de amostras
 - Ordenação alfabética nos seletores de Cilindro/Elemento
 - Remoção de elementos duplicados nos seletores de amostra
+- **Refatoração para Blueprints** - Código organizado por domínio
 
 ### Versão
-- v1.3.0 - Sistema de histórico, filtros aprimorados, correções de bugs
+- v1.4.0 - Refatoração para Blueprints, código modular
