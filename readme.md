@@ -131,8 +131,14 @@ SUPABASE_SERVICE_KEY=sua_service_role_key
 ## Estado Atual
 
 ### Funcionalidades Implementadas
-- **Segurança**: Proteção CSRF, Rate Limiting, Validação de entrada
-- **IDOR**: Verificação de propriedade antes de operações de delete
+- **Segurança v1.5.0**:
+  - Proteção CSRF em todos os formulários
+  - Rate Limiting (5 tentativas/min login, 3 tentativas/min register)
+  - Validação de role e status contra valores permitidos
+  - Verificação de propriedade antes de delete (proteção IDOR)
+  - Session fixation protection (session.clear() após login)
+  - Cliente autenticado para operações RLS
+  - Mensagens de erro amigáveis para login e registro
 - Mensagens de erro amigáveis para duplicatas
 - Sistema de registro de histórico funcionando corretamente
 - Datas formatadas em DD/MM/YYYY

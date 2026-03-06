@@ -293,6 +293,7 @@ python -m venv venv
   - Verificação de propriedade antes de delete (proteção IDOR)
   - Session fixation protection (session.clear() após login)
   - Cliente autenticado para operações RLS
+  - Mensagens de erro amigáveis para login e registro
 - Mensagens de erro amigáveis para duplicatas (código 23505)
 - Sistema de registro de histórico funcionando corretamente
 - Datas formatadas em DD/MM/YYYY por todo o projeto
