@@ -101,11 +101,13 @@ def login():
                 }
 
                 try:
-                    perfil = supabase.table("perfil").select("*").eq("id", response.user.id).execute()
+                    from blueprints.helpers import get_authenticated_client
+                    perfil_client = get_authenticated_client()
+                    perfil = perfil_client.table("perfil").select("*").eq("id", response.user.id).execute()
                     nome = response.user.user_metadata.get("nome", "") if response.user.user_metadata else ""
                     
                     if not perfil.data:
-                        supabase.table("perfil").insert({
+                        get_admin_client().table("perfil").insert({
                             "id": response.user.id,
                             "role": "usuario",
                             "ativo": True,
@@ -168,7 +170,7 @@ def register():
 
             if response.user:
                 try:
-                    supabase.table("perfil").insert({
+                    get_admin_client().table("perfil").insert({
                         "id": response.user.id,
                         "role": "usuario",
                         "ativo": True,
