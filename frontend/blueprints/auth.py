@@ -168,13 +168,21 @@ def register():
         supabase = get_supabase_client()
 
         try:
+            try:
+                existing = supabase.auth.get_user(email)
+                if existing.user:
+                    flash("Este email já está cadastrado.", "danger")
+                    return redirect(url_for("auth.register"))
+            except Exception:
+                pass
+
             response = supabase.auth.sign_up({
                 "email": email,
                 "password": password,
                 "options": {"data": {"nome": nome}},
             })
 
-            if response.user and response.session:
+            if response.user:
                 try:
                     get_admin_client().table("perfil").insert({
                         "id": response.user.id,
@@ -187,9 +195,6 @@ def register():
                     flash(f"Conta criada! Mas erro ao criar perfil: {str(perfil_error)}", "warning")
                     return redirect(url_for("auth.login"))
 
-                flash("Conta criada! Verifique seu email para confirmação.", "success")
-                return redirect(url_for("auth.login"))
-            elif response.user:
                 flash("Conta criada! Verifique seu email para confirmação.", "success")
                 return redirect(url_for("auth.login"))
 
