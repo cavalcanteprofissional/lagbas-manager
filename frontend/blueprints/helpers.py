@@ -19,7 +19,7 @@ def is_admin():
     
     try:
         from utils.supabase_utils import get_supabase_client
-        supabase = get_supabase_client()
+        supabase = get_authenticated_client()
         response = supabase.table("perfil").select("role").eq("id", user_id).execute()
         
         if response.data and len(response.data) > 0:
@@ -38,7 +38,7 @@ def is_user_active(user_id):
     """Verifica se o usuário está ativo"""
     try:
         from utils.supabase_utils import get_supabase_client
-        supabase = get_supabase_client()
+        supabase = get_authenticated_client()
         response = supabase.table("perfil").select("ativo").eq("id", user_id).execute()
         if response.data:
             return response.data[0].get("ativo", True)
@@ -54,13 +54,28 @@ def get_user_role():
         return "usuario"
     try:
         from utils.supabase_utils import get_supabase_client
-        supabase = get_supabase_client()
+        supabase = get_authenticated_client()
         response = supabase.table("perfil").select("role").eq("id", user_id).execute()
         if response.data:
             return response.data[0].get("role", "usuario")
     except Exception as e:
         logger.error(f"get_user_role: erro: {str(e)}")
     return "usuario"
+
+
+def get_user_name():
+    """Retorna o nome do usuário atual"""
+    user_id = get_user_id()
+    if not user_id:
+        return ""
+    try:
+        supabase = get_authenticated_client()
+        response = supabase.table("perfil").select("nome").eq("id", user_id).execute()
+        if response.data:
+            return response.data[0].get("nome", "")
+    except Exception as e:
+        logger.error(f"get_user_name: erro: {str(e)}")
+    return ""
 
 
 def get_authenticated_client():

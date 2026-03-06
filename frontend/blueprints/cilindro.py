@@ -29,6 +29,9 @@ def list():
             custo = request.form.get("custo", "")
             status = request.form.get("status", "ativo")
             
+            if status not in CILINDRO_STATUS:
+                status = "ativo"
+            
             if not codigo or not data_compra:
                 flash("Código e data de compra são obrigatórios", "danger")
                 return redirect(url_for("cilindro.list"))
@@ -98,6 +101,9 @@ def list():
             custo = request.form.get("custo", "")
             status = request.form.get("status", "ativo")
             
+            if status not in CILINDRO_STATUS:
+                status = "ativo"
+            
             if not cilindro_id or not codigo or not data_compra:
                 flash("ID do cilindro, código e data de compra são obrigatórios", "danger")
                 return redirect(url_for("cilindro.list"))
@@ -151,16 +157,25 @@ def list():
             cilindro_id = request.form.get("cilindro_id", "").strip()
             
             if not cilindro_id:
-                abort(400, description="ID do cilindro é obrigatório")
+                flash("ID do cilindro é obrigatório", "danger")
+                return redirect(url_for("cilindro.list"))
             
             try:
+                cilindro_info = get_supabase_client().table("cilindro").select("codigo,user_id").eq("id", cilindro_id).execute().data
+                if not cilindro_info:
+                    flash("Cilindro não encontrado", "danger")
+                    return redirect(url_for("cilindro.list"))
+                
+                if cilindro_info[0].get("user_id") != user_id:
+                    flash("Você não tem permissão para excluir este cilindro.", "danger")
+                    return redirect(url_for("cilindro.list"))
+                
+                cilindro_codigo = cilindro_info[0].get("codigo")
+                
                 amostra_count = get_supabase_client().table("amostra").select("id", count="exact").eq("cilindro_id", cilindro_id).execute()
                 if amostra_count.count and amostra_count.count > 0:
                     flash("Não é possível excluir este cilindro pois existem amostras vinculadas a ele. Exclua primeiro as amostras.", "warning")
                     return redirect(url_for("cilindro.list"))
-                
-                cilindro_info = get_supabase_client().table("cilindro").select("codigo").eq("id", cilindro_id).execute().data
-                cilindro_codigo = cilindro_info[0].get("codigo") if cilindro_info else "N/A"
                 
                 get_admin_client().table("cilindro").delete().eq("id", cilindro_id).execute()
                 
@@ -181,17 +196,24 @@ def list():
             try:
                 deleted_count = 0
                 skipped = []
+                not_owned = []
                 
                 for cilindro_id in cilindro_ids:
                     try:
-                        amostra_count = get_supabase_client().table("amostra").select("id", count="exact").eq("cilindro_id", cilindro_id).execute()
-                        if amostra_count.count and amostra_count.count > 0:
-                            cilindro_info = get_supabase_client().table("cilindro").select("codigo").eq("id", cilindro_id).execute().data
-                            skipped.append(cilindro_info[0].get("codigo") if cilindro_info else cilindro_id)
+                        cilindro_info = get_supabase_client().table("cilindro").select("codigo,user_id").eq("id", cilindro_id).execute().data
+                        if not cilindro_info:
                             continue
                         
-                        cilindro_info = get_supabase_client().table("cilindro").select("codigo").eq("id", cilindro_id).execute().data
-                        cilindro_codigo = cilindro_info[0].get("codigo") if cilindro_info else "N/A"
+                        if cilindro_info[0].get("user_id") != user_id:
+                            not_owned.append(cilindro_info[0].get("codigo", cilindro_id))
+                            continue
+                        
+                        cilindro_codigo = cilindro_info[0].get("codigo")
+                        
+                        amostra_count = get_supabase_client().table("amostra").select("id", count="exact").eq("cilindro_id", cilindro_id).execute()
+                        if amostra_count.count and amostra_count.count > 0:
+                            skipped.append(cilindro_codigo)
+                            continue
                         
                         get_admin_client().table("cilindro").delete().eq("id", cilindro_id).execute()
                         
@@ -204,6 +226,8 @@ def list():
                     flash(f"{deleted_count} cilindro(s) excluído(s) com sucesso!", "success")
                 if skipped:
                     flash(f"Alguns cilindos não puderam ser excluídos (amostras vinculadas): {', '.join(skipped)}", "warning")
+                if not_owned:
+                    flash(f"Alguns cilindos não foram excluídos (não pertencem a você): {', '.join(not_owned)}", "warning")
             except Exception as e:
                 flash(f"Erro ao excluir cilindos: {str(e)}", "danger")
             

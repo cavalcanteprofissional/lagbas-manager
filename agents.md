@@ -286,6 +286,13 @@ python -m venv venv
 ## Estado Atual
 
 ### Funcionalidades Implementadas
+- **Segurança v1.5.0**:
+  - Proteção CSRF em todos os formulários
+  - Rate Limiting (5 tentativas/min login, 3 tentativas/min register)
+  - Validação de role e status contra valores permitidos
+  - Verificação de propriedade antes de delete (proteção IDOR)
+  - Session fixation protection (session.clear() após login)
+  - Cliente autenticado para operações RLS
 - Mensagens de erro amigáveis para duplicatas (código 23505)
 - Sistema de registro de histórico funcionando corretamente
 - Datas formatadas em DD/MM/YYYY por todo o projeto
@@ -316,5 +323,6 @@ python -m venv venv
 - Status de cilindro: ativo, esgotado (removido "em_uso")
 
 ### Versão
+- v1.5.0 - Correções de segurança (CSRF, IDOR, Rate Limiting, RLS)
 - v1.4.1 - Correções de UX e mensagens amigáveis, formatação de datas
 - v1.4.0 - Refatoração para Blueprints, código modular

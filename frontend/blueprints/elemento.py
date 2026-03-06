@@ -90,7 +90,19 @@ def list():
             elemento_id = request.form.get("elemento_id")
             
             if not elemento_id:
-                abort(400, description="ID do elemento é obrigatório")
+                flash("ID do elemento é obrigatório", "danger")
+                return redirect(url_for("elemento.list"))
+            
+            elemento_info = get_supabase_client().table("elemento").select("nome,user_id").eq("id", elemento_id).execute().data
+            if not elemento_info:
+                flash("Elemento não encontrado", "danger")
+                return redirect(url_for("elemento.list"))
+            
+            if elemento_info[0].get("user_id") != user_id:
+                flash("Você não tem permissão para excluir este elemento.", "danger")
+                return redirect(url_for("elemento.list"))
+            
+            elemento_nome = elemento_info[0].get("nome")
             
             amostra_count = get_supabase_client().table("amostra").select("id", count="exact").eq("elemento_id", elemento_id).execute()
             if amostra_count.count and amostra_count.count > 0:
@@ -98,9 +110,6 @@ def list():
                 return redirect(url_for("elemento.list"))
             
             try:
-                elemento_info = get_supabase_client().table("elemento").select("nome").eq("id", elemento_id).execute().data
-                elemento_nome = elemento_info[0].get("nome") if elemento_info else "N/A"
-                
                 get_admin_client().table("elemento").delete().eq("id", elemento_id).execute()
                 
                 registrar_historico("elemento", "excluido", elemento_nome, user_id)
@@ -120,17 +129,24 @@ def list():
             try:
                 deleted_count = 0
                 skipped = []
+                not_owned = []
                 
                 for elemento_id in elemento_ids:
                     try:
-                        amostra_count = get_supabase_client().table("amostra").select("id", count="exact").eq("elemento_id", elemento_id).execute()
-                        if amostra_count.count and amostra_count.count > 0:
-                            elemento_info = get_supabase_client().table("elemento").select("nome").eq("id", elemento_id).execute().data
-                            skipped.append(elemento_info[0].get("nome") if elemento_info else elemento_id)
+                        elemento_info = get_supabase_client().table("elemento").select("nome,user_id").eq("id", elemento_id).execute().data
+                        if not elemento_info:
                             continue
                         
-                        elemento_info = get_supabase_client().table("elemento").select("nome").eq("id", elemento_id).execute().data
-                        elemento_nome = elemento_info[0].get("nome") if elemento_info else "N/A"
+                        if elemento_info[0].get("user_id") != user_id:
+                            not_owned.append(elemento_info[0].get("nome", elemento_id))
+                            continue
+                        
+                        elemento_nome = elemento_info[0].get("nome")
+                        
+                        amostra_count = get_supabase_client().table("amostra").select("id", count="exact").eq("elemento_id", elemento_id).execute()
+                        if amostra_count.count and amostra_count.count > 0:
+                            skipped.append(elemento_nome)
+                            continue
                         
                         get_admin_client().table("elemento").delete().eq("id", elemento_id).execute()
                         
@@ -143,6 +159,8 @@ def list():
                     flash(f"{deleted_count} elemento(s) excluído(s) com sucesso!", "success")
                 if skipped:
                     flash(f"Alguns elementos não puderam ser excluídos (amostras vinculadas): {', '.join(skipped)}", "warning")
+                if not_owned:
+                    flash(f"Alguns elementos não foram excluídos (não pertencem a você): {', '.join(not_owned)}", "warning")
             except Exception as e:
                 flash(f"Erro ao excluir elementos: {str(e)}", "danger")
             

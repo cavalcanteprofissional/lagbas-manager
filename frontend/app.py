@@ -2,13 +2,30 @@ import os
 from datetime import timedelta
 from flask import Flask, render_template, redirect, url_for, session, request, flash
 from flask_login import LoginManager, login_required, current_user
+from flask_wtf import CSRFProtect
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 from dotenv import load_dotenv
 from supabase import create_client, Client
+
+from blueprints.helpers import get_authenticated_client
 
 load_dotenv()
 
 app = Flask(__name__)
-app.secret_key = os.getenv("SECRET_KEY", "dev-secret-key-change-in-production")
+app.secret_key = os.getenv("SECRET_KEY")
+
+if not app.secret_key:
+    raise ValueError("SECRET_KEY é obrigatória para produção")
+
+csrf = CSRFProtect(app)
+
+limiter = Limiter(
+    app=app,
+    key_func=get_remote_address,
+    default_limits=["200 per day", "50 per hour"],
+    storage_uri=os.getenv("REDIS_URL", "memory://")
+)
 
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")
@@ -47,8 +64,8 @@ def add_cors_headers(response):
 
 @app.context_processor
 def inject_user_info():
-    from blueprints.helpers import is_admin, get_user_role
-    return dict(is_admin=is_admin(), user_role=get_user_role())
+    from blueprints.helpers import is_admin, get_user_role, get_user_name
+    return dict(is_admin=is_admin(), user_role=get_user_role(), user_name=get_user_name())
 
 
 @app.template_filter("formatar_data")
@@ -120,11 +137,10 @@ def dashboard():
 @app.route("/perfil", methods=["GET", "POST"])
 @login_required
 def perfil():
-    from blueprints.helpers import get_user_id
-    from utils.supabase_utils import get_supabase_client
+    from blueprints.helpers import get_user_id, get_authenticated_client
     
     user_id = get_user_id()
-    supabase = get_supabase_client()
+    supabase = get_authenticated_client()
 
     perfil_response = supabase.table("perfil").select("*").eq("id", user_id).execute()
     perfil_data = perfil_response.data[0] if perfil_response.data else {}

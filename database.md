@@ -165,6 +165,9 @@ DROP POLICY IF EXISTS "Admins can manage all perfil" ON perfil;
 CREATE POLICY "Users can view own perfil" ON perfil
     FOR SELECT USING (auth.uid() = id);
 
+CREATE POLICY "Users can insert own perfil" ON perfil
+    FOR INSERT WITH CHECK (auth.uid() = id);
+
 CREATE POLICY "Users can update own perfil" ON perfil
     FOR UPDATE USING (auth.uid() = id);
 

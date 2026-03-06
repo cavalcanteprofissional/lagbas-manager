@@ -6,24 +6,29 @@ SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 SUPABASE_SERVICE_KEY = os.getenv("SUPABASE_SERVICE_KEY")
 
-_supabase_client = None
-_admin_client = None
-
 
 def get_supabase_client():
-    """Retorna cliente Supabase常规 (anon key)."""
-    global _supabase_client
-    if _supabase_client is None:
-        _supabase_client = create_client(SUPABASE_URL, SUPABASE_KEY)
-    return _supabase_client
+    """Retorna cliente Supabase (anon key) usando Flask g para thread safety."""
+    from flask import has_request_context, g, current_app
+    
+    if not has_request_context():
+        return create_client(SUPABASE_URL, SUPABASE_KEY)
+    
+    if not hasattr(g, '_supabase_client'):
+        g._supabase_client = create_client(SUPABASE_URL, SUPABASE_KEY)
+    return g._supabase_client
 
 
 def get_admin_client():
-    """Retorna cliente Supabase com service_role (bypass RLS)."""
-    global _admin_client
-    if _admin_client is None:
-        _admin_client = create_client(SUPABASE_URL, SUPABASE_SERVICE_KEY)
-    return _admin_client
+    """Retorna cliente Supabase com service_role (bypass RLS) usando Flask g."""
+    from flask import has_request_context, g, current_app
+    
+    if not has_request_context():
+        return create_client(SUPABASE_URL, SUPABASE_SERVICE_KEY)
+    
+    if not hasattr(g, '_admin_client'):
+        g._admin_client = create_client(SUPABASE_URL, SUPABASE_SERVICE_KEY)
+    return g._admin_client
 
 
 def buscar_perfis_usuarios(user_ids):

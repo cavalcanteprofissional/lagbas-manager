@@ -14,6 +14,7 @@
     <div class="collapse" id="formAmostra">
         <div class="card-body">
             <form method="POST" id="createForm">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <input type="hidden" name="action" value="create">
                 <div class="row g-2">
                     <div class="col-12 col-md-6 col-lg-3">
@@ -137,6 +138,7 @@
                                     <i class="bi bi-pencil"></i>
                                 </button>
                                 <form method="POST" style="display:inline;" id="deleteForm{{ a.id }}">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                     <input type="hidden" name="action" value="delete">
                                     <input type="hidden" name="amostra_id" value="{{ a.id }}">
                                 </form>
@@ -150,6 +152,7 @@
                         <div class="modal-dialog modal-dialog-centered">
                             <div class="modal-content">
                                 <form method="POST" onsubmit="return updateAmostra(event, {{ a.id }})">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                     <input type="hidden" name="action" value="update">
                                     <input type="hidden" name="amostra_id" value="{{ a.id }}">
                                     <div class="modal-header">
@@ -213,6 +216,7 @@
     
     {% if total and total > 0 %}
     <form method="POST" id="bulkDeleteForm">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <input type="hidden" name="action" value="delete_multiple">
         <div class="card-footer">
             <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">

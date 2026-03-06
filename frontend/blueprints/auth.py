@@ -4,11 +4,29 @@ from flask_login import login_user, logout_user, current_user
 from datetime import timedelta
 import jwt
 import logging
+import time
 
 from utils.supabase_utils import get_supabase_client, get_admin_client
 
 auth_bp = Blueprint('auth', __name__)
 logger = logging.getLogger(__name__)
+
+_rate_limit_storage = {}
+
+
+def check_rate_limit(key, limit=5, window=60):
+    """Simple rate limiting check"""
+    now = time.time()
+    if key not in _rate_limit_storage:
+        _rate_limit_storage[key] = []
+    
+    _rate_limit_storage[key] = [t for t in _rate_limit_storage[key] if now - t < window]
+    
+    if len(_rate_limit_storage[key]) >= limit:
+        return False
+    
+    _rate_limit_storage[key].append(now)
+    return True
 
 
 class User:
@@ -46,6 +64,11 @@ def login():
         return redirect(url_for("dashboard"))
 
     if request.method == "POST":
+        client_ip = request.remote_addr
+        if not check_rate_limit(f"login:{client_ip}", limit=5, window=60):
+            flash("Muitas tentativas de login. Tente novamente em 1 minuto.", "danger")
+            return redirect(url_for("auth.login"))
+        
         email = request.form.get("email")
         password = request.form.get("password")
 
@@ -64,7 +87,9 @@ def login():
             if response.user:
                 from flask import current_app
                 secret_key = current_app.secret_key
-
+                
+                session.clear()
+                
                 session["user_id"] = response.user.id
                 session["supabase_token"] = response.session.access_token
                 session["jwt_token"] = generate_jwt_token(response.user.id, secret_key)
@@ -110,6 +135,11 @@ def register():
         return redirect(url_for("dashboard"))
 
     if request.method == "POST":
+        client_ip = request.remote_addr
+        if not check_rate_limit(f"register:{client_ip}", limit=3, window=60):
+            flash("Muitas tentativas de registro. Tente novamente em 1 minuto.", "danger")
+            return redirect(url_for("auth.register"))
+        
         email = request.form.get("email")
         password = request.form.get("password")
         confirm_password = request.form.get("confirm_password")

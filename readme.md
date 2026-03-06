@@ -1,15 +1,16 @@
 # LabGas Manager
 
-**Versão: 1.4.1**
+**Versão: 1.5.0**
 
 Dashboard para gestão de cilindro de gás e elementos analisados em laboratório de química, utilizando **Flask** com **Jinja2** para o frontend e **Supabase** como banco de dados.
 
-## Novidades v1.4.1
+## Novidades v1.5.0
 
-- **Mensagens de erro amigáveis**: Erros de chave duplicada agora exibem mensagens claras
-- **Correção no histórico**: Registro de atividades agora funciona corretamente
-- **Formatação de datas**: Datas padronizadas para DD/MM/YYYY
-- **Correção de exclusão**: Exclusão de cilindro/elemento com amostras vinculadas com mensagem clara
+- **Correções de Segurança**: Implementadas proteções contra vulnerabilidades
+- **Proteção CSRF**: Tokens em todos os formulários
+- **Rate Limiting**: Limite de tentativas em login/register
+- **Validação de Entrada**: Role e status validados contra valores permitidos
+- **Correção RLS**: Cliente autenticado para operações de perfil
 
 ## Arquitetura do Sistema
 
@@ -130,9 +131,11 @@ SUPABASE_SERVICE_KEY=sua_service_role_key
 ## Estado Atual
 
 ### Funcionalidades Implementadas
+- **Segurança**: Proteção CSRF, Rate Limiting, Validação de entrada
+- **IDOR**: Verificação de propriedade antes de operações de delete
 - Mensagens de erro amigáveis para duplicatas
 - Sistema de registro de histórico funcionando corretamente
-- Dates formatadas em DD/MM/YYYY
+- Datas formatadas em DD/MM/YYYY
 - Sistema de admin com todas as funcionalidades operacionais
 - Sistema de registro de histórico de atividades
 - Painel admin lista todos os usuários cadastrados
@@ -156,7 +159,9 @@ SUPABASE_SERVICE_KEY=sua_service_role_key
 - Remoção de elementos duplicados nos seletores de amostra
 - **Refatoração para Blueprints** - Código organizado por domínio
 - Multi-select com checkbox para exclusão em massa
+- Status de cilindro: ativo, esgotado
 
 ### Versão
+- v1.5.0 - Correções de segurança (CSRF, IDOR, Rate Limiting)
 - v1.4.1 - Correções de UX e mensagens amigáveis
 - v1.4.0 - Refatoração para Blueprints, código modular

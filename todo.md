@@ -1,6 +1,58 @@
-# Tarefas Pendentes
+# Tarefas de Segurança - LabGas Manager
+
+## Fase 1 - CRÍTICO (Implementação Imediata) ✅ CONCLUÍDO
+
+### 1.1 IDOR em Operações de Delete
+- [x] Adicionar verificação de propriedade antes de excluir em cilindro.py
+- [x] Adicionar verificação de propriedade antes de excluir em elemento.py  
+- [x] Adicionar verificação de propriedade antes de excluir em amostra.py
+
+### 1.2 Ausência de Proteção CSRF
+- [x] Instalar flask-wtf
+- [x] Configurar CSRFProtect em app.py
+- [x] Adicionar token CSRF em todos os formulários (templates)
+
+### 1.3 Secret Key Fallback
+- [x] Remover fallback de secret_key em app.py
+- [x] Adicionar validação obrigatória da variável de ambiente
+
+---
+
+## Fase 2 - HIGH (Curto Prazo) ✅ CONCLUÍDO
+
+### 2.1 Rate Limiting
+- [x] Adicionar flask-limiter ao requirements.txt
+- [x] Configurar limite de tentativas em /login (5 por minuto)
+- [x] Configurar limite em /register (3 por minuto)
+
+---
+
+## Fase 3 - MEDIUM (Médio Prazo) ✅ CONCLUÍDO
+
+### 3.1 Validação de Role
+- [x] Validar role contra valores permitidos em admin.py
+
+### 3.2 Validação de Status
+- [x] Validar status contra CILINDRO_STATUS em cilindro.py
+
+### 3.3 Padrão Singleton de Clientes
+- [x] Refatorar supabase_utils.py para usar Flask g object
+
+---
+
+## Fase 4 - LOW (Melhorias Contínuas) ✅ CONCLUÍDO
+
+### 4.1 Logging
+- [x] Revisar logs para remover dados sensíveis
+
+### 4.2 Session Fixation
+- [x] Implementar regeneração de session ID após login
+
+---
 
 ## Projeto Concluído ✅
+
+> As tarefas de segurança acima estão em andamento. Abaixo está o histórico do projeto.
 
 ### 2026-03-05 - Refatoração para Blueprints
 
@@ -49,6 +101,14 @@ frontend/
 ---
 
 ## Histórico de Correções
+
+### 2026-03-06
+- Mensagens de erro amigáveis para duplicatas (código 23505)
+- Registro no histórico corrigido (agora usa admin_client)
+- Adiciona filtro Jinja2 formatar_data para DD/MM/YYYY
+- Corrige mensagem ao excluir cilindro/elemento com amostras vinculadas
+- Análise de segurança completa identificando 11 vulnerabilidades
+- Removido status 'em_uso' do cilindro
 
 ### 2026-03-05
 - Refatoração completa para Blueprints

@@ -6,7 +6,7 @@ LITROS_EQUIVALENTES_KG = 956.0
 GAS_KG_DEFAULT = 1.0
 CUSTO_DEFAULT = 290.00
 
-CILINDRO_STATUS = ["ativo", "em_uso", "esgotado"]
+CILINDRO_STATUS = ["ativo", "esgotado"]
 
 ELEMENTOS_PADRAO = [
     {"nome": "Antimônio", "consumo_lpm": 1.5},

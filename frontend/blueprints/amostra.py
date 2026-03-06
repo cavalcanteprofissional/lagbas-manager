@@ -133,15 +133,23 @@ def list():
             amostra_id = request.form.get("amostra_id")
             
             if not amostra_id:
-                abort(400, description="ID da amostra é obrigatório")
+                flash("ID da amostra é obrigatório", "danger")
+                return redirect(url_for("amostra.list"))
             
             try:
-                amostra_info = get_supabase_client().table("amostra").select("cilindro_id,elemento_id").eq("id", amostra_id).execute().data
+                amostra_info = get_supabase_client().table("amostra").select("cilindro_id,elemento_id,user_id").eq("id", amostra_id).execute().data
+                if not amostra_info:
+                    flash("Amostra não encontrada", "danger")
+                    return redirect(url_for("amostra.list"))
+                
+                if amostra_info[0].get("user_id") != user_id:
+                    flash("Você não tem permissão para excluir esta amostra.", "danger")
+                    return redirect(url_for("amostra.list"))
+                
                 nome_amostra = "N/A"
-                if amostra_info:
-                    cilindro_nome = get_supabase_client().table("cilindro").select("codigo").eq("id", amostra_info[0]["cilindro_id"]).execute().data
-                    elemento_nome = get_supabase_client().table("elemento").select("nome").eq("id", amostra_info[0]["elemento_id"]).execute().data
-                    nome_amostra = f"{cilindro_nome[0]['codigo'] if cilindro_nome else 'N/A'} - {elemento_nome[0]['nome'] if elemento_nome else 'N/A'}"
+                cilindro_nome = get_supabase_client().table("cilindro").select("codigo").eq("id", amostra_info[0]["cilindro_id"]).execute().data
+                elemento_nome = get_supabase_client().table("elemento").select("nome").eq("id", amostra_info[0]["elemento_id"]).execute().data
+                nome_amostra = f"{cilindro_nome[0]['codigo'] if cilindro_nome else 'N/A'} - {elemento_nome[0]['nome'] if elemento_nome else 'N/A'}"
                 
                 get_admin_client().table("amostra").delete().eq("id", amostra_id).execute()
                 
@@ -161,15 +169,22 @@ def list():
             
             try:
                 deleted_count = 0
+                not_owned = []
                 
                 for amostra_id in amostra_ids:
                     try:
-                        amostra_info = get_supabase_client().table("amostra").select("cilindro_id,elemento_id").eq("id", amostra_id).execute().data
+                        amostra_info = get_supabase_client().table("amostra").select("cilindro_id,elemento_id,user_id").eq("id", amostra_id).execute().data
+                        if not amostra_info:
+                            continue
+                        
+                        if amostra_info[0].get("user_id") != user_id:
+                            not_owned.append(amostra_id)
+                            continue
+                        
                         nome_amostra = "N/A"
-                        if amostra_info:
-                            cilindro_nome = get_supabase_client().table("cilindro").select("codigo").eq("id", amostra_info[0]["cilindro_id"]).execute().data
-                            elemento_nome = get_supabase_client().table("elemento").select("nome").eq("id", amostra_info[0]["elemento_id"]).execute().data
-                            nome_amostra = f"{cilindro_nome[0]['codigo'] if cilindro_nome else 'N/A'} - {elemento_nome[0]['nome'] if elemento_nome else 'N/A'}"
+                        cilindro_nome = get_supabase_client().table("cilindro").select("codigo").eq("id", amostra_info[0]["cilindro_id"]).execute().data
+                        elemento_nome = get_supabase_client().table("elemento").select("nome").eq("id", amostra_info[0]["elemento_id"]).execute().data
+                        nome_amostra = f"{cilindro_nome[0]['codigo'] if cilindro_nome else 'N/A'} - {elemento_nome[0]['nome'] if elemento_nome else 'N/A'}"
                         
                         get_admin_client().table("amostra").delete().eq("id", amostra_id).execute()
                         
@@ -178,7 +193,10 @@ def list():
                     except Exception:
                         continue
                 
-                flash(f"{deleted_count} amostra(s) excluída(s) com sucesso!", "success")
+                if deleted_count > 0:
+                    flash(f"{deleted_count} amostra(s) excluída(s) com sucesso!", "success")
+                if not_owned:
+                    flash(f"{len(not_owned)} amostra(s) não foram excluídas (não pertencem a você)", "warning")
             except Exception as e:
                 flash(f"Erro ao excluir amostras: {str(e)}", "danger")
             

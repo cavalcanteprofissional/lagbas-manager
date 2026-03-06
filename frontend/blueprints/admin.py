@@ -96,6 +96,10 @@ def set_role():
     target_user_id = request.form.get("user_id")
     role = request.form.get("role")
     
+    if role not in ["admin", "usuario"]:
+        flash("Função inválida.", "danger")
+        return redirect(url_for("admin.panel"))
+    
     if target_user_id == get_user_id():
         flash("Você não pode alterar sua própria função.", "warning")
         return redirect(url_for("admin.panel"))
