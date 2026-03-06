@@ -92,7 +92,7 @@
                     <div class="list-group-item d-flex justify-content-between align-items-center">
                         <div>
                             <strong>{{ c.codigo }}</strong>
-                            <small class="d-block text-muted">{{ c.data_compra }}</small>
+                            <small class="d-block text-muted">{{ c.data_compra|formatar_data }}</small>
                         </div>
                         <span class="badge bg-{{ 'success' if c.status == 'ativo' else 'primary' if c.status == 'em_uso' else 'danger' }}">
                             {{ c.status|title }}
@@ -152,7 +152,7 @@
                             <strong>{{ a.cilindro_nome or a.cilindro_id }}</strong>
                             <small class="d-block text-muted">{{ a.elemento_nome or a.elemento_id }}</small>
                         </div>
-                        <small class="text-muted">{{ a.data }}</small>
+                        <small class="text-muted">{{ a.data|formatar_data if a.data else '-' }}</small>
                     </div>
                     {% endfor %}
                 </div>

@@ -51,6 +51,22 @@ def inject_user_info():
     return dict(is_admin=is_admin(), user_role=get_user_role())
 
 
+@app.template_filter("formatar_data")
+def formatar_data(data):
+    if not data:
+        return "-"
+    if isinstance(data, str):
+        if "T" in data:
+            data = data.split("T")[0]
+        try:
+            from datetime import datetime
+            dt = datetime.strptime(data, "%Y-%m-%d")
+            return dt.strftime("%d/%m/%Y")
+        except ValueError:
+            return data
+    return data
+
+
 @app.route("/")
 def index():
     if current_user.is_authenticated:

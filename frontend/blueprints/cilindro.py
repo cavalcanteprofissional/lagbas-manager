@@ -1,7 +1,7 @@
 # Cilindro blueprint - CRUD operations
 import re
 from datetime import datetime
-from flask import Blueprint, render_template, request, redirect, url_for, flash
+from flask import Blueprint, render_template, request, redirect, url_for, flash, abort
 
 from utils.supabase_utils import get_supabase_client, get_admin_client
 from utils.validators import safe_float
@@ -54,7 +54,7 @@ def list():
             
             if not admin:
                 try:
-                    existing = get_supabase_client().table("cilindro").select("id").eq("user_id", user_id).eq("codigo", codigo).execute()
+                    existing = get_admin_client().table("cilindro").select("id").eq("user_id", user_id).eq("codigo", codigo).execute()
                     if existing.data:
                         flash("Código já existe para este usuário", "danger")
                         return redirect(url_for("cilindro.list"))
@@ -82,7 +82,11 @@ def list():
                 registrar_historico("cilindro", "criado", codigo, user_id)
                 flash("Cilindro criado com sucesso!", "success")
             except Exception as e:
-                flash(f"Erro ao criar cilindro: {str(e)}", "danger")
+                error_str = str(e)
+                if "23505" in error_str or "duplicate key" in error_str.lower():
+                    flash("Código já existe. Por favor, utilize outro código.", "danger")
+                else:
+                    flash(f"Erro ao criar cilindro: {error_str}", "danger")
             
         elif action == "update":
             cilindro_id = request.form.get("cilindro_id", "").strip()
@@ -113,7 +117,7 @@ def list():
             
             try:
                 if not admin:
-                    existing = get_supabase_client().table("cilindro").select("id").eq("user_id", user_id).eq("codigo", codigo).neq("id", cilindro_id).execute()
+                    existing = get_admin_client().table("cilindro").select("id").eq("user_id", user_id).eq("codigo", codigo).neq("id", cilindro_id).execute()
                     if existing.data:
                         flash("Código já existe para este usuário", "danger")
                         return redirect(url_for("cilindro.list"))
@@ -147,27 +151,63 @@ def list():
             cilindro_id = request.form.get("cilindro_id", "").strip()
             
             if not cilindro_id:
-                flash("ID do cilindro é obrigatório", "danger")
-                return redirect(url_for("cilindro.list"))
+                abort(400, description="ID do cilindro é obrigatório")
             
             try:
                 amostra_count = get_supabase_client().table("amostra").select("id", count="exact").eq("cilindro_id", cilindro_id).execute()
                 if amostra_count.count and amostra_count.count > 0:
-                    flash("Não é possível excluir este cilindro pois existem amostras vinculadas a ele", "danger")
+                    flash("Não é possível excluir este cilindro pois existem amostras vinculadas a ele. Exclua primeiro as amostras.", "warning")
                     return redirect(url_for("cilindro.list"))
                 
                 cilindro_info = get_supabase_client().table("cilindro").select("codigo").eq("id", cilindro_id).execute().data
                 cilindro_codigo = cilindro_info[0].get("codigo") if cilindro_info else "N/A"
                 
-                if not admin:
-                    get_supabase_client().table("cilindro").delete().eq("id", cilindro_id).eq("user_id", user_id).execute()
-                else:
-                    get_supabase_client().table("cilindro").delete().eq("id", cilindro_id).execute()
+                get_admin_client().table("cilindro").delete().eq("id", cilindro_id).execute()
                 
                 registrar_historico("cilindro", "excluido", cilindro_codigo, user_id)
                 flash("Cilindro excluído com sucesso!", "success")
             except Exception as e:
                 flash(f"Erro ao excluir cilindro: {str(e)}", "danger")
+            
+            return redirect(url_for("cilindro.list"))
+        
+        elif action == "delete_multiple":
+            cilindro_ids = request.form.getlist("cilindro_ids")
+            
+            if not cilindro_ids:
+                flash("Nenhum cilindro selecionado", "danger")
+                return redirect(url_for("cilindro.list"))
+            
+            try:
+                deleted_count = 0
+                skipped = []
+                
+                for cilindro_id in cilindro_ids:
+                    try:
+                        amostra_count = get_supabase_client().table("amostra").select("id", count="exact").eq("cilindro_id", cilindro_id).execute()
+                        if amostra_count.count and amostra_count.count > 0:
+                            cilindro_info = get_supabase_client().table("cilindro").select("codigo").eq("id", cilindro_id).execute().data
+                            skipped.append(cilindro_info[0].get("codigo") if cilindro_info else cilindro_id)
+                            continue
+                        
+                        cilindro_info = get_supabase_client().table("cilindro").select("codigo").eq("id", cilindro_id).execute().data
+                        cilindro_codigo = cilindro_info[0].get("codigo") if cilindro_info else "N/A"
+                        
+                        get_admin_client().table("cilindro").delete().eq("id", cilindro_id).execute()
+                        
+                        registrar_historico("cilindro", "excluido", cilindro_codigo, user_id)
+                        deleted_count += 1
+                    except Exception:
+                        continue
+                
+                if deleted_count > 0:
+                    flash(f"{deleted_count} cilindro(s) excluído(s) com sucesso!", "success")
+                if skipped:
+                    flash(f"Alguns cilindos não puderam ser excluídos (amostras vinculadas): {', '.join(skipped)}", "warning")
+            except Exception as e:
+                flash(f"Erro ao excluir cilindos: {str(e)}", "danger")
+            
+            return redirect(url_for("cilindro.list"))
     
     response = get_supabase_client().table("cilindro").select("*").order("created_at", desc=True).execute()
     cilindro = response.data or []
@@ -180,6 +220,8 @@ def list():
     cilindro = paginated_data
     
     pages = (total + per_page - 1) // per_page
+    end = min(page * per_page, total)
+    max_pages = min(pages, 10)
         
     return render_template(
         "cilindro.html", 
@@ -187,6 +229,8 @@ def list():
         status_options=CILINDRO_STATUS,
         page=page,
         per_page=per_page,
-        total=total if 'pages' in locals() else None,
-        pages=pages if 'pages' in locals() else None
+        total=total,
+        pages=pages,
+        end=end,
+        max_pages=max_pages
     )

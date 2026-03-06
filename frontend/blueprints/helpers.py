@@ -82,9 +82,9 @@ def get_admin_client():
 
 def registrar_historico(tipo, acao, nome, user_id):
     """Registra uma ação no histórico"""
-    from utils.supabase_utils import get_supabase_client
+    from utils.supabase_utils import get_admin_client
     try:
-        client = get_supabase_client()
+        client = get_admin_client()
         client.table("historico_log").insert({
             "tipo": tipo,
             "acao": acao,

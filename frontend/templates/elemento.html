@@ -13,7 +13,7 @@
     </div>
     <div class="collapse" id="formElemento">
         <div class="card-body">
-            <form method="POST">
+            <form method="POST" id="createForm">
                 <input type="hidden" name="action" value="create">
                 <div class="row g-2">
                     <div class="col-12 col-md-6">
@@ -54,6 +54,7 @@
             <table class="table table-hover mb-0">
                 <thead class="table-light">
                     <tr>
+                        <th style="width: 40px;"><input type="checkbox" id="selectAll"></th>
                         <th>Nome</th>
                         <th>Consumo (L/min)</th>
                         <th>Ações</th>
@@ -62,6 +63,7 @@
                 <tbody>
                     {% for e in elementos %}
                     <tr>
+                        <td><input type="checkbox" name="elemento_ids" value="{{ e.id }}" class="item-checkbox"></td>
                         <td><strong>{{ e.nome }}</strong></td>
                         <td><span class="badge bg-info">{{ "%.2f"|format(e.consumo_lpm) }}</span></td>
                         <td>
@@ -69,20 +71,20 @@
                                 <button class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#editModal{{ e.id }}">
                                     <i class="bi bi-pencil"></i>
                                 </button>
-                                <form method="POST" style="display:inline;">
+                                <form method="POST" style="display:inline;" id="deleteForm{{ e.id }}">
                                     <input type="hidden" name="action" value="delete">
                                     <input type="hidden" name="elemento_id" value="{{ e.id }}">
-                                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Excluir?')">
-                                        <i class="bi bi-trash"></i>
-                                    </button>
                                 </form>
+                                <button type="submit" form="deleteForm{{ e.id }}" class="btn btn-sm btn-danger" onclick="return confirm('Excluir elemento {{ e.nome }}?')">
+                                    <i class="bi bi-trash"></i>
+                                </button>
                             </div>
                         </td>
                     </tr>
                     <div class="modal fade" id="editModal{{ e.id }}" tabindex="-1">
                         <div class="modal-dialog modal-dialog-centered">
                             <div class="modal-content">
-                                <form method="POST">
+                                <form method="POST" onsubmit="return updateElemento(event, {{ e.id }})">
                                     <input type="hidden" name="action" value="update">
                                     <input type="hidden" name="elemento_id" value="{{ e.id }}">
                                     <div class="modal-header">
@@ -117,6 +119,47 @@
         </div>
         {% endif %}
     </div>
+    
+    {% if total and total > 0 %}
+    <form method="POST" id="bulkDeleteForm">
+        <input type="hidden" name="action" value="delete_multiple">
+        <div class="card-footer">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+                <div class="text-muted">
+                    Mostrando {{ (page-1)*per_page + 1 }}-{{ end }} de {{ total }}
+                </div>
+                <nav>
+                    <ul class="pagination mb-0">
+                        <li class="page-item {{ 'disabled' if page == 1 }}"><a class="page-link" href="?page={{ page-1 }}&per_page={{ per_page }}">Anterior</a></li>
+                        {% for p in range(1, max_pages + 1) %}
+                        <li class="page-item {{ 'active' if p == page }}"><a class="page-link" href="?page={{ p }}&per_page={{ per_page }}">{{ p }}</a></li>
+                        {% endfor %}
+                        {% if pages > 10 %}
+                        <li class="page-item disabled"><span class="page-link">...</span></li>
+                        <li class="page-item {{ 'active' if page == pages }}"><a class="page-link" href="?page={{ pages }}&per_page={{ per_page }}">{{ pages }}</a></li>
+                        {% endif %}
+                        <li class="page-item {{ 'disabled' if page == pages }}"><a class="page-link" href="?page={{ page+1 }}&per_page={{ per_page }}">Próxima</a></li>
+                    </ul>
+                </nav>
+                <select class="form-select form-select-sm" style="width: auto;" onchange="window.location.href='?page=1&per_page='+this.value">
+                    <option value="10" {{ 'selected' if per_page == 10 }}>10 por página</option>
+                    <option value="25" {{ 'selected' if per_page == 25 }}>25 por página</option>
+                    <option value="50" {{ 'selected' if per_page == 50 }}>50 por página</option>
+                    <option value="100" {{ 'selected' if per_page == 100 }}>100 por página</option>
+                </select>
+            </div>
+        </div>
+    </form>
+    {% endif %}
+</div>
+
+<div id="selectedActions" class="position-fixed bottom-0 start-50 translate-middle-x mb-4 shadow-lg d-none" style="z-index: 1050;">
+    <div class="alert alert-warning mb-0 py-2 px-4 rounded-pill shadow">
+        <span id="selectedCount" class="me-3 fw-bold">0</span>selecionado(s)
+        <button type="submit" form="bulkDeleteForm" class="btn btn-danger btn-sm ms-3" onclick="return confirm('Excluir itens selecionados?')">
+            <i class="bi bi-trash"></i> Excluir
+        </button>
+    </div>
 </div>
 
 <script>
@@ -125,7 +168,7 @@ function filterElemento() {
     
     const rows = document.querySelectorAll('tbody tr');
     rows.forEach(row => {
-        const nome = row.cells[0].textContent.toLowerCase();
+        const nome = row.cells[1].textContent.toLowerCase();
         
         let show = true;
         if (search && !nome.includes(search)) show = false;
@@ -135,5 +178,39 @@ function filterElemento() {
 }
 
 document.getElementById('searchElemento').addEventListener('keyup', filterElemento);
+
+document.getElementById('selectAll').addEventListener('change', function() {
+    const checkboxes = document.querySelectorAll('.item-checkbox');
+    checkboxes.forEach(cb => cb.checked = this.checked);
+    updateSelectedCount();
+});
+
+document.querySelectorAll('.item-checkbox').forEach(cb => {
+    cb.addEventListener('change', updateSelectedCount);
+});
+
+function updateSelectedCount() {
+    const count = document.querySelectorAll('.item-checkbox:checked').length;
+    const div = document.getElementById('selectedActions');
+    document.getElementById('selectedCount').textContent = count;
+    div.classList.toggle('d-none', count === 0);
+}
+
+document.getElementById('bulkDeleteForm').addEventListener('submit', function(e) {
+    const checkboxes = document.querySelectorAll('.item-checkbox:checked');
+    if (checkboxes.length === 0) {
+        e.preventDefault();
+        alert('Nenhum item selecionado');
+        return;
+    }
+    
+    checkboxes.forEach(cb => {
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'elemento_ids';
+        input.value = cb.value;
+        this.appendChild(input);
+    });
+});
 </script>
 {% endblock %}

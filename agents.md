@@ -286,13 +286,17 @@ python -m venv venv
 ## Estado Atual
 
 ### Funcionalidades Implementadas
+- Mensagens de erro amigáveis para duplicatas (código 23505)
+- Sistema de registro de histórico funcionando corretamente
+- Datas formatadas em DD/MM/YYYY por todo o projeto
+- Exclusão com mensagem clara quando há amostras vinculadas
 - Sistema de admin com todas as funcionalidades operacionais
 - Sistema de registro de histórico de atividades
 - Painel admin lista todos os usuários cadastrados
 - Perfil de usuário mostra role corretamente
 - Nome e email armazenados na tabela perfil
 - Sistema de segurança com JWT validation
-- Paginação em todas as listas (10 itens por página)
+- Paginação em todas as listas (10/25/50/100 itens por página)
 - Otimização de consultas (separação dados próprios vs compartilhados)
 - Sistema de cache (5 minutos)
 - Filtros em listas de cilindro, elemento e amostra
@@ -308,6 +312,9 @@ python -m venv venv
 - Ordenação alfabética nos seletores de Cilindro/Elemento
 - Remoção de elementos duplicados nos seletores de amostra
 - **Refatoração para Blueprints** - Código organizado por domínio
+- Multi-select com checkbox para exclusão em massa
+- Status de cilindro: ativo, esgotado (removido "em_uso")
 
 ### Versão
+- v1.4.1 - Correções de UX e mensagens amigáveis, formatação de datas
 - v1.4.0 - Refatoração para Blueprints, código modular

@@ -1,5 +1,5 @@
 # Amostra blueprint - CRUD operations
-from flask import Blueprint, render_template, request, redirect, url_for, flash
+from flask import Blueprint, render_template, request, redirect, url_for, flash, abort
 
 from utils.supabase_utils import get_supabase_client, get_admin_client
 from utils.validators import safe_int, formatar_tempo_chama
@@ -72,13 +72,20 @@ def list():
             else:
                 client = get_supabase_client()
             
-            client.table("amostra").insert(data).execute()
-            
-            cilindro_nome = get_supabase_client().table("cilindro").select("codigo").eq("id", cilindro_id).execute().data
-            elemento_nome = get_supabase_client().table("elemento").select("nome").eq("id", elemento_id).execute().data
-            nome_amostra = f"{cilindro_nome[0]['codigo'] if cilindro_nome else 'N/A'} - {elemento_nome[0]['nome'] if elemento_nome else 'N/A'}"
-            registrar_historico("amostra", "criado", nome_amostra, user_id)
-            flash("Amostra criada com sucesso!", "success")
+            try:
+                client.table("amostra").insert(data).execute()
+                
+                cilindro_nome = get_supabase_client().table("cilindro").select("codigo").eq("id", cilindro_id).execute().data
+                elemento_nome = get_supabase_client().table("elemento").select("nome").eq("id", elemento_id).execute().data
+                nome_amostra = f"{cilindro_nome[0]['codigo'] if cilindro_nome else 'N/A'} - {elemento_nome[0]['nome'] if elemento_nome else 'N/A'}"
+                registrar_historico("amostra", "criado", nome_amostra, user_id)
+                flash("Amostra criada com sucesso!", "success")
+            except Exception as e:
+                error_str = str(e)
+                if "23505" in error_str or "duplicate key" in error_str.lower():
+                    flash("Amostra duplicada. Os dados informados já existem.", "danger")
+                else:
+                    flash(f"Erro ao criar amostra: {error_str}", "danger")
             
         elif action == "update":
             amostra_id = request.form.get("amostra_id")
@@ -126,8 +133,7 @@ def list():
             amostra_id = request.form.get("amostra_id")
             
             if not amostra_id:
-                flash("ID da amostra é obrigatório", "danger")
-                return redirect(url_for("amostra.list"))
+                abort(400, description="ID da amostra é obrigatório")
             
             try:
                 amostra_info = get_supabase_client().table("amostra").select("cilindro_id,elemento_id").eq("id", amostra_id).execute().data
@@ -137,15 +143,46 @@ def list():
                     elemento_nome = get_supabase_client().table("elemento").select("nome").eq("id", amostra_info[0]["elemento_id"]).execute().data
                     nome_amostra = f"{cilindro_nome[0]['codigo'] if cilindro_nome else 'N/A'} - {elemento_nome[0]['nome'] if elemento_nome else 'N/A'}"
                 
-                if not admin:
-                    get_supabase_client().table("amostra").delete().eq("id", amostra_id).eq("user_id", user_id).execute()
-                else:
-                    get_supabase_client().table("amostra").delete().eq("id", amostra_id).execute()
+                get_admin_client().table("amostra").delete().eq("id", amostra_id).execute()
                 
                 registrar_historico("amostra", "excluido", nome_amostra, user_id)
                 flash("Amostra excluída com sucesso!", "success")
             except Exception as e:
                 flash(f"Erro ao excluir amostra: {str(e)}", "danger")
+            
+            return redirect(url_for("amostra.list"))
+        
+        elif action == "delete_multiple":
+            amostra_ids = request.form.getlist("amostra_ids")
+            
+            if not amostra_ids:
+                flash("Nenhuma amostra selecionada", "danger")
+                return redirect(url_for("amostra.list"))
+            
+            try:
+                deleted_count = 0
+                
+                for amostra_id in amostra_ids:
+                    try:
+                        amostra_info = get_supabase_client().table("amostra").select("cilindro_id,elemento_id").eq("id", amostra_id).execute().data
+                        nome_amostra = "N/A"
+                        if amostra_info:
+                            cilindro_nome = get_supabase_client().table("cilindro").select("codigo").eq("id", amostra_info[0]["cilindro_id"]).execute().data
+                            elemento_nome = get_supabase_client().table("elemento").select("nome").eq("id", amostra_info[0]["elemento_id"]).execute().data
+                            nome_amostra = f"{cilindro_nome[0]['codigo'] if cilindro_nome else 'N/A'} - {elemento_nome[0]['nome'] if elemento_nome else 'N/A'}"
+                        
+                        get_admin_client().table("amostra").delete().eq("id", amostra_id).execute()
+                        
+                        registrar_historico("amostra", "excluido", nome_amostra, user_id)
+                        deleted_count += 1
+                    except Exception:
+                        continue
+                
+                flash(f"{deleted_count} amostra(s) excluída(s) com sucesso!", "success")
+            except Exception as e:
+                flash(f"Erro ao excluir amostras: {str(e)}", "danger")
+            
+            return redirect(url_for("amostra.list"))
     
     response = get_supabase_client().table("amostra").select("*").order("data", desc=True).execute()
     amostras = response.data or []
@@ -158,6 +195,8 @@ def list():
     amostras = paginated_data
     
     pages = (total + per_page - 1) // per_page
+    end = min(page * per_page, total)
+    max_pages = min(pages, 10)
     
     for amostra in amostras:
         for c in cilindro:
@@ -176,6 +215,8 @@ def list():
         elementos=elementos,
         page=page,
         per_page=per_page,
-        total=total if 'pages' in locals() else None,
-        pages=pages if 'pages' in locals() else None
+        total=total,
+        pages=pages,
+        end=end,
+        max_pages=max_pages
     )

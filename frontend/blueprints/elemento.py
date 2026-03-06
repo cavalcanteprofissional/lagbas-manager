@@ -1,5 +1,5 @@
 # Elemento blueprint - CRUD operations
-from flask import Blueprint, render_template, request, redirect, url_for, flash
+from flask import Blueprint, render_template, request, redirect, url_for, flash, abort
 
 from utils.supabase_utils import get_supabase_client, get_admin_client
 from utils.validators import safe_float
@@ -28,7 +28,7 @@ def list():
                 flash("Nome e consumo são obrigatórios", "danger")
                 return redirect(url_for("elemento.list"))
             
-            existing = get_supabase_client().table("elemento").select("id").eq("nome", nome).execute()
+            existing = get_admin_client().table("elemento").select("id").eq("nome", nome).execute()
             if existing.data:
                 if admin:
                     flash(f"Elemento '{nome}' já existe no sistema", "danger")
@@ -42,14 +42,21 @@ def list():
                 "user_id": user_id
             }
             
-            if admin:
-                client = get_admin_client()
-            else:
-                client = get_supabase_client()
-            
-            client.table("elemento").insert(data).execute()
-            registrar_historico("elemento", "criado", nome, user_id)
-            flash("Elemento criado com sucesso!", "success")
+            try:
+                if admin:
+                    client = get_admin_client()
+                else:
+                    client = get_supabase_client()
+                
+                client.table("elemento").insert(data).execute()
+                registrar_historico("elemento", "criado", nome, user_id)
+                flash("Elemento criado com sucesso!", "success")
+            except Exception as e:
+                error_str = str(e)
+                if "23505" in error_str or "duplicate key" in error_str.lower():
+                    flash("Elemento já existe. Por favor, utilize outro nome.", "danger")
+                else:
+                    flash(f"Erro ao criar elemento: {error_str}", "danger")
             
         elif action == "update":
             elemento_id = request.form.get("elemento_id")
@@ -61,7 +68,7 @@ def list():
                 return redirect(url_for("elemento.list"))
             
             if not admin:
-                existing = get_supabase_client().table("elemento").select("id").eq("user_id", user_id).eq("nome", nome).neq("id", elemento_id).execute()
+                existing = get_admin_client().table("elemento").select("id").eq("user_id", user_id).eq("nome", nome).neq("id", elemento_id).execute()
                 if existing.data:
                     flash("Elemento com este nome já existe para este usuário", "danger")
                     return redirect(url_for("elemento.list"))
@@ -83,27 +90,63 @@ def list():
             elemento_id = request.form.get("elemento_id")
             
             if not elemento_id:
-                flash("ID do elemento é obrigatório", "danger")
-                return redirect(url_for("elemento.list"))
+                abort(400, description="ID do elemento é obrigatório")
             
             amostra_count = get_supabase_client().table("amostra").select("id", count="exact").eq("elemento_id", elemento_id).execute()
             if amostra_count.count and amostra_count.count > 0:
-                flash("Não é possível excluir este elemento pois existem amostras vinculadas a ele", "danger")
+                flash("Não é possível excluir este elemento pois existem amostras vinculadas a ele. Exclua primeiro as amostras.", "warning")
                 return redirect(url_for("elemento.list"))
             
             try:
                 elemento_info = get_supabase_client().table("elemento").select("nome").eq("id", elemento_id).execute().data
                 elemento_nome = elemento_info[0].get("nome") if elemento_info else "N/A"
                 
-                if not admin:
-                    get_supabase_client().table("elemento").delete().eq("id", elemento_id).eq("user_id", user_id).execute()
-                else:
-                    get_supabase_client().table("elemento").delete().eq("id", elemento_id).execute()
+                get_admin_client().table("elemento").delete().eq("id", elemento_id).execute()
                 
                 registrar_historico("elemento", "excluido", elemento_nome, user_id)
                 flash("Elemento excluído com sucesso!", "success")
             except Exception as e:
                 flash(f"Erro ao excluir elemento: {str(e)}", "danger")
+            
+            return redirect(url_for("elemento.list"))
+        
+        elif action == "delete_multiple":
+            elemento_ids = request.form.getlist("elemento_ids")
+            
+            if not elemento_ids:
+                flash("Nenhum elemento selecionado", "danger")
+                return redirect(url_for("elemento.list"))
+            
+            try:
+                deleted_count = 0
+                skipped = []
+                
+                for elemento_id in elemento_ids:
+                    try:
+                        amostra_count = get_supabase_client().table("amostra").select("id", count="exact").eq("elemento_id", elemento_id).execute()
+                        if amostra_count.count and amostra_count.count > 0:
+                            elemento_info = get_supabase_client().table("elemento").select("nome").eq("id", elemento_id).execute().data
+                            skipped.append(elemento_info[0].get("nome") if elemento_info else elemento_id)
+                            continue
+                        
+                        elemento_info = get_supabase_client().table("elemento").select("nome").eq("id", elemento_id).execute().data
+                        elemento_nome = elemento_info[0].get("nome") if elemento_info else "N/A"
+                        
+                        get_admin_client().table("elemento").delete().eq("id", elemento_id).execute()
+                        
+                        registrar_historico("elemento", "excluido", elemento_nome, user_id)
+                        deleted_count += 1
+                    except Exception:
+                        continue
+                
+                if deleted_count > 0:
+                    flash(f"{deleted_count} elemento(s) excluído(s) com sucesso!", "success")
+                if skipped:
+                    flash(f"Alguns elementos não puderam ser excluídos (amostras vinculadas): {', '.join(skipped)}", "warning")
+            except Exception as e:
+                flash(f"Erro ao excluir elementos: {str(e)}", "danger")
+            
+            return redirect(url_for("elemento.list"))
     
     response = get_supabase_client().table("elemento").select("*").order("created_at", desc=True).execute()
     elementos = response.data or []
@@ -116,5 +159,7 @@ def list():
     elementos = paginated_data
     
     pages = (total + per_page - 1) // per_page
+    end = min(page * per_page, total)
+    max_pages = min(pages, 10)
     
-    return render_template("elemento.html", elementos=elementos, page=page, per_page=per_page, total=total if 'pages' in locals() else None, pages=pages if 'pages' in locals() else None)
+    return render_template("elemento.html", elementos=elementos, page=page, per_page=per_page, total=total, pages=pages, end=end, max_pages=max_pages)

@@ -119,7 +119,7 @@
                         <tbody>
                             {% for a in amostras %}
                             <tr>
-                                <td>{{ a.data }}</td>
+                                <td>{{ a.data|formatar_data if a.data else '-' }}</td>
                                 <td>{{ a.quantidade_amostras }}</td>
                             </tr>
                             {% endfor %}

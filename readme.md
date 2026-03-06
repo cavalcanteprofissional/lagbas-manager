@@ -1,16 +1,15 @@
 # LabGas Manager
 
-**Versão: 1.4.0**
+**Versão: 1.4.1**
 
 Dashboard para gestão de cilindro de gás e elementos analisados em laboratório de química, utilizando **Flask** com **Jinja2** para o frontend e **Supabase** como banco de dados.
 
-## Novidades v1.4.0
+## Novidades v1.4.1
 
-- **Refatoração para Blueprints**: Código organizado por domínio
-- **app.py reduzido**: De ~1250 linhas para ~130 linhas
-- **Separação por domínio**: auth, cilindro, elemento, amostra, admin, historico
-- **Funções auxiliares**: Centralizadas em helpers.py
-- **Constantes**: Centralizadas em constants.py
+- **Mensagens de erro amigáveis**: Erros de chave duplicada agora exibem mensagens claras
+- **Correção no histórico**: Registro de atividades agora funciona corretamente
+- **Formatação de datas**: Datas padronizadas para DD/MM/YYYY
+- **Correção de exclusão**: Exclusão de cilindro/elemento com amostras vinculadas com mensagem clara
 
 ## Arquitetura do Sistema
 
@@ -115,7 +114,7 @@ SUPABASE_SERVICE_KEY=sua_service_role_key
 - Código único por usuário
 - Código deve seguir formato CIL-XXX (ex: CIL-001, CIL-002)
 - Valores padrão: 1kg = 956L, R$290
-- Status: ativo, em_uso, esgotado
+- Status: ativo, esgotado
 
 ### Elemento
 - Lista pré-carregada automática (20 elementos padrão)
@@ -131,13 +130,16 @@ SUPABASE_SERVICE_KEY=sua_service_role_key
 ## Estado Atual
 
 ### Funcionalidades Implementadas
+- Mensagens de erro amigáveis para duplicatas
+- Sistema de registro de histórico funcionando corretamente
+- Dates formatadas em DD/MM/YYYY
 - Sistema de admin com todas as funcionalidades operacionais
 - Sistema de registro de histórico de atividades
 - Painel admin lista todos os usuários cadastrados
 - Perfil de usuário mostra role corretamente
 - Nome e email armazenados na tabela perfil
 - Sistema de segurança com JWT validation
-- Paginação em todas as listas (10 itens por página)
+- Paginação em todas as listas (10/25/50/100 itens por página)
 - Otimização de consultas (separação dados próprios vs compartilhados)
 - Sistema de cache (5 minutos)
 - Filtros em listas de cilindro, elemento e amostra
@@ -153,6 +155,8 @@ SUPABASE_SERVICE_KEY=sua_service_role_key
 - Ordenação alfabética nos seletores de Cilindro/Elemento
 - Remoção de elementos duplicados nos seletores de amostra
 - **Refatoração para Blueprints** - Código organizado por domínio
+- Multi-select com checkbox para exclusão em massa
 
 ### Versão
+- v1.4.1 - Correções de UX e mensagens amigáveis
 - v1.4.0 - Refatoração para Blueprints, código modular
