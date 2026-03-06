@@ -192,7 +192,11 @@ def register():
                         "email": email
                     }).execute()
                 except Exception as perfil_error:
-                    flash("Conta criada! Você pode fazer login.", "success")
+                    error_str = str(perfil_error)
+                    if "23503" in error_str or "foreign key" in error_str.lower():
+                        flash("Este email já está cadastrado.", "danger")
+                    else:
+                        flash("Conta criada! Você pode fazer login.", "success")
                     return redirect(url_for("auth.login"))
 
                 flash("Conta criada! Verifique seu email para confirmação.", "success")
