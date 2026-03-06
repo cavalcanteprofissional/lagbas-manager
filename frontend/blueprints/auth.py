@@ -126,7 +126,13 @@ def login():
                 return redirect(url_for("dashboard"))
 
         except Exception as e:
-            flash(f"Erro no login: {str(e)}", "danger")
+            error_str = str(e)
+            if "Invalid login credentials" in error_str:
+                flash("Email ou senha inválidos.", "danger")
+            elif "rate limit" in error_str.lower():
+                flash("Muitas tentativas. Tente novamente mais tarde.", "danger")
+            else:
+                flash(f"Erro no login: {error_str}", "danger")
 
     return render_template("login.html")
 
@@ -185,7 +191,13 @@ def register():
                 return redirect(url_for("auth.login"))
 
         except Exception as e:
-            flash(f"Erro no registro: {str(e)}", "danger")
+            error_str = str(e)
+            if "email rate limit exceeded" in error_str.lower():
+                flash("Muitas tentativas de registro. Tente novamente mais tarde.", "danger")
+            elif "User already registered" in error_str:
+                flash("Este email já está cadastrado.", "danger")
+            else:
+                flash(f"Erro no registro: {error_str}", "danger")
 
     return render_template("register.html")
 
