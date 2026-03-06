@@ -174,7 +174,7 @@ def register():
                 "options": {"data": {"nome": nome}},
             })
 
-            if response.user:
+            if response.user and response.session:
                 try:
                     get_admin_client().table("perfil").insert({
                         "id": response.user.id,
@@ -187,6 +187,9 @@ def register():
                     flash(f"Conta criada! Mas erro ao criar perfil: {str(perfil_error)}", "warning")
                     return redirect(url_for("auth.login"))
 
+                flash("Conta criada! Verifique seu email para confirmação.", "success")
+                return redirect(url_for("auth.login"))
+            elif response.user:
                 flash("Conta criada! Verifique seu email para confirmação.", "success")
                 return redirect(url_for("auth.login"))
 
