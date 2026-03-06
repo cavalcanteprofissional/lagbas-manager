@@ -192,7 +192,7 @@ def register():
                         "email": email
                     }).execute()
                 except Exception as perfil_error:
-                    flash(f"Conta criada! Mas erro ao criar perfil: {str(perfil_error)}", "warning")
+                    flash("Conta criada! Você pode fazer login.", "success")
                     return redirect(url_for("auth.login"))
 
                 flash("Conta criada! Verifique seu email para confirmação.", "success")
