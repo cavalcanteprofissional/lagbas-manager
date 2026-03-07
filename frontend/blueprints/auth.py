@@ -130,7 +130,7 @@ def login():
             if "Invalid login credentials" in error_str:
                 flash("Email ou senha inválidos.", "danger")
             elif "rate limit" in error_str.lower():
-                flash("Muitas tentativas. Tente novamente mais tarde.", "danger")
+                flash("Muitas tentativas de login. Tente novamente em 1 minuto.", "danger")
             else:
                 flash(f"Erro no login: {error_str}", "danger")
 
@@ -205,7 +205,7 @@ def register():
         except Exception as e:
             error_str = str(e)
             if "email rate limit exceeded" in error_str.lower():
-                flash("Muitas tentativas de registro. Tente novamente mais tarde.", "danger")
+                flash("Muitas tentativas de registro. Tente novamente em 1 minuto.", "danger")
             elif "User already registered" in error_str:
                 flash("Este email já está cadastrado.", "danger")
             else:
