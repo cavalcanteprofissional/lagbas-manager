@@ -45,28 +45,44 @@
                         <td class="text-center">{{ user.elementos }}</td>
                         <td class="text-center">{{ user.amostras }}</td>
                         <td>
-                            <form method="POST" action="{{ url_for('admin.update_habilitar_abas') }}" style="display:inline;">
-                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                                <input type="hidden" name="user_id" value="{{ user.id }}">
-                                <div class="d-flex flex-column gap-1 small">
-                                    <label class="d-flex align-items-center gap-1 mb-0">
-                                        <input type="checkbox" name="cilindro" {% if user.habilitar_abas.cilindro %}checked{% endif %} onchange="this.form.submit()">
-                                        <span class="text-success">CIL</span>
-                                    </label>
-                                    <label class="d-flex align-items-center gap-1 mb-0">
-                                        <input type="checkbox" name="elemento" {% if user.habilitar_abas.elemento %}checked{% endif %} onchange="this.form.submit()">
-                                        <span class="text-primary">ELE</span>
-                                    </label>
-                                    <label class="d-flex align-items-center gap-1 mb-0">
-                                        <input type="checkbox" name="amostra" {% if user.habilitar_abas.amostra %}checked{% endif %} onchange="this.form.submit()">
-                                        <span class="text-danger">AMO</span>
-                                    </label>
-                                    <label class="d-flex align-items-center gap-1 mb-0">
-                                        <input type="checkbox" name="historico" {% if user.habilitar_abas.historico %}checked{% endif %} onchange="this.form.submit()">
-                                        <span class="text-secondary">HIS</span>
-                                    </label>
-                                </div>
-                            </form>
+                            <div class="d-flex flex-wrap gap-1 justify-content-center">
+                                <form method="POST" action="{{ url_for('admin.update_habilitar_abas') }}" style="display:inline;">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <input type="hidden" name="user_id" value="{{ user.id }}">
+                                    <input type="hidden" name="aba" value="cilindro">
+                                    <input type="hidden" name="habilitar" value="{{ 'false' if user.habilitar_abas.cilindro else 'true' }}">
+                                    <button type="submit" class="btn btn-sm btn-{{ 'success' if user.habilitar_abas.cilindro else 'outline-secondary' }}" title="Cilindros">
+                                        CIL
+                                    </button>
+                                </form>
+                                <form method="POST" action="{{ url_for('admin.update_habilitar_abas') }}" style="display:inline;">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <input type="hidden" name="user_id" value="{{ user.id }}">
+                                    <input type="hidden" name="aba" value="elemento">
+                                    <input type="hidden" name="habilitar" value="{{ 'false' if user.habilitar_abas.elemento else 'true' }}">
+                                    <button type="submit" class="btn btn-sm btn-{{ 'primary' if user.habilitar_abas.elemento else 'outline-secondary' }}" title="Elementos">
+                                        ELE
+                                    </button>
+                                </form>
+                                <form method="POST" action="{{ url_for('admin.update_habilitar_abas') }}" style="display:inline;">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <input type="hidden" name="user_id" value="{{ user.id }}">
+                                    <input type="hidden" name="aba" value="amostra">
+                                    <input type="hidden" name="habilitar" value="{{ 'false' if user.habilitar_abas.amostra else 'true' }}">
+                                    <button type="submit" class="btn btn-sm btn-{{ 'danger' if user.habilitar_abas.amostra else 'outline-secondary' }}" title="Amostras">
+                                        AMO
+                                    </button>
+                                </form>
+                                <form method="POST" action="{{ url_for('admin.update_habilitar_abas') }}" style="display:inline;">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <input type="hidden" name="user_id" value="{{ user.id }}">
+                                    <input type="hidden" name="aba" value="historico">
+                                    <input type="hidden" name="habilitar" value="{{ 'false' if user.habilitar_abas.historico else 'true' }}">
+                                    <button type="submit" class="btn btn-sm btn-{{ 'dark' if user.habilitar_abas.historico else 'outline-secondary' }}" title="Histórico">
+                                        HIS
+                                    </button>
+                                </form>
+                            </div>
                         </td>
                         <td>
                             <div class="btn-group" role="group">

@@ -150,16 +150,32 @@ def update_habilitar_abas():
         return error
     
     target_user_id = request.form.get("user_id")
-    if not target_user_id:
-        flash("Usuário não especificado.", "danger")
+    aba = request.form.get("aba")
+    habilitar = request.form.get("habilitar") == "true"
+    
+    if not target_user_id or not aba:
+        flash("Parâmetros inválidos.", "danger")
         return redirect(url_for("admin.panel"))
     
-    habilitar_abas = {
-        "cilindro": request.form.get("cilindro") == "on",
-        "elemento": request.form.get("elemento") == "on",
-        "amostra": request.form.get("amostra") == "on",
-        "historico": request.form.get("historico") == "on"
-    }
+    if aba not in ["cilindro", "elemento", "amostra", "historico"]:
+        flash("Aba inválida.", "danger")
+        return redirect(url_for("admin.panel"))
+    
+    client = get_admin_client()
+    
+    perfil = client.table("perfil").select("habilitar_abas").eq("id", target_user_id).execute()
+    
+    habilitar_abas = {"cilindro": False, "elemento": False, "amostra": False, "historico": False}
+    if perfil.data and perfil.data[0].get("habilitar_abas"):
+        habilitar_abas = perfil.data[0].get("habilitar_abas")
+    
+    habilitar_abas[aba] = habilitar
+    
+    client.table("perfil").update({"habilitar_abas": habilitar_abas}).eq("id", target_user_id).execute()
+    
+    acao = "habilitada" if habilitar else "desabilitada"
+    nome_aba = {"cilindro": "Cilindros", "elemento": "Elementos", "amostra": "Amostras", "historico": "Histórico"}.get(aba, aba)
+    flash(f"Aba {nome_aba} {acao} com sucesso!", "success")
     
     client = get_admin_client()
     client.table("perfil").update({"habilitar_abas": habilitar_abas}).eq("id", target_user_id).execute()
