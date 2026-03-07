@@ -1,19 +1,54 @@
 # LabGas Manager
 
-**Versão: 1.5.0**
+**Versão: 1.6.0**
 
-Dashboard para gestão de cilindro de gás e elementos analisados em laboratório de química, utilizando **Flask** com **Jinja2** para o frontend e **Supabase** como banco de dados.
+Dashboard para gestão de cilindro de gás e elementos analisados em laboratório de química, utilizando **Flask** com **Jinja2** para o frontend web e **Supabase** como banco de dados PostgreSQL.
 
-## Novidades v1.5.0
+---
 
-- **Correções de Segurança**: Implementadas proteções contra vulnerabilidades
-- **Proteção CSRF**: Tokens em todos os formulários
-- **Rate Limiting**: Limite de tentativas em login/register
-- **Validação de Entrada**: Role e status validados contra valores permitidos
-- **Correção RLS**: Cliente autenticado para operações de perfil
-- **Dashboard Melhorado**: Novos cards com métricas avançadas
-- **Padrão de Cores**: Cilindro=Verde, Elemento=Azul, Amostra=Rosa, Ativos=Roxo
-- **Mensagens Amigáveis**: Erros traduzidos para português
+## Recursos Principais
+
+### Abas e Funcionalidades
+
+| Aba | Funcionalidades |
+|-----|-----------------|
+| **Dashboard** | Cards com estatísticas, gráficos de amostras por cilindro, elementos mais analisados, eficiência de cylinders |
+| **Cilindros** | CRUD completo, código CIL-XXX, status (ativo/esgotado), compartilhamento |
+| **Elementos** | CRUD completo, consumo em L/min, 20 elementos padrão pré-carregados |
+| **Amostras** | CRUD completo, vinculado a cilindro/elemento, tempo de chama, quantidade |
+| **Histórico** | Log de todas as operações CRUD, filtros por tipo/ação |
+| **Perfil** | Edição de nome, visualização de role e permissões |
+| **Administração** | Painel admin, gerenciar usuários, controle de acesso por abas, exportar dados |
+
+### Novidades v1.6.0
+
+- **Exportação de Dados**: Admin pode exportar todo o banco de dados
+  - Formatos: JSON, CSV, Excel (.xlsx), Markdown (.md)
+  - Botão no dashboard disponível apenas para admin
+- **Controle de Acesso por Abas**: Admin pode habilitar/desabilitar abas para cada usuário
+  - Abas controladas: Cilindros, Elementos, Amostras, Histórico
+  - Usuários admin sempre têm acesso a todas as abas
+
+### Recursos de Segurança v1.5.0
+
+- Proteção CSRF em todos os formulários
+- Rate Limiting (5 tentativas/min login, 3 tentativas/min register)
+- Validação de role e status contra valores permitidos
+- Verificação de propriedade antes de delete (proteção IDOR)
+- Session fixation protection
+- Cliente autenticado para operações RLS
+
+---
+
+## Tecnologias
+
+- **Frontend**: Flask 3.0 + Jinja2 + Bootstrap 5 + Bootstrap Icons
+- **Banco de Dados**: Supabase (PostgreSQL)
+- **Autenticação**: Supabase Auth (via Flask-Login)
+- **Gerenciamento de Dependências**: pip + venv
+- **Deploy**: Railway.app
+
+---
 
 ## Arquitetura do Sistema
 
@@ -25,13 +60,7 @@ Dashboard para gestão de cilindro de gás e elementos analisados em laboratóri
 └─────────────────┘     └─────────────────┘
 ```
 
-## Tecnologias
-
-- **Frontend**: Flask 3.0 + Jinja2 + Bootstrap 5
-- **Banco de Dados**: Supabase (PostgreSQL)
-- **Autenticação**: Supabase Auth
-- **Gerenciamento de Dependências**: pip + venv
-- **Deploy**: Railway.app
+---
 
 ## Estrutura de Diretórios
 
@@ -41,76 +70,70 @@ labgas-manager/
 ├── AGENTS.md                  # Documentação técnica
 ├── readme.md                  # Este arquivo
 ├── database.md               # Schema completo do banco de dados
-├── todo.md                  # Tarefas e histórico
-├── backend/                   # Flask API (opcional)
-└── frontend/                  # Flask + Jinja2 (Web)
-    ├── app.py                 # Aplicação Flask principal (~130 linhas)
-    ├── blueprints/            # Blueprints Flask
-    │   ├── auth.py           # Login, register, logout
-    │   ├── cilindro.py       # CRUD Cilindros
-    │   ├── elemento.py       # CRUD Elementos
-    │   ├── amostra.py        # CRUD Amostras
-    │   ├── admin.py          # Funções admin
-    │   ├── historico.py      # Histórico de atividades
-    │   └── helpers.py        # Funções auxiliares
-    ├── utils/                # Utilitários
-    │   ├── supabase_utils.py # Cliente Supabase
-    │   ├── validators.py     # Validações
-    │   └── constants.py      # Constantes
-    └── templates/            # Templates HTML
+├── frontend/                  # Flask + Jinja2 (Web)
+│   ├── app.py                 # Aplicação Flask principal
+│   ├── blueprints/            # Blueprints Flask
+│   │   ├── auth.py           # Login, register, logout
+│   │   ├── cilindro.py       # CRUD Cilindros
+│   │   ├── elemento.py       # CRUD Elementos
+│   │   ├── amostra.py        # CRUD Amostras
+│   │   ├── admin.py          # Funções admin
+│   │   ├── historico.py      # Histórico de atividades
+│   │   └── helpers.py        # Funções auxiliares
+│   ├── utils/                # Utilitários
+│   │   ├── supabase_utils.py # Cliente Supabase
+│   │   ├── validators.py     # Validações
+│   │   └── constants.py      # Constantes
+│   └── templates/            # Templates HTML Jinja2
 ```
+
+---
 
 ## Como Rodar Local
 
-### Frontend (Flask + Jinja2)
+### Pré-requisitos
+
+- Python 3.10+
+- pip
+
+### Instalação
 
 ```bash
-# 1. Criar ambiente virtual (primeira vez)
+# 1. Clonar o repositório e entrar na pasta frontend
 cd frontend
+
+# 2. Criar ambiente virtual
 python -m venv venv
 
-# 2. Instalar dependências
-./venv/Scripts/pip install -r requirements.txt
+# 3. Ativar ambiente virtual (Windows)
+venv\Scripts\activate
 
-# 3. Rodar o servidor
-./venv/Scripts/python app.py
+# 4. Instalar dependências
+pip install -r requirements.txt
 ```
 
-O frontend estará disponível em: `http://localhost:5000`
+### Configuração
 
-## Variáveis de Ambiente
-
-### frontend/.env
+Crie o arquivo `frontend/.env` com as variáveis de ambiente:
 
 ```env
-SECRET_KEY=sua_chave_secreta
+SECRET_KEY=sua_chave_secreta_aqui
 SUPABASE_URL=https://seu-projeto.supabase.co
 SUPABASE_KEY=sua_chave_anon
 SUPABASE_SERVICE_KEY=sua_service_role_key
 ```
 
-**Nota**: A service_role key é necessária para operações de admin (bypass RLS).
+**Nota**: A `service_role_key` é necessária para operações de admin (bypass RLS).
 
-## Deploy no Railway
+### Executar
 
-### Configuração
+```bash
+python app.py
+```
 
-1. Criar projeto no Railway com o repositório GitHub
-2. Adicionar variáveis de ambiente no Railway:
-   - `SECRET_KEY`: chave secreta para sessões
-   - `SUPABASE_URL`: URL do projeto Supabase
-   - `SUPABASE_KEY`: chave anônima do Supabase
+O frontend estará disponível em: `http://localhost:5000`
 
-### Build Command: (vazio)
-### Start Command: `gunicorn app:app`
-
-## Fluxo de Autenticação
-
-1. Usuário acessa o frontend Flask
-2. Faz login com email/senha
-3. Flask valida no Supabase Auth
-4. Sessão gerenciada por Flask-Login
-5. Dados filtrados por user_id
+---
 
 ## Regras de Negócio
 
@@ -123,7 +146,7 @@ SUPABASE_SERVICE_KEY=sua_service_role_key
 ### Elemento
 - Lista pré-carregada automática (20 elementos padrão)
 - Consumo em L/min
-- Nomes únicos por usuário
+- Nomes únicos por usuário (primeira letra maiúscula)
 
 ### Amostra
 - Data default como data atual
@@ -131,46 +154,69 @@ SUPABASE_SERVICE_KEY=sua_service_role_key
 - Vincular a cilindro e elemento existentes
 - Quantidade de amostras (inteiro)
 
-## Estado Atual
+---
 
-### Funcionalidades Implementadas
-- **Segurança v1.5.0**:
-  - Proteção CSRF em todos os formulários
-  - Rate Limiting (5 tentativas/min login, 3 tentativas/min register)
-  - Validação de role e status contra valores permitidos
-  - Verificação de propriedade antes de delete (proteção IDOR)
-  - Session fixation protection (session.clear() após login)
-  - Cliente autenticado para operações RLS
-  - Mensagens de erro amigáveis para login e registro
-- Mensagens de erro amigáveis para duplicatas
-- Sistema de registro de histórico funcionando corretamente
-- Datas formatadas em DD/MM/YYYY
-- Sistema de admin com todas as funcionalidades operacionais
-- Sistema de registro de histórico de atividades
-- Painel admin lista todos os usuários cadastrados
-- Perfil de usuário mostra role corretamente
-- Nome e email armazenados na tabela perfil
-- Sistema de segurança com JWT validation
+## Funcionalidades Implementadas
+
+### Geral
+- Sistema de autenticação (login/register/logout)
+- Dashboard com cards de estatísticas
 - Paginação em todas as listas (10/25/50/100 itens por página)
-- Otimização de consultas (separação dados próprios vs compartilhados)
-- Sistema de cache (5 minutos)
 - Filtros em listas de cilindro, elemento e amostra
-- Página de histórico com filtros por tipo e ação
-- Coluna "Usuário" no histórico de atividades
-- Cards visuais no dashboard
+- Sistema de cache (5 minutos)
 - Toast notifications
-- Edição de perfil (nome) funcionando corretamente
-- Criação automática de perfil no registro
+- Design responsivo com Bootstrap 5
+
+### CRUD
+- Criação, edição e exclusão de Cilindros
+- Criação, edição e exclusão de Elementos
+- Criação, edição e exclusão de Amostras
+- Multi-select com checkbox para exclusão em massa
+
+### Admin
+- Painel de administração com lista de usuários
+- Ativar/Desativar usuários
+- Promover/Demover usuários (admin/usuario)
+- Deletar usuário e todos os dados associados
+- Visualizar dados de qualquer usuário
+- Controle de acesso por abas
+- Exportação de dados (JSON/CSV/Excel/Markdown)
+
+### Histórico
+- Registro de todas as operações CRUD
+- Filtros por tipo (cilindro/elemento/amostra) e ação (criado/atualizado/excluido)
+- Exibição do usuário que realizou a ação
+
+### Validações
+- Não permitir duplicatas (código de cilindro, nome de elemento)
+- Cilindro e elemento não podem ser excluídos se possuírem amostras vinculadas
 - Validação de código de cilindro (CIL-XXX)
 - Normalização de nomes de elementos
-- Data default como hoje no registro de amostras
-- Ordenação alfabética nos seletores de Cilindro/Elemento
-- Remoção de elementos duplicados nos seletores de amostra
-- **Refatoração para Blueprints** - Código organizado por domínio
-- Multi-select com checkbox para exclusão em massa
-- Status de cilindro: ativo, esgotado
 
-### Versão
-- v1.5.0 - Correções de segurança (CSRF, IDOR, Rate Limiting)
-- v1.4.1 - Correções de UX e mensagens amigáveis
-- v1.4.0 - Refatoração para Blueprints, código modular
+---
+
+## Deploy no Railway
+
+1. Criar projeto no Railway com o repositório GitHub
+2. Adicionar variáveis de ambiente:
+   - `SECRET_KEY`: chave secreta para sessões
+   - `SUPABASE_URL`: URL do projeto Supabase
+   - `SUPABASE_KEY`: chave anônima do Supabase
+3. Start Command: `gunicorn app:app`
+
+---
+
+## Changelog
+
+| Versão | Descrição |
+|--------|-----------|
+| v1.6.0 | Exportação de dados (JSON/CSV/Excel/Markdown) + Controle de acesso por abas |
+| v1.5.0 | Correções de segurança (CSRF, IDOR, Rate Limiting, RLS) |
+| v1.4.1 | Correções de UX e mensagens amigáveis, formatação de datas |
+| v1.4.0 | Refatoração para Blueprints, código modular |
+
+---
+
+## Licença
+
+MIT

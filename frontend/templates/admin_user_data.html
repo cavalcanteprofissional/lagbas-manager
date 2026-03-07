@@ -36,6 +36,54 @@
     </div>
 </div>
 
+{% if target_user.role != 'admin' %}
+<div class="card mb-4">
+    <div class="card-header" style="background: linear-gradient(135deg, #8b5cf6, #a78bfa); color: white;">
+        <h5 class="mb-0"><i class="bi bi-shield-lock"></i> Permissões de Acesso</h5>
+    </div>
+    <div class="card-body">
+        <div class="row text-center">
+            <div class="col-6 col-md-3 mb-2">
+                <div class="p-3 rounded {{ 'bg-success bg-opacity-10' if habilitar_abas.cilindro else 'bg-secondary bg-opacity-10' }}">
+                    <i class="bi bi-box-seam fs-4 {{ 'text-success' if habilitar_abas.cilindro else 'text-secondary' }}"></i>
+                    <p class="mb-0 mt-2"><strong>Cilindros</strong></p>
+                    <span class="badge bg-{{ 'success' if habilitar_abas.cilindro else 'secondary' }}">
+                        {{ 'Habilitado' if habilitar_abas.cilindro else 'Desabilitado' }}
+                    </span>
+                </div>
+            </div>
+            <div class="col-6 col-md-3 mb-2">
+                <div class="p-3 rounded {{ 'bg-success bg-opacity-10' if habilitar_abas.elemento else 'bg-secondary bg-opacity-10' }}">
+                    <i class="bi bi-droplet fs-4 {{ 'text-success' if habilitar_abas.elemento else 'text-secondary' }}"></i>
+                    <p class="mb-0 mt-2"><strong>Elementos</strong></p>
+                    <span class="badge bg-{{ 'success' if habilitar_abas.elemento else 'secondary' }}">
+                        {{ 'Habilitado' if habilitar_abas.elemento else 'Desabilitado' }}
+                    </span>
+                </div>
+            </div>
+            <div class="col-6 col-md-3 mb-2">
+                <div class="p-3 rounded {{ 'bg-success bg-opacity-10' if habilitar_abas.amostra else 'bg-secondary bg-opacity-10' }}">
+                    <i class="bi bi-graph-up fs-4 {{ 'text-success' if habilitar_abas.amostra else 'text-secondary' }}"></i>
+                    <p class="mb-0 mt-2"><strong>Amostras</strong></p>
+                    <span class="badge bg-{{ 'success' if habilitar_abas.amostra else 'secondary' }}">
+                        {{ 'Habilitado' if habilitar_abas.amostra else 'Desabilitado' }}
+                    </span>
+                </div>
+            </div>
+            <div class="col-6 col-md-3 mb-2">
+                <div class="p-3 rounded {{ 'bg-success bg-opacity-10' if habilitar_abas.historico else 'bg-secondary bg-opacity-10' }}">
+                    <i class="bi bi-clock-history fs-4 {{ 'text-success' if habilitar_abas.historico else 'text-secondary' }}"></i>
+                    <p class="mb-0 mt-2"><strong>Histórico</strong></p>
+                    <span class="badge bg-{{ 'success' if habilitar_abas.historico else 'secondary' }}">
+                        {{ 'Habilitado' if habilitar_abas.historico else 'Desabilitado' }}
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
 <div class="row">
     <div class="col-12 col-lg-4 mb-4">
         <div class="card h-100">

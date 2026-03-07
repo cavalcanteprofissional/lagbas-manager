@@ -1,6 +1,10 @@
 # Admin blueprint - Administrative functions
+import json
+import io
 import jwt
-from flask import Blueprint, render_template, request, redirect, url_for, flash, session
+from datetime import datetime
+from flask import Blueprint, render_template, request, redirect, url_for, flash, session, make_response
+from openpyxl import Workbook
 
 from utils.supabase_utils import get_admin_client
 from blueprints.helpers import get_user_id, is_admin, get_user_role, get_habilitar_abas
@@ -55,7 +59,10 @@ def panel():
         user["cilindros"] = cilindro_count.count or 0
         user["elementos"] = elemento_count.count or 0
         user["amostras"] = amostra_count.count or 0
-        user["habilitar_abas"] = get_habilitar_abas(user["id"])
+        if user.get("role") == "admin":
+            user["habilitar_abas"] = {"cilindro": True, "elemento": True, "amostra": True, "historico": True}
+        else:
+            user["habilitar_abas"] = get_habilitar_abas(user["id"])
     
     users = sorted(users, key=lambda x: (x.get("nome") or x.get("email") or "").lower())
     
@@ -205,10 +212,210 @@ def user_data(target_user_id):
     perfil = client.table("perfil").select("*").eq("id", target_user_id).execute().data
     target_user = perfil[0] if perfil else {"id": target_user_id, "role": "unknown"}
     
+    habilitar_abas = get_habilitar_abas(target_user_id) if target_user.get("role") != "admin" else {"cilindro": True, "elemento": True, "amostra": True, "historico": True}
+    
     return render_template(
         "admin_user_data.html",
         target_user=target_user,
         cilindro=cilindro,
         elementos=elementos,
-        amostras=amostras
+        amostras=amostras,
+        habilitar_abas=habilitar_abas
     )
+
+
+@admin_bp.route("/admin/export")
+def export_data():
+    if not is_admin():
+        flash("Acesso restrito a administradores.", "danger")
+        return redirect(url_for("dashboard"))
+    
+    user_id, error = validate_admin_token()
+    if error:
+        return error
+    
+    formato = request.args.get("formato", "json").lower()
+    
+    if formato not in ["csv", "json", "excel", "md"]:
+        flash("Formato inválido.", "danger")
+        return redirect(url_for("dashboard"))
+    
+    client = get_admin_client()
+    
+    cilindro_data = client.table("cilindro").select("*").execute().data or []
+    elementos_data = client.table("elemento").select("*").execute().data or []
+    amostras_data = client.table("amostra").select("*").execute().data or []
+    usuarios_data = client.table("perfil").select("id,email,nome").execute().data or []
+    
+    usuarios_dict = {u.get("id"): u for u in usuarios_data}
+    
+    for c in cilindro_data:
+        uid = c.get("user_id")
+        if uid:
+            u = usuarios_dict.get(uid, {})
+            c["usuario_email"] = u.get("email", "")
+            c["usuario_nome"] = u.get("nome", "")
+    
+    for e in elementos_data:
+        uid = e.get("user_id")
+        if uid:
+            u = usuarios_dict.get(uid, {})
+            e["usuario_email"] = u.get("email", "")
+            e["usuario_nome"] = u.get("nome", "")
+    
+    cilindro_dict = {c.get("id"): c.get("codigo") for c in cilindro_data}
+    elemento_dict = {e.get("id"): e.get("nome") for e in elementos_data}
+    
+    for a in amostras_data:
+        uid = a.get("user_id")
+        if uid:
+            u = usuarios_dict.get(uid, {})
+            a["usuario_email"] = u.get("email", "")
+            a["usuario_nome"] = u.get("nome", "")
+        a["cilindro_codigo"] = cilindro_dict.get(a.get("cilindro_id"), "")
+        a["elemento_nome"] = elemento_dict.get(a.get("elemento_id"), "")
+    
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    
+    if formato == "json":
+        data = {
+            "exportado_em": datetime.now().isoformat(),
+            "cilindros": cilindro_data,
+            "elementos": elementos_data,
+            "amostras": amostras_data
+        }
+        response = make_response(json.dumps(data, indent=2, default=str))
+        response.headers["Content-Disposition"] = f"attachment; filename=labgas_export_{timestamp}.json"
+        response.headers["Content-Type"] = "application/json"
+        return response
+    
+    elif formato == "csv":
+        output = io.StringIO()
+        
+        output.write("# CILINDROS\n")
+        if cilindro_data:
+            headers = ["id", "codigo", "data_compra", "data_inicio_consumo", "data_fim", 
+                      "gas_kg", "litros_equivalentes", "custo", "status", "compartilhado", 
+                      "usuario_email", "usuario_nome", "created_at"]
+            output.write(",".join(headers) + "\n")
+            for row in cilindro_data:
+                values = [str(row.get(h, "")) for h in headers]
+                output.write(",".join(values) + "\n")
+        
+        output.write("\n# ELEMENTOS\n")
+        if elementos_data:
+            headers = ["id", "nome", "consumo_lpm", "compartilhado", "usuario_email", "usuario_nome", "created_at"]
+            output.write(",".join(headers) + "\n")
+            for row in elementos_data:
+                values = [str(row.get(h, "")) for h in headers]
+                output.write(",".join(values) + "\n")
+        
+        output.write("\n# AMOSTRAS\n")
+        if amostras_data:
+            headers = ["id", "data", "tempo_chama", "cilindro_id", "cilindro_codigo", 
+                      "elemento_id", "elemento_nome", "quantidade_amostras", "compartilhado",
+                      "usuario_email", "usuario_nome", "created_at"]
+            output.write(",".join(headers) + "\n")
+            for row in amostras_data:
+                values = [str(row.get(h, "")) for h in headers]
+                output.write(",".join(values) + "\n")
+        
+        response = make_response(output.getvalue())
+        response.headers["Content-Disposition"] = f"attachment; filename=labgas_export_{timestamp}.csv"
+        response.headers["Content-Type"] = "text/csv"
+        return response
+    
+    elif formato == "excel":
+        wb = Workbook()
+        
+        ws_cilindros = wb.active
+        ws_cilindros.title = "Cilindros"
+        if cilindro_data:
+            headers = ["ID", "Código", "Data Compra", "Data Início", "Data Fim", 
+                      "Gas (kg)", "Litros", "Custo", "Status", "Compartilhado",
+                      "Usuário Email", "Usuário Nome", "Criado em"]
+            ws_cilindros.append(headers)
+            for row in cilindro_data:
+                ws_cilindros.append([
+                    row.get("id"), row.get("codigo"), row.get("data_compra"),
+                    row.get("data_inicio_consumo"), row.get("data_fim"),
+                    row.get("gas_kg"), row.get("litros_equivalentes"), row.get("custo"),
+                    row.get("status"), row.get("compartilhado"),
+                    row.get("usuario_email"), row.get("usuario_nome"), row.get("created_at")
+                ])
+        
+        ws_elementos = wb.create_sheet("Elementos")
+        if elementos_data:
+            headers = ["ID", "Nome", "Consumo (L/min)", "Compartilhado", "Usuário Email", "Usuário Nome", "Criado em"]
+            ws_elementos.append(headers)
+            for row in elementos_data:
+                ws_elementos.append([
+                    row.get("id"), row.get("nome"), row.get("consumo_lpm"),
+                    row.get("compartilhado"), row.get("usuario_email"), row.get("usuario_nome"), row.get("created_at")
+                ])
+        
+        ws_amostras = wb.create_sheet("Amostras")
+        if amostras_data:
+            headers = ["ID", "Data", "Tempo Chama", "Cilindro ID", "Cilindro Código",
+                      "Elemento ID", "Elemento Nome", "Qtd Amostras", "Compartilhado",
+                      "Usuário Email", "Usuário Nome", "Criado em"]
+            ws_amostras.append(headers)
+            for row in amostras_data:
+                ws_amostras.append([
+                    row.get("id"), row.get("data"), row.get("tempo_chama"),
+                    row.get("cilindro_id"), row.get("cilindro_codigo"),
+                    row.get("elemento_id"), row.get("elemento_nome"),
+                    row.get("quantidade_amostras"), row.get("compartilhado"),
+                    row.get("usuario_email"), row.get("usuario_nome"), row.get("created_at")
+                ])
+        
+        output = io.BytesIO()
+        wb.save(output)
+        output.seek(0)
+        
+        response = make_response(output.getvalue())
+        response.headers["Content-Disposition"] = f"attachment; filename=labgas_export_{timestamp}.xlsx"
+        response.headers["Content-Type"] = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        return response
+    
+    elif formato == "md":
+        md_output = io.StringIO()
+        
+        md_output.write(f"# LabGas Manager - Exportação\n\n")
+        md_output.write(f"**Exportado em:** {datetime.now().strftime('%d/%m/%Y %H:%M:%S')}\n\n")
+        md_output.write(f"**Total:** {len(cilindro_data)} Cilindros | {len(elementos_data)} Elementos | {len(amostras_data)} Amostras\n\n")
+        
+        md_output.write("## Cilindros\n\n")
+        if cilindro_data:
+            md_output.write("| ID | Código | Status | Gas (kg) | Custo | Usuário |\n")
+            md_output.write("|---|---|---|---|---|---|\n")
+            for row in cilindro_data:
+                md_output.write(f"| {row.get('id')} | {row.get('codigo')} | {row.get('status')} | {row.get('gas_kg')} | R${row.get('custo')} | {row.get('usuario_email')} |\n")
+        else:
+            md_output.write("*Nenhum cilindro encontrado.*\n\n")
+        
+        md_output.write("\n## Elementos\n\n")
+        if elementos_data:
+            md_output.write("| ID | Nome | Consumo (L/min) | Usuário |\n")
+            md_output.write("|---|---|---|---|\n")
+            for row in elementos_data:
+                md_output.write(f"| {row.get('id')} | {row.get('nome')} | {row.get('consumo_lpm')} | {row.get('usuario_email')} |\n")
+        else:
+            md_output.write("*Nenhum elemento encontrado.*\n\n")
+        
+        md_output.write("\n## Amostras\n\n")
+        if amostras_data:
+            md_output.write("| ID | Data | Tempo | Cilindro | Elemento | Qtd | Usuário |\n")
+            md_output.write("|---|---|---|---|---|---|---|\n")
+            for row in amostras_data:
+                md_output.write(f"| {row.get('id')} | {row.get('data')} | {row.get('tempo_chama')} | {row.get('cilindro_codigo')} | {row.get('elemento_nome')} | {row.get('quantidade_amostras')} | {row.get('usuario_email')} |\n")
+        else:
+            md_output.write("*Nenhuma amostra encontrada.*\n\n")
+        
+        response = make_response(md_output.getvalue())
+        response.headers["Content-Disposition"] = f"attachment; filename=labgas_export_{timestamp}.md"
+        response.headers["Content-Type"] = "text/markdown"
+        return response
+    
+    flash("Formato não suportado.", "danger")
+    return redirect(url_for("dashboard"))

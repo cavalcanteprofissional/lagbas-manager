@@ -211,7 +211,7 @@ def dashboard():
 @app.route("/perfil", methods=["GET", "POST"])
 @login_required
 def perfil():
-    from blueprints.helpers import get_user_id, get_authenticated_client
+    from blueprints.helpers import get_user_id, get_authenticated_client, get_habilitar_abas, is_admin
     
     user_id = get_user_id()
     supabase = get_authenticated_client()
@@ -220,6 +220,11 @@ def perfil():
     perfil_data = perfil_response.data[0] if perfil_response.data else {}
     user_role = perfil_data.get("role", "usuario")
     user_nome = perfil_data.get("nome", "")
+    
+    if is_admin():
+        habilitar_abas = {"cilindro": True, "elemento": True, "amostra": True, "historico": True}
+    else:
+        habilitar_abas = get_habilitar_abas(user_id)
 
     if request.method == "POST":
         action = request.form.get("action")
@@ -257,7 +262,7 @@ def perfil():
         "amostras": len(amostras_response.data or []),
     }
 
-    return render_template("perfil.html", stats=stats, user_role=user_role, user_nome=user_nome)
+    return render_template("perfil.html", stats=stats, user_role=user_role, user_nome=user_nome, habilitar_abas=habilitar_abas)
 
 
 from blueprints.auth import auth_bp

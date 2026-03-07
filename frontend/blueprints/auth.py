@@ -112,7 +112,8 @@ def login():
                             "role": "usuario",
                             "ativo": True,
                             "nome": nome,
-                            "email": email
+                            "email": email,
+                            "habilitar_abas": {"cilindro": True, "elemento": True, "amostra": True, "historico": True}
                         }).execute()
                         flash("Perfil criado com sucesso!", "success")
 
@@ -189,7 +190,8 @@ def register():
                         "role": "usuario",
                         "ativo": True,
                         "nome": nome,
-                        "email": email
+                        "email": email,
+                        "habilitar_abas": {"cilindro": True, "elemento": True, "amostra": True, "historico": True}
                     }).execute()
                 except Exception as perfil_error:
                     error_str = str(perfil_error)

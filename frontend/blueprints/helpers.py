@@ -112,6 +112,7 @@ def registrar_historico(tipo, acao, nome, user_id):
 
 
 ABAS_DISPONIVEIS = ["cilindro", "elemento", "amostra", "historico"]
+ABAS_DEFAULT = {aba: True for aba in ABAS_DISPONIVEIS}
 
 
 def pode_acessar_aba(aba):
@@ -132,12 +133,12 @@ def pode_acessar_aba(aba):
         if response.data and len(response.data) > 0:
             habilitar_abas = response.data[0].get("habilitar_abas")
             if habilitar_abas is None:
-                return False
-            return habilitar_abas.get(aba, False)
+                return True
+            return habilitar_abas.get(aba, True)
     except Exception as e:
         logger.error(f"pode_acessar_aba: erro ao buscar perfil: {str(e)}")
     
-    return False
+    return True
 
 
 def get_habilitar_abas(user_id):
@@ -145,7 +146,7 @@ def get_habilitar_abas(user_id):
     from utils.supabase_utils import get_admin_client
     
     if not user_id:
-        return {aba: False for aba in ABAS_DISPONIVEIS}
+        return ABAS_DEFAULT.copy()
     
     try:
         client = get_admin_client()
@@ -154,8 +155,8 @@ def get_habilitar_abas(user_id):
         if response.data and len(response.data) > 0:
             habilitar_abas = response.data[0].get("habilitar_abas")
             if habilitar_abas:
-                return {aba: habilitar_abas.get(aba, False) for aba in ABAS_DISPONIVEIS}
+                return {aba: habilitar_abas.get(aba, True) for aba in ABAS_DISPONIVEIS}
     except Exception as e:
         logger.error(f"get_habilitar_abas: erro ao buscar perfil: {str(e)}")
     
-    return {aba: False for aba in ABAS_DISPONIVEIS}
+    return ABAS_DEFAULT.copy()
