@@ -11,6 +11,9 @@ Dashboard para gestão de cilindro de gás e elementos analisados em laboratóri
 - **Rate Limiting**: Limite de tentativas em login/register
 - **Validação de Entrada**: Role e status validados contra valores permitidos
 - **Correção RLS**: Cliente autenticado para operações de perfil
+- **Dashboard Melhorado**: Novos cards com métricas avançadas
+- **Padrão de Cores**: Cilindro=Verde, Elemento=Azul, Amostra=Rosa, Ativos=Roxo
+- **Mensagens Amigáveis**: Erros traduzidos para português
 
 ## Arquitetura do Sistema
 

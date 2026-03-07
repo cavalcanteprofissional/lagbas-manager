@@ -45,3 +45,9 @@ Thumbs.db
 
 # Streamlit
 .streamlit/
+
+# Documentação interna
+agents.md
+analise_seguranca.md
+bd_admin.md
+database.md
