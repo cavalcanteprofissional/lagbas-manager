@@ -110,6 +110,7 @@ def dashboard():
 
     ativos = len([c for c in cilindro if c.get("status") == "ativo"])
 
+    # Status counts (para compatibilidadde)
     status_counts = {}
     for c in cilindro:
         status = c.get("status", "desconhecido")
@@ -117,8 +118,76 @@ def dashboard():
 
     status_labels = list(status_counts.keys())
     status_values = list(status_counts.values())
-    elementos_nomes = [e.get("nome") for e in elementos]
-    elementos_consumos = [float(e.get("consumo_lpm", 0)) for e in elementos]
+
+    # Quantidade de amostras por cilindro (novo card)
+    cilindro_amostras = {}
+    for a in amostras:
+        cil_id = a.get("cilindro_id")
+        if cil_id:
+            cilindro_amostras[cil_id] = cilindro_amostras.get(cil_id, 0) + 1
+
+    cilindro_amostras_labels = []
+    cilindro_amostras_values = []
+    cilindro_dict = {c.get("id"): c.get("codigo") for c in cilindro}
+    for cil_id, count in sorted(cilindro_amostras.items(), key=lambda x: x[1], reverse=True):
+        cilindro_amostras_labels.append(cilindro_dict.get(cil_id, str(cil_id)))
+        cilindro_amostras_values.append(count)
+
+    # TOP 3 Elementos Mais Analisados
+    elemento_amostras_count = {}
+    for a in amostras:
+        elem_id = a.get("elemento_id")
+        if elem_id:
+            elemento_amostras_count[elem_id] = elemento_amostras_count.get(elem_id, 0) + 1
+
+    elemento_dict = {e.get("id"): e.get("nome") for e in elementos}
+    top_3_elementos = []
+    for elem_id, count in sorted(elemento_amostras_count.items(), key=lambda x: x[1], reverse=True)[:3]:
+        top_3_elementos.append({
+            "nome": elemento_dict.get(elem_id, str(elem_id)),
+            "quantidade": count
+        })
+
+    # Tempo de chama por elemento (para consumo × tempo)
+    tempo_chama_elementos = {}
+    for a in amostras:
+        elem_id = a.get("elemento_id")
+        tempo = a.get("tempo_chama", "00:00:00")
+        if elem_id and tempo:
+            try:
+                partes = tempo.split(":")
+                minutos = int(partes[0]) * 60 + int(partes[1]) + int(partes[2])/60
+                tempo_chama_elementos[elem_id] = tempo_chama_elementos.get(elem_id, 0) + minutos
+            except:
+                pass
+
+    # Consumo por Elemento × Tempo de Chama
+    elementos_labels = []
+    elementos_consumo_tempo = []
+    for e in elementos:
+        eid = e.get("id")
+        consumo = float(e.get("consumo_lpm", 0))
+        tempo = tempo_chama_elementos.get(eid, 0)
+        elementos_labels.append(e.get("nome"))
+        elementos_consumo_tempo.append(round(consumo * tempo, 2))
+
+    # Eficiência de Cilindros por Elemento (matriz)
+    eficiencia = {}
+    for a in amostras:
+        cil_id = a.get("cilindro_id")
+        elem_id = a.get("elemento_id")
+        if cil_id and elem_id:
+            key = f"{cil_id}-{elem_id}"
+            eficiencia[key] = eficiencia.get(key, 0) + 1
+
+    eficiencia_labels = []
+    eficiencia_values = []
+    for key, count in sorted(eficiencia.items(), key=lambda x: x[1], reverse=True)[:10]:
+        cil_id, elem_id = key.split("-")
+        nome_cil = cilindro_dict.get(cil_id, str(cil_id))
+        nome_elem = elemento_dict.get(elem_id, str(elem_id))
+        eficiencia_labels.append(f"{nome_cil} × {nome_elem}")
+        eficiencia_values.append(count)
 
     return render_template(
         "dashboard.html",
@@ -129,8 +198,13 @@ def dashboard():
         status_counts=status_counts,
         status_labels=status_labels,
         status_values=status_values,
-        elementos_nomes=elementos_nomes,
-        elementos_consumos=elementos_consumos,
+        cilindro_amostras_labels=cilindro_amostras_labels,
+        cilindro_amostras_values=cilindro_amostras_values,
+        top_3_elementos=top_3_elementos,
+        elementos_labels=elementos_labels,
+        elementos_consumo_tempo=elementos_consumo_tempo,
+        eficiencia_labels=eficiencia_labels,
+        eficiencia_values=eficiencia_values,
     )
 
 

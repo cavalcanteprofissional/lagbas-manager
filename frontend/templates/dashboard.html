@@ -43,32 +43,74 @@
 <div class="row">
     <div class="col-12 col-lg-6 mb-4">
         <div class="card h-100">
-            <div class="card-header">
-                <h5 class="mb-0"><i class="bi bi-pie-chart"></i> Cilindros por Status</h5>
+            <div class="card-header" style="background: linear-gradient(135deg, #10b981, #34d399); color: white;">
+                <h5 class="mb-0"><i class="bi bi-pie-chart"></i> Quantidade de Amostras por Cilindro</h5>
             </div>
             <div class="card-body">
-                {% if status_counts %}
+                {% if cilindro_amostras_values %}
                 <div class="chart-container" style="position: relative; height: 250px;">
                     <canvas id="statusChart"></canvas>
                 </div>
                 {% else %}
-                <p class="text-muted text-center py-5">Nenhum cilindro cadastrado.</p>
+                <p class="text-muted text-center py-5">Nenhuma amostra cadastrada.</p>
                 {% endif %}
             </div>
         </div>
     </div>
     <div class="col-12 col-lg-6 mb-4">
         <div class="card h-100">
-            <div class="card-header">
-                <h5 class="mb-0"><i class="bi bi-bar-chart"></i> Consumo por Elemento</h5>
+            <div class="card-header" style="background: linear-gradient(135deg, #3b82f6, #60a5fa); color: white;">
+                <h5 class="mb-0"><i class="bi bi-bar-chart"></i> Consumo por Elemento × Tempo de Chama</h5>
             </div>
             <div class="card-body">
-                {% if elementos %}
+                {% if elementos_labels %}
                 <div class="chart-container" style="position: relative; height: 250px;">
                     <canvas id="elementosChart"></canvas>
                 </div>
                 {% else %}
                 <p class="text-muted text-center py-5">Nenhum elemento cadastrado.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-12 col-lg-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header" style="background: linear-gradient(135deg, #ec4899, #f472b6); color: white;">
+                <h5 class="mb-0"><i class="bi bi-trophy"></i> TOP 3 Elementos Mais Analisados</h5>
+            </div>
+            <div class="card-body">
+                {% if top_3_elementos %}
+                <div class="list-group list-group-flush">
+                    {% for item in top_3_elementos %}
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>{{ loop.index }}º {{ item.nome }}</strong>
+                        </div>
+                        <span class="badge bg-primary">{{ item.quantidade }} amostra(s)</span>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="text-muted text-center py-4">Nenhuma amostra registrada.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-lg-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header" style="background: linear-gradient(135deg, #8b5cf6, #a78bfa); color: white;">
+                <h5 class="mb-0"><i class="bi bi-diagram-3"></i> Eficiência de Cilindros por Elemento</h5>
+            </div>
+            <div class="card-body">
+                {% if eficiencia_labels %}
+                <div class="chart-container" style="position: relative; height: 200px;">
+                    <canvas id="eficienciaChart"></canvas>
+                </div>
+                {% else %}
+                <p class="text-muted text-center py-4">Nenhuma amostra registrada.</p>
                 {% endif %}
             </div>
         </div>
@@ -175,10 +217,10 @@
 new Chart(document.getElementById('statusChart'), {
     type: 'doughnut',
     data: {
-        labels: {{ status_labels|tojson }},
+        labels: {{ cilindro_amostras_labels|tojson }},
         datasets: [{
-            data: {{ status_values|tojson }},
-            backgroundColor: ['#28a745', '#007bff', '#dc3545']
+            data: {{ cilindro_amostras_values|tojson }},
+            backgroundColor: ['#10b981', '#34d399', '#3b82f6', '#60a5fa', '#ec4899', '#f472b6', '#8b5cf6', '#a78bfa']
         }]
     },
     options: {
@@ -197,15 +239,15 @@ new Chart(document.getElementById('statusChart'), {
 });
 {% endif %}
 
-{% if elementos %}
+{% if elementos_labels %}
 new Chart(document.getElementById('elementosChart'), {
     type: 'bar',
     data: {
-        labels: {{ elementos_nomes|tojson }},
+        labels: {{ elementos_labels|tojson }},
         datasets: [{
-            label: 'Consumo (L/min)',
-            data: {{ elementos_consumos|tojson }},
-            backgroundColor: '#667eea',
+            label: 'Consumo × Tempo (L)',
+            data: {{ elementos_consumo_tempo|tojson }},
+            backgroundColor: '#3b82f6',
             borderRadius: 4
         }]
     },
@@ -221,6 +263,38 @@ new Chart(document.getElementById('elementosChart'), {
         scales: {
             x: {
                 beginAtZero: true
+            }
+        }
+    }
+});
+{% endif %}
+
+{% if eficiencia_labels %}
+new Chart(document.getElementById('eficienciaChart'), {
+    type: 'bar',
+    data: {
+        labels: {{ eficiencia_labels|tojson }},
+        datasets: [{
+            label: 'Qtd Amostras',
+            data: {{ eficiencia_values|tojson }},
+            backgroundColor: '#8b5cf6',
+            borderRadius: 4
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                display: false
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                ticks: {
+                    stepSize: 1
+                }
             }
         }
     }
