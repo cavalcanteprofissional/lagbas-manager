@@ -45,14 +45,14 @@
                         <td class="text-center">{{ user.elementos }}</td>
                         <td class="text-center">{{ user.amostras }}</td>
                         <td>
-                            <div class="d-flex flex-wrap gap-1 justify-content-center">
+                            <div class="d-flex flex-column gap-1">
                                 <form method="POST" action="{{ url_for('admin.update_habilitar_abas') }}" style="display:inline;">
                                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                     <input type="hidden" name="user_id" value="{{ user.id }}">
                                     <input type="hidden" name="aba" value="cilindro">
                                     <input type="hidden" name="habilitar" value="{{ 'false' if user.habilitar_abas.cilindro else 'true' }}">
-                                    <button type="submit" class="btn btn-sm btn-{{ 'success' if user.habilitar_abas.cilindro else 'outline-secondary' }}" title="Cilindros">
-                                        CIL
+                                    <button type="submit" class="btn btn-sm btn-{{ 'success' if user.habilitar_abas.cilindro else 'outline-secondary' }} w-100 text-start">
+                                        <i class="bi bi-box-seam me-1"></i> Cilindros
                                     </button>
                                 </form>
                                 <form method="POST" action="{{ url_for('admin.update_habilitar_abas') }}" style="display:inline;">
@@ -60,8 +60,8 @@
                                     <input type="hidden" name="user_id" value="{{ user.id }}">
                                     <input type="hidden" name="aba" value="elemento">
                                     <input type="hidden" name="habilitar" value="{{ 'false' if user.habilitar_abas.elemento else 'true' }}">
-                                    <button type="submit" class="btn btn-sm btn-{{ 'primary' if user.habilitar_abas.elemento else 'outline-secondary' }}" title="Elementos">
-                                        ELE
+                                    <button type="submit" class="btn btn-sm btn-{{ 'primary' if user.habilitar_abas.elemento else 'outline-secondary' }} w-100 text-start">
+                                        <i class="bi bi-droplet me-1"></i> Elementos
                                     </button>
                                 </form>
                                 <form method="POST" action="{{ url_for('admin.update_habilitar_abas') }}" style="display:inline;">
@@ -69,8 +69,8 @@
                                     <input type="hidden" name="user_id" value="{{ user.id }}">
                                     <input type="hidden" name="aba" value="amostra">
                                     <input type="hidden" name="habilitar" value="{{ 'false' if user.habilitar_abas.amostra else 'true' }}">
-                                    <button type="submit" class="btn btn-sm btn-{{ 'danger' if user.habilitar_abas.amostra else 'outline-secondary' }}" title="Amostras">
-                                        AMO
+                                    <button type="submit" class="btn btn-sm btn-{{ 'danger' if user.habilitar_abas.amostra else 'outline-secondary' }} w-100 text-start">
+                                        <i class="bi bi-graph-up me-1"></i> Amostras
                                     </button>
                                 </form>
                                 <form method="POST" action="{{ url_for('admin.update_habilitar_abas') }}" style="display:inline;">
@@ -78,8 +78,8 @@
                                     <input type="hidden" name="user_id" value="{{ user.id }}">
                                     <input type="hidden" name="aba" value="historico">
                                     <input type="hidden" name="habilitar" value="{{ 'false' if user.habilitar_abas.historico else 'true' }}">
-                                    <button type="submit" class="btn btn-sm btn-{{ 'dark' if user.habilitar_abas.historico else 'outline-secondary' }}" title="Histórico">
-                                        HIS
+                                    <button type="submit" class="btn btn-sm btn-{{ 'dark' if user.habilitar_abas.historico else 'outline-secondary' }} w-100 text-start">
+                                        <i class="bi bi-clock-history me-1"></i> Histórico
                                     </button>
                                 </form>
                             </div>
