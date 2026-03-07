@@ -57,6 +57,8 @@ def panel():
         user["amostras"] = amostra_count.count or 0
         user["habilitar_abas"] = get_habilitar_abas(user["id"])
     
+    users = sorted(users, key=lambda x: (x.get("nome") or x.get("email") or "").lower())
+    
     return render_template("admin.html", users=users)
 
 
