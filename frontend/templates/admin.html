@@ -20,6 +20,7 @@
                         <th>Cilindros</th>
                         <th>Elementos</th>
                         <th>Amostras</th>
+                        <th>Acesso às Abas</th>
                         <th>Ações</th>
                     </tr>
                 </thead>
@@ -43,6 +44,30 @@
                         <td class="text-center">{{ user.cilindros }}</td>
                         <td class="text-center">{{ user.elementos }}</td>
                         <td class="text-center">{{ user.amostras }}</td>
+                        <td>
+                            <form method="POST" action="{{ url_for('admin.update_habilitar_abas') }}" style="display:inline;">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <input type="hidden" name="user_id" value="{{ user.id }}">
+                                <div class="d-flex flex-column gap-1 small">
+                                    <label class="d-flex align-items-center gap-1 mb-0">
+                                        <input type="checkbox" name="cilindro" {% if user.habilitar_abas.cilindro %}checked{% endif %} onchange="this.form.submit()">
+                                        <span class="text-success">CIL</span>
+                                    </label>
+                                    <label class="d-flex align-items-center gap-1 mb-0">
+                                        <input type="checkbox" name="elemento" {% if user.habilitar_abas.elemento %}checked{% endif %} onchange="this.form.submit()">
+                                        <span class="text-primary">ELE</span>
+                                    </label>
+                                    <label class="d-flex align-items-center gap-1 mb-0">
+                                        <input type="checkbox" name="amostra" {% if user.habilitar_abas.amostra %}checked{% endif %} onchange="this.form.submit()">
+                                        <span class="text-danger">AMO</span>
+                                    </label>
+                                    <label class="d-flex align-items-center gap-1 mb-0">
+                                        <input type="checkbox" name="historico" {% if user.habilitar_abas.historico %}checked{% endif %} onchange="this.form.submit()">
+                                        <span class="text-secondary">HIS</span>
+                                    </label>
+                                </div>
+                            </form>
+                        </td>
                         <td>
                             <div class="btn-group" role="group">
                                 <a href="{{ url_for('admin.user_data', target_user_id=user.id) }}" class="btn btn-sm btn-info" title="Ver dados">

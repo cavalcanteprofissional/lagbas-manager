@@ -50,6 +50,35 @@
 
 ---
 
+## Fase 5 - Controle de Acesso às Abas (Futuro) ✅ CONCLUÍDO
+
+### Descrição
+Admin pode habilitar/desabilitar acesso às abas para usuários comuns.
+
+### Abas Controladas
+- Cilindros
+- Elementos
+- Amostras
+- Histórico
+
+### Comportamento Default
+- Todas as abas **desabilitadas** para usuários comuns por padrão
+- Admin tem acesso a todas as abas
+
+### Tarefas
+- [x] Adicionar campo `habilitar_abas` na tabela perfil (JSON)
+- [x] Criar função `pode_acessar_aba()` em helpers.py
+- [x] Verificar permissão nas rotas de cilindro, elemento, amostra, historico
+- [x] Adicionar UI no admin para gerenciar permissões
+- [x] Ocultar menus das abas se usuário não tem permissão
+
+### SQL para executar no Supabase
+```sql
+ALTER TABLE perfil ADD COLUMN habilitar_abas JSONB DEFAULT '{"cilindro": false, "elemento": false, "amostra": false, "historico": false}';
+```
+
+---
+
 ## Projeto Concluído ✅
 
 > As tarefas de segurança acima estão em andamento. Abaixo está o histórico do projeto.

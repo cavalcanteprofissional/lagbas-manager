@@ -185,18 +185,26 @@
             <a href="{{ url_for('dashboard') }}" class="{% if request.endpoint == 'dashboard' %}active{% endif %}">
                 <i class="bi bi-speedometer2 me-2"></i> <span>Dashboard</span>
             </a>
+            {% if is_admin or pode_acessar_aba('cilindro') %}
             <a href="{{ url_for('cilindro.list') }}" class="{% if request.endpoint == 'cilindro.list' %}active{% endif %}">
                 <i class="bi bi-box-seam me-2"></i> <span>Cilindros</span>
             </a>
+            {% endif %}
+            {% if is_admin or pode_acessar_aba('elemento') %}
             <a href="{{ url_for('elemento.list') }}" class="{% if request.endpoint == 'elemento.list' %}active{% endif %}">
                 <i class="bi bi-droplet me-2"></i> <span>Elementos</span>
             </a>
+            {% endif %}
+            {% if is_admin or pode_acessar_aba('amostra') %}
             <a href="{{ url_for('amostra.list') }}" class="{% if request.endpoint == 'amostra.list' %}active{% endif %}">
                 <i class="bi bi-graph-up me-2"></i> <span>Amostras</span>
             </a>
+            {% endif %}
+            {% if is_admin or pode_acessar_aba('historico') %}
             <a href="{{ url_for('historico.list') }}" class="{% if request.endpoint == 'historico.list' %}active{% endif %}">
                 <i class="bi bi-clock-history me-2"></i> <span>Histórico</span>
             </a>
+            {% endif %}
             <a href="{{ url_for('perfil') }}" class="{% if request.endpoint == 'perfil' %}active{% endif %}">
                 <i class="bi bi-person me-2"></i> <span>Perfil</span>
             </a>

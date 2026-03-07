@@ -109,3 +109,53 @@ def registrar_historico(tipo, acao, nome, user_id):
         logger.info(f"Histórico registrado: {tipo} | {acao} | {nome} | User: {user_id}")
     except Exception as e:
         logger.error(f"Erro ao registrar histórico: {str(e)}")
+
+
+ABAS_DISPONIVEIS = ["cilindro", "elemento", "amostra", "historico"]
+
+
+def pode_acessar_aba(aba):
+    """Verifica se o usuário atual pode acessar a aba especificada"""
+    from utils.supabase_utils import get_admin_client
+    
+    if is_admin():
+        return True
+    
+    user_id = get_user_id()
+    if not user_id:
+        return False
+    
+    try:
+        client = get_admin_client()
+        response = client.table("perfil").select("habilitar_abas").eq("id", user_id).execute()
+        
+        if response.data and len(response.data) > 0:
+            habilitar_abas = response.data[0].get("habilitar_abas")
+            if habilitar_abas is None:
+                return False
+            return habilitar_abas.get(aba, False)
+    except Exception as e:
+        logger.error(f"pode_acessar_aba: erro ao buscar perfil: {str(e)}")
+    
+    return False
+
+
+def get_habilitar_abas(user_id):
+    """Retorna o dicionário de abas habilitadas para o usuário"""
+    from utils.supabase_utils import get_admin_client
+    
+    if not user_id:
+        return {aba: False for aba in ABAS_DISPONIVEIS}
+    
+    try:
+        client = get_admin_client()
+        response = client.table("perfil").select("habilitar_abas").eq("id", user_id).execute()
+        
+        if response.data and len(response.data) > 0:
+            habilitar_abas = response.data[0].get("habilitar_abas")
+            if habilitar_abas:
+                return {aba: habilitar_abas.get(aba, False) for aba in ABAS_DISPONIVEIS}
+    except Exception as e:
+        logger.error(f"get_habilitar_abas: erro ao buscar perfil: {str(e)}")
+    
+    return {aba: False for aba in ABAS_DISPONIVEIS}

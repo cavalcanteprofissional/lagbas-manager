@@ -64,8 +64,8 @@ def add_cors_headers(response):
 
 @app.context_processor
 def inject_user_info():
-    from blueprints.helpers import is_admin, get_user_role, get_user_name
-    return dict(is_admin=is_admin(), user_role=get_user_role(), user_name=get_user_name())
+    from blueprints.helpers import is_admin, get_user_role, get_user_name, pode_acessar_aba
+    return dict(is_admin=is_admin(), user_role=get_user_role(), user_name=get_user_name(), pode_acessar_aba=pode_acessar_aba)
 
 
 @app.template_filter("formatar_data")

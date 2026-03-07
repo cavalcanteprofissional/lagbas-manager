@@ -4,13 +4,18 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash,
 from utils.supabase_utils import get_supabase_client, get_admin_client
 from utils.validators import safe_int, formatar_tempo_chama
 from utils.constants import ITEMS_PER_PAGE
-from blueprints.helpers import get_user_id, is_admin, registrar_historico
+from blueprints.helpers import get_user_id, is_admin, registrar_historico, pode_acessar_aba
 
 amostra_bp = Blueprint('amostra', __name__)
 
 
 @amostra_bp.route("/amostras", methods=["GET", "POST"])
 def list():
+    if not pode_acessar_aba("amostra"):
+        flash("Você não tem permissão para acessar esta aba.", "warning")
+        from flask import current_app
+        return redirect(current_app.config.get("LOGIN_VIEW", "/dashboard"))
+    
     user_id = get_user_id()
     admin = is_admin()
     

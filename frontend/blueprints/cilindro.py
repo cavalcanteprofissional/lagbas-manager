@@ -6,13 +6,18 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash,
 from utils.supabase_utils import get_supabase_client, get_admin_client
 from utils.validators import safe_float
 from utils.constants import ITEMS_PER_PAGE, LITROS_EQUIVALENTES_KG, GAS_KG_DEFAULT, CUSTO_DEFAULT, CILINDRO_STATUS
-from blueprints.helpers import get_user_id, is_admin, registrar_historico
+from blueprints.helpers import get_user_id, is_admin, registrar_historico, pode_acessar_aba
 
 cilindro_bp = Blueprint('cilindro', __name__)
 
 
 @cilindro_bp.route("/cilindros", methods=["GET", "POST"])
 def list():
+    if not pode_acessar_aba("cilindro"):
+        flash("Você não tem permissão para acessar esta aba.", "warning")
+        from flask import current_app
+        return redirect(current_app.config.get("LOGIN_VIEW", "/dashboard"))
+    
     user_id = get_user_id()
     admin = is_admin()
     

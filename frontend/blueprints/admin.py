@@ -3,7 +3,7 @@ import jwt
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session
 
 from utils.supabase_utils import get_admin_client
-from blueprints.helpers import get_user_id, is_admin, get_user_role
+from blueprints.helpers import get_user_id, is_admin, get_user_role, get_habilitar_abas
 
 admin_bp = Blueprint('admin', __name__)
 
@@ -55,6 +55,7 @@ def panel():
         user["cilindros"] = cilindro_count.count or 0
         user["elementos"] = elemento_count.count or 0
         user["amostras"] = amostra_count.count or 0
+        user["habilitar_abas"] = get_habilitar_abas(user["id"])
     
     return render_template("admin.html", users=users)
 
@@ -134,6 +135,36 @@ def delete_user():
     client.table("perfil").delete().eq("id", target_user_id).execute()
     
     flash("Usuário e todos os seus dados foram excluídos!", "success")
+    
+    return redirect(url_for("admin.panel"))
+
+
+@admin_bp.route("/admin/update-habilitar-abas", methods=["POST"])
+def update_habilitar_abas():
+    if not is_admin():
+        flash("Acesso restrito a administradores.", "danger")
+        return redirect(url_for("dashboard"))
+    
+    user_id, error = validate_admin_token()
+    if error:
+        return error
+    
+    target_user_id = request.form.get("user_id")
+    if not target_user_id:
+        flash("Usuário não especificado.", "danger")
+        return redirect(url_for("admin.panel"))
+    
+    habilitar_abas = {
+        "cilindro": request.form.get("cilindro") == "on",
+        "elemento": request.form.get("elemento") == "on",
+        "amostra": request.form.get("amostra") == "on",
+        "historico": request.form.get("historico") == "on"
+    }
+    
+    client = get_admin_client()
+    client.table("perfil").update({"habilitar_abas": habilitar_abas}).eq("id", target_user_id).execute()
+    
+    flash("Permissões de acesso atualizadas!", "success")
     
     return redirect(url_for("admin.panel"))
 
