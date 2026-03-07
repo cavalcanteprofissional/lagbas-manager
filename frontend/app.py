@@ -141,9 +141,9 @@ def dashboard():
             elemento_amostras_count[elem_id] = elemento_amostras_count.get(elem_id, 0) + 1
 
     elemento_dict = {e.get("id"): e.get("nome") for e in elementos}
-    top_3_elementos = []
-    for elem_id, count in sorted(elemento_amostras_count.items(), key=lambda x: x[1], reverse=True)[:3]:
-        top_3_elementos.append({
+    elementos_mais_analisados = []
+    for elem_id, count in sorted(elemento_amostras_count.items(), key=lambda x: x[1], reverse=True):
+        elementos_mais_analisados.append({
             "nome": elemento_dict.get(elem_id, str(elem_id)),
             "quantidade": count
         })
@@ -200,7 +200,7 @@ def dashboard():
         status_values=status_values,
         cilindro_amostras_labels=cilindro_amostras_labels,
         cilindro_amostras_values=cilindro_amostras_values,
-        top_3_elementos=top_3_elementos,
+        elementos_mais_analisados=elementos_mais_analisados,
         elementos_labels=elementos_labels,
         elementos_consumo_tempo=elementos_consumo_tempo,
         eficiencia_labels=eficiencia_labels,

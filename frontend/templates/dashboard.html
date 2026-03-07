@@ -79,15 +79,15 @@
     <div class="col-12 col-lg-6 mb-4">
         <div class="card h-100">
             <div class="card-header" style="background: linear-gradient(135deg, #ec4899, #f472b6); color: white;">
-                <h5 class="mb-0"><i class="bi bi-trophy"></i> TOP 3 Elementos Mais Analisados</h5>
+                <h5 class="mb-0"><i class="bi bi-bar-chart-steps"></i> Elementos mais analisados por Amostras</h5>
             </div>
             <div class="card-body">
-                {% if top_3_elementos %}
+                {% if elementos_mais_analisados %}
                 <div class="list-group list-group-flush">
-                    {% for item in top_3_elementos %}
+                    {% for item in elementos_mais_analisados %}
                     <div class="list-group-item d-flex justify-content-between align-items-center">
                         <div>
-                            <strong>{{ loop.index }}º {{ item.nome }}</strong>
+                            <strong>{{ item.nome }}</strong>
                         </div>
                         <span class="badge bg-primary">{{ item.quantidade }} amostra(s)</span>
                     </div>
