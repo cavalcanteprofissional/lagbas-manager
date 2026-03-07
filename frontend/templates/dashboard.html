@@ -7,7 +7,7 @@
 
 <div class="row g-3 mb-4">
     <div class="col-6 col-lg-3">
-        <div class="card stat-card h-100">
+        <div class="card stat-card green h-100">
             <div class="card-body d-flex flex-column justify-content-center">
                 <h5 class="card-title"><i class="bi bi-box-seam me-1"></i> Cilindros</h5>
                 <h2 class="mb-0">{{ cilindro|length }}</h2>
@@ -15,7 +15,7 @@
         </div>
     </div>
     <div class="col-6 col-lg-3">
-        <div class="card stat-card green h-100">
+        <div class="card stat-card purple h-100">
             <div class="card-body d-flex flex-column justify-content-center">
                 <h5 class="card-title"><i class="bi bi-check-circle me-1"></i> Ativos</h5>
                 <h2 class="mb-0">{{ ativos }}</h2>
@@ -23,7 +23,7 @@
         </div>
     </div>
     <div class="col-6 col-lg-3">
-        <div class="card stat-card orange h-100">
+        <div class="card stat-card blue h-100">
             <div class="card-body d-flex flex-column justify-content-center">
                 <h5 class="card-title"><i class="bi bi-droplet me-1"></i> Elementos</h5>
                 <h2 class="mb-0">{{ elementos|length }}</h2>
@@ -31,7 +31,7 @@
         </div>
     </div>
     <div class="col-6 col-lg-3">
-        <div class="card stat-card blue h-100">
+        <div class="card stat-card pink h-100">
             <div class="card-body d-flex flex-column justify-content-center">
                 <h5 class="card-title"><i class="bi bi-graph-up me-1"></i> Amostras</h5>
                 <h2 class="mb-0">{{ amostras|length }}</h2>
@@ -82,7 +82,7 @@
     
     <div class="col-12 col-lg-4">
         <div class="card h-100">
-            <div class="card-header bg-success text-white">
+            <div class="card-header" style="background: linear-gradient(135deg, #10b981, #34d399); color: white;">
                 <h6 class="mb-0"><i class="bi bi-box-seam"></i> Últimos Cilindros</h6>
             </div>
             <div class="card-body p-0">
@@ -94,7 +94,7 @@
                             <strong>{{ c.codigo }}</strong>
                             <small class="d-block text-muted">{{ c.data_compra|formatar_data }}</small>
                         </div>
-                        <span class="badge bg-{{ 'success' if c.status == 'ativo' else 'primary' if c.status == 'em_uso' else 'danger' }}">
+                        <span class="badge bg-{{ 'success' if c.status == 'ativo' else 'danger' }}">
                             {{ c.status|title }}
                         </span>
                     </div>
@@ -112,7 +112,7 @@
     
     <div class="col-12 col-lg-4">
         <div class="card h-100">
-            <div class="card-header bg-primary text-white">
+            <div class="card-header" style="background: linear-gradient(135deg, #3b82f6, #60a5fa); color: white;">
                 <h6 class="mb-0"><i class="bi bi-droplet"></i> Últimos Elementos</h6>
             </div>
             <div class="card-body p-0">
@@ -124,7 +124,7 @@
                             <strong>{{ e.nome }}</strong>
                             <small class="d-block text-muted">{{ "%.1f"|format(e.consumo_lpm) }} L/min</small>
                         </div>
-                        <span class="badge bg-info">{{ "%.1f"|format(e.consumo_lpm) }}</span>
+                        <span class="badge bg-primary">{{ "%.1f"|format(e.consumo_lpm) }}</span>
                     </div>
                     {% endfor %}
                 </div>
@@ -140,7 +140,7 @@
     
     <div class="col-12 col-lg-4">
         <div class="card h-100">
-            <div class="card-header bg-info text-white">
+            <div class="card-header" style="background: linear-gradient(135deg, #ec4899, #f472b6); color: white;">
                 <h6 class="mb-0"><i class="bi bi-graph-up"></i> Últimas Amostras</h6>
             </div>
             <div class="card-body p-0">
@@ -157,7 +157,7 @@
                     {% endfor %}
                 </div>
                 <div class="card-footer text-center">
-                    <a href="{{ url_for('amostra.list') }}" class="btn btn-sm btn-outline-info">Ver todos</a>
+                    <a href="{{ url_for('amostra.list') }}" class="btn btn-sm" style="border-color: #ec4899; color: #ec4899;">Ver todos</a>
                 </div>
                 {% else %}
                 <p class="text-muted text-center py-4">Nenhuma amostra</p>

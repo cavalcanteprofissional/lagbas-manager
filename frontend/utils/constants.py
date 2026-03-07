@@ -8,6 +8,35 @@ CUSTO_DEFAULT = 290.00
 
 CILINDRO_STATUS = ["ativo", "esgotado"]
 
+# Padrão de cores por tipo (CSS classes e gradients)
+COR_TIPO = {
+    "cilindro": {
+        "class": "green",
+        "gradient": "linear-gradient(135deg, #10b981, #34d399)",
+        "badge": "success"
+    },
+    "elemento": {
+        "class": "blue", 
+        "gradient": "linear-gradient(135deg, #3b82f6, #60a5fa)",
+        "badge": "primary"
+    },
+    "amostra": {
+        "class": "pink",
+        "gradient": "linear-gradient(135deg, #ec4899, #f472b6)",
+        "badge": "pink"
+    },
+    "ativos": {
+        "class": "purple",
+        "gradient": "linear-gradient(135deg, #8b5cf6, #a78bfa)",
+        "badge": "purple"
+    },
+    "admin": {
+        "class": "danger",
+        "gradient": "linear-gradient(135deg, #ef4444, #f87171)",
+        "badge": "danger"
+    }
+}
+
 ELEMENTOS_PADRAO = [
     {"nome": "Antimônio", "consumo_lpm": 1.5},
     {"nome": "Alumínio", "consumo_lpm": 4.5},

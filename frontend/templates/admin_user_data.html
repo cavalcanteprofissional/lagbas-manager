@@ -39,7 +39,7 @@
 <div class="row">
     <div class="col-12 col-lg-4 mb-4">
         <div class="card h-100">
-            <div class="card-header">
+            <div class="card-header" style="background: linear-gradient(135deg, #10b981, #34d399); color: white;">
                 <h5 class="mb-0"><i class="bi bi-box-seam"></i> Cilindros ({{ cilindro|length }})</h5>
             </div>
             <div class="card-body p-0">
@@ -56,7 +56,7 @@
                             {% for c in cilindro %}
                             <tr>
                                 <td>{{ c.codigo }}</td>
-                                <td><span class="badge bg-{{ 'success' if c.status == 'ativo' else 'primary' if c.status == 'em_uso' else 'danger' }}">{{ c.status }}</span></td>
+                                <td><span class="badge bg-{{ 'success' if c.status == 'ativo' else 'danger' }}">{{ c.status }}</span></td>
                             </tr>
                             {% endfor %}
                         </tbody>
@@ -71,7 +71,7 @@
 
     <div class="col-12 col-lg-4 mb-4">
         <div class="card h-100">
-            <div class="card-header">
+            <div class="card-header" style="background: linear-gradient(135deg, #3b82f6, #60a5fa); color: white;">
                 <h5 class="mb-0"><i class="bi bi-droplet"></i> Elementos ({{ elementos|length }})</h5>
             </div>
             <div class="card-body p-0">
@@ -103,7 +103,7 @@
 
     <div class="col-12 col-lg-4 mb-4">
         <div class="card h-100">
-            <div class="card-header">
+            <div class="card-header" style="background: linear-gradient(135deg, #ec4899, #f472b6); color: white;">
                 <h5 class="mb-0"><i class="bi bi-graph-up"></i> Amostras ({{ amostras|length }})</h5>
             </div>
             <div class="card-body p-0">

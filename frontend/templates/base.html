@@ -73,14 +73,21 @@
         .stat-card:active {
             transform: scale(0.98);
         }
-        .stat-card.green {
-            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        /* Padrão de cores por tipo */
+        .stat-card.green, .stat-card.cilindro {
+            background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+        }
+        .stat-card.blue, .stat-card.elemento {
+            background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);
+        }
+        .stat-card.pink, .stat-card.amostra {
+            background: linear-gradient(135deg, #ec4899 0%, #f472b6 100%);
+        }
+        .stat-card.purple, .stat-card.ativos {
+            background: linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%);
         }
         .stat-card.orange {
             background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-        }
-        .stat-card.blue {
-            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
         }
         .stat-card .card-title {
             font-size: 0.85rem;
