@@ -1,6 +1,6 @@
 # LabGas Manager
 
-**Versão: 1.7.0**
+**Versão: 1.8.0**
 
 Dashboard para gestão de cilindro de gás e elementos analisados em laboratório de química, utilizando **Flask** com **Jinja2** para o frontend web e **Supabase** como banco de dados PostgreSQL.
 
@@ -33,6 +33,11 @@ Dashboard para gestão de cilindro de gás e elementos analisados em laboratóri
 
 - **Correção RLS**: Uso de cliente autenticado para operações no banco
 - **Mensagens de Erro Amigáveis**: Erros técnicos são convertidos para mensagens amigáveis
+
+### Novidades v1.8.0
+
+- **Expiração de Sessão**: Sessão expira após 10 minutos de inatividade
+  - Usuário é redirecionado para login com mensagem explicativa
 
 ### Recursos de Segurança v1.5.0
 
@@ -216,6 +221,7 @@ O frontend estará disponível em: `http://localhost:5000`
 
 | Versão | Descrição |
 |--------|-----------|
+| v1.8.0 | Sistema de expiração de sessão por inatividade (10 min) |
 | v1.7.0 | Correções RLS, mensagens de erro amigáveis |
 | v1.6.0 | Exportação de dados (JSON/CSV/Excel/Markdown) + Controle de acesso por abas |
 | v1.5.0 | Correções de segurança (CSRF, IDOR, Rate Limiting, RLS) |

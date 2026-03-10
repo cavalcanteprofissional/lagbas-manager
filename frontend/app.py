@@ -1,5 +1,5 @@
 import os
-from datetime import timedelta
+from datetime import datetime, timedelta
 from flask import Flask, render_template, redirect, url_for, session, request, flash
 from flask_login import LoginManager, login_required, current_user
 from flask_wtf import CSRFProtect
@@ -52,6 +52,44 @@ def load_user(user_id):
     if user_data:
         return User(user_id, user_data.get("email"), user_data)
     return None
+
+
+INACTIVITY_TIMEOUT = timedelta(minutes=10)
+
+PUBLIC_ENDPOINTS = [
+    'auth.login',
+    'auth.register', 
+    'auth.logout',
+    'static',
+    '_debug_toolbar.static'
+]
+
+@app.before_request
+def check_inactivity():
+    if request.endpoint is None:
+        return
+    
+    if request.endpoint in PUBLIC_ENDPOINTS:
+        return
+    
+    if 'user_id' not in session:
+        return
+    
+    last_activity = session.get('last_activity')
+    now = datetime.utcnow()
+    
+    if last_activity:
+        try:
+            last_activity_dt = datetime.fromisoformat(str(last_activity))
+            if now - last_activity_dt > INACTIVITY_TIMEOUT:
+                session.clear()
+                flash('Sessão expirada por inatividade. Faça login novamente.', 'warning')
+                logger.info(f"Sessão expirada por inatividade para user_id: {session.get('user_id', 'desconhecido')}")
+                return redirect(url_for('auth.login'))
+        except (ValueError, TypeError):
+            session['last_activity'] = now.isoformat()
+    
+    session['last_activity'] = now.isoformat()
 
 
 @app.after_request
