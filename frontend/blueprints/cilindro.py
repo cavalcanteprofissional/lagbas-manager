@@ -6,6 +6,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash,
 from utils.supabase_utils import get_supabase_client, get_admin_client
 from utils.validators import safe_float
 from utils.constants import ITEMS_PER_PAGE, LITROS_EQUIVALENTES_KG, GAS_KG_DEFAULT, CUSTO_DEFAULT, CILINDRO_STATUS
+from utils.erros_utils import formatar_erro_supabase
 from blueprints.helpers import get_user_id, is_admin, registrar_historico, pode_acessar_aba
 
 cilindro_bp = Blueprint('cilindro', __name__)
@@ -30,6 +31,8 @@ def list():
         if action == "create":
             codigo = request.form.get("codigo", "").strip()
             data_compra = request.form.get("data_compra", "").strip()
+            data_inicio_consumo = request.form.get("data_inicio_consumo", "").strip()
+            data_fim = request.form.get("data_fim", "").strip()
             gas_kg = request.form.get("gas_kg", "")
             custo = request.form.get("custo", "")
             status = request.form.get("status", "ativo")
@@ -74,6 +77,8 @@ def list():
                 data = {
                     "codigo": codigo,
                     "data_compra": data_compra,
+                    "data_inicio_consumo": data_inicio_consumo,
+                    "data_fim": data_fim or None,
                     "gas_kg": gas_kg_val,
                     "litros_equivalentes": gas_kg_val * LITROS_EQUIVALENTES_KG,
                     "custo": custo_val,
@@ -81,20 +86,18 @@ def list():
                     "user_id": user_id
                 }
                 
+                from blueprints.helpers import get_authenticated_client
                 if admin:
                     client = get_admin_client()
                 else:
-                    client = get_supabase_client()
+                    client = get_authenticated_client()
                 
                 client.table("cilindro").insert(data).execute()
                 registrar_historico("cilindro", "criado", codigo, user_id)
                 flash("Cilindro criado com sucesso!", "success")
             except Exception as e:
                 error_str = str(e)
-                if "23505" in error_str or "duplicate key" in error_str.lower():
-                    flash("Código já existe. Por favor, utilize outro código.", "danger")
-                else:
-                    flash(f"Erro ao criar cilindro: {error_str}", "danger")
+                flash(formatar_erro_supabase(error_str, "criar cilindro"), "danger")
             
         elif action == "update":
             cilindro_id = request.form.get("cilindro_id", "").strip()

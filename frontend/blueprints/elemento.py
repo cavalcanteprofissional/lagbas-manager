@@ -4,6 +4,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash,
 from utils.supabase_utils import get_supabase_client, get_admin_client
 from utils.validators import safe_float
 from utils.constants import ITEMS_PER_PAGE
+from utils.erros_utils import formatar_erro_supabase
 from blueprints.helpers import get_user_id, is_admin, registrar_historico, pode_acessar_aba
 
 elemento_bp = Blueprint('elemento', __name__)
@@ -48,20 +49,18 @@ def list():
             }
             
             try:
+                from blueprints.helpers import get_authenticated_client
                 if admin:
                     client = get_admin_client()
                 else:
-                    client = get_supabase_client()
+                    client = get_authenticated_client()
                 
                 client.table("elemento").insert(data).execute()
                 registrar_historico("elemento", "criado", nome, user_id)
                 flash("Elemento criado com sucesso!", "success")
             except Exception as e:
                 error_str = str(e)
-                if "23505" in error_str or "duplicate key" in error_str.lower():
-                    flash("Elemento já existe. Por favor, utilize outro nome.", "danger")
-                else:
-                    flash(f"Erro ao criar elemento: {error_str}", "danger")
+                flash(formatar_erro_supabase(error_str, "criar elemento"), "danger")
             
         elif action == "update":
             elemento_id = request.form.get("elemento_id")

@@ -4,6 +4,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash,
 from utils.supabase_utils import get_supabase_client, get_admin_client
 from utils.validators import safe_int, formatar_tempo_chama
 from utils.constants import ITEMS_PER_PAGE
+from utils.erros_utils import formatar_erro_supabase
 from blueprints.helpers import get_user_id, is_admin, registrar_historico, pode_acessar_aba
 
 amostra_bp = Blueprint('amostra', __name__)
@@ -72,10 +73,11 @@ def list():
                 "user_id": user_id
             }
             
+            from blueprints.helpers import get_authenticated_client
             if admin:
                 client = get_admin_client()
             else:
-                client = get_supabase_client()
+                client = get_authenticated_client()
             
             try:
                 client.table("amostra").insert(data).execute()
@@ -87,10 +89,7 @@ def list():
                 flash("Amostra criada com sucesso!", "success")
             except Exception as e:
                 error_str = str(e)
-                if "23505" in error_str or "duplicate key" in error_str.lower():
-                    flash("Amostra duplicada. Os dados informados já existem.", "danger")
-                else:
-                    flash(f"Erro ao criar amostra: {error_str}", "danger")
+                flash(formatar_erro_supabase(error_str, "criar amostra"), "danger")
             
         elif action == "update":
             amostra_id = request.form.get("amostra_id")

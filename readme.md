@@ -1,6 +1,6 @@
 # LabGas Manager
 
-**Versão: 1.6.0**
+**Versão: 1.7.0**
 
 Dashboard para gestão de cilindro de gás e elementos analisados em laboratório de química, utilizando **Flask** com **Jinja2** para o frontend web e **Supabase** como banco de dados PostgreSQL.
 
@@ -28,6 +28,11 @@ Dashboard para gestão de cilindro de gás e elementos analisados em laboratóri
 - **Controle de Acesso por Abas**: Admin pode habilitar/desabilitar abas para cada usuário
   - Abas controladas: Cilindros, Elementos, Amostras, Histórico
   - Usuários admin sempre têm acesso a todas as abas
+
+### Novidades v1.7.0
+
+- **Correção RLS**: Uso de cliente autenticado para operações no banco
+- **Mensagens de Erro Amigáveis**: Erros técnicos são convertidos para mensagens amigáveis
 
 ### Recursos de Segurança v1.5.0
 
@@ -192,6 +197,7 @@ O frontend estará disponível em: `http://localhost:5000`
 - Cilindro e elemento não podem ser excluídos se possuírem amostras vinculadas
 - Validação de código de cilindro (CIL-XXX)
 - Normalização de nomes de elementos
+- **Mensagens de erro amigáveis**: Erros técnicos são convertidos para mensagens amigáveis
 
 ---
 
@@ -210,6 +216,7 @@ O frontend estará disponível em: `http://localhost:5000`
 
 | Versão | Descrição |
 |--------|-----------|
+| v1.7.0 | Correções RLS, mensagens de erro amigáveis |
 | v1.6.0 | Exportação de dados (JSON/CSV/Excel/Markdown) + Controle de acesso por abas |
 | v1.5.0 | Correções de segurança (CSRF, IDOR, Rate Limiting, RLS) |
 | v1.4.1 | Correções de UX e mensagens amigáveis, formatação de datas |
