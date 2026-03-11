@@ -162,7 +162,7 @@ def dashboard():
     for a in amostras:
         cil_id = a.get("cilindro_id")
         if cil_id:
-            cilindro_amostras[cil_id] = cilindro_amostras.get(cil_id, 0) + 1
+            cilindro_amostras[cil_id] = cilindro_amostras.get(cil_id, 0) + a.get("quantidade_amostras", 1)
 
     cilindro_amostras_labels = []
     cilindro_amostras_values = []
@@ -176,7 +176,7 @@ def dashboard():
     for a in amostras:
         elem_id = a.get("elemento_id")
         if elem_id:
-            elemento_amostras_count[elem_id] = elemento_amostras_count.get(elem_id, 0) + 1
+            elemento_amostras_count[elem_id] = elemento_amostras_count.get(elem_id, 0) + a.get("quantidade_amostras", 1)
 
     elemento_dict = {e.get("id"): e.get("nome") for e in elementos}
     elementos_mais_analisados = []
@@ -216,7 +216,7 @@ def dashboard():
         elem_id = a.get("elemento_id")
         if cil_id and elem_id:
             key = f"{cil_id}-{elem_id}"
-            eficiencia[key] = eficiencia.get(key, 0) + 1
+            eficiencia[key] = eficiencia.get(key, 0) + a.get("quantidade_amostras", 1)
 
     eficiencia_labels = []
     eficiencia_values = []
@@ -226,6 +226,8 @@ def dashboard():
         nome_elem = elemento_dict.get(elem_id, str(elem_id))
         eficiencia_labels.append(f"{nome_cil} × {nome_elem}")
         eficiencia_values.append(count)
+
+    total_quantidade_amostras = sum(a.get("quantidade_amostras", 1) for a in amostras)
 
     return render_template(
         "dashboard.html",
@@ -243,6 +245,10 @@ def dashboard():
         elementos_consumo_tempo=elementos_consumo_tempo,
         eficiencia_labels=eficiencia_labels,
         eficiencia_values=eficiencia_values,
+        eficiencia_data=eficiencia,
+        cilindro_dict=cilindro_dict,
+        elemento_dict=elemento_dict,
+        total_quantidade_amostras=total_quantidade_amostras,
     )
 
 

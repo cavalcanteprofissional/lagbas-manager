@@ -358,8 +358,11 @@ python -m venv venv
 - **Refatoração para Blueprints** - Código organizado por domínio
 - Multi-select com checkbox para exclusão em massa
 - Status de cilindro: ativo, esgotado
+- Dashboard com soma de quantidade_amostras (não apenas contagem de registros)
+- Filtro de cilindro no card de Eficiência por Elemento
 
 ### Versão
+- v1.9.0 - Dashboard com soma de quantidade_amostras e filtro de cilindro
 - v1.8.0 - Sistema de expiração de sessão por inatividade
 - v1.7.0 - Correções RLS, mensagens de erro amigáveis
 - v1.6.0 - Exportação de dados e Controle de acesso por abas
