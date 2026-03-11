@@ -295,7 +295,7 @@ def export_data():
         output.write("# CILINDROS\n")
         if cilindro_data:
             headers = ["id", "codigo", "data_compra", "data_inicio_consumo", "data_fim", 
-                      "gas_kg", "litros_equivalentes", "custo", "status", "compartilhado", 
+                      "gas_kg", "litros_equivalentes", "custo", "status", 
                       "usuario_email", "usuario_nome", "created_at"]
             output.write(",".join(headers) + "\n")
             for row in cilindro_data:
@@ -304,7 +304,7 @@ def export_data():
         
         output.write("\n# ELEMENTOS\n")
         if elementos_data:
-            headers = ["id", "nome", "consumo_lpm", "compartilhado", "usuario_email", "usuario_nome", "created_at"]
+            headers = ["id", "nome", "consumo_lpm", "usuario_email", "usuario_nome", "created_at"]
             output.write(",".join(headers) + "\n")
             for row in elementos_data:
                 values = [str(row.get(h, "")) for h in headers]
@@ -313,7 +313,7 @@ def export_data():
         output.write("\n# AMOSTRAS\n")
         if amostras_data:
             headers = ["id", "data", "tempo_chama", "cilindro_id", "cilindro_codigo", 
-                      "elemento_id", "elemento_nome", "quantidade_amostras", "compartilhado",
+                      "elemento_id", "elemento_nome", "quantidade_amostras",
                       "usuario_email", "usuario_nome", "created_at"]
             output.write(",".join(headers) + "\n")
             for row in amostras_data:
@@ -332,7 +332,7 @@ def export_data():
         ws_cilindros.title = "Cilindros"
         if cilindro_data:
             headers = ["ID", "Código", "Data Compra", "Data Início", "Data Fim", 
-                      "Gas (kg)", "Litros", "Custo", "Status", "Compartilhado",
+                      "Gas (kg)", "Litros", "Custo", "Status", 
                       "Usuário Email", "Usuário Nome", "Criado em"]
             ws_cilindros.append(headers)
             for row in cilindro_data:
@@ -340,24 +340,24 @@ def export_data():
                     row.get("id"), row.get("codigo"), row.get("data_compra"),
                     row.get("data_inicio_consumo"), row.get("data_fim"),
                     row.get("gas_kg"), row.get("litros_equivalentes"), row.get("custo"),
-                    row.get("status"), row.get("compartilhado"),
+                    row.get("status"), 
                     row.get("usuario_email"), row.get("usuario_nome"), row.get("created_at")
                 ])
         
         ws_elementos = wb.create_sheet("Elementos")
         if elementos_data:
-            headers = ["ID", "Nome", "Consumo (L/min)", "Compartilhado", "Usuário Email", "Usuário Nome", "Criado em"]
+            headers = ["ID", "Nome", "Consumo (L/min)", "Usuário Email", "Usuário Nome", "Criado em"]
             ws_elementos.append(headers)
             for row in elementos_data:
                 ws_elementos.append([
                     row.get("id"), row.get("nome"), row.get("consumo_lpm"),
-                    row.get("compartilhado"), row.get("usuario_email"), row.get("usuario_nome"), row.get("created_at")
+                    row.get("usuario_email"), row.get("usuario_nome"), row.get("created_at")
                 ])
         
         ws_amostras = wb.create_sheet("Amostras")
         if amostras_data:
             headers = ["ID", "Data", "Tempo Chama", "Cilindro ID", "Cilindro Código",
-                      "Elemento ID", "Elemento Nome", "Qtd Amostras", "Compartilhado",
+                      "Elemento ID", "Elemento Nome", "Qtd Amostras",
                       "Usuário Email", "Usuário Nome", "Criado em"]
             ws_amostras.append(headers)
             for row in amostras_data:
@@ -365,7 +365,7 @@ def export_data():
                     row.get("id"), row.get("data"), row.get("tempo_chama"),
                     row.get("cilindro_id"), row.get("cilindro_codigo"),
                     row.get("elemento_id"), row.get("elemento_nome"),
-                    row.get("quantidade_amostras"), row.get("compartilhado"),
+                    row.get("quantidade_amostras"),
                     row.get("usuario_email"), row.get("usuario_nome"), row.get("created_at")
                 ])
         
