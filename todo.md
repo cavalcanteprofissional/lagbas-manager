@@ -167,3 +167,6 @@ frontend/
 - Corrigido admin para visualizar todos os usuários
 - Adicionado validação de código de cilindro (CIL-XXX)
 - Adicionado normalização de nomes de elementos
+
+### 2026-03-28
+- Ordenação alfabética na legenda do card "Quantidade de Amostras por Cilindro" no dashboard

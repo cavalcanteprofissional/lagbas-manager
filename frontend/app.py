@@ -167,7 +167,7 @@ def dashboard():
     cilindro_amostras_labels = []
     cilindro_amostras_values = []
     cilindro_dict = {c.get("id"): c.get("codigo") for c in cilindro}
-    for cil_id, count in sorted(cilindro_amostras.items(), key=lambda x: x[1], reverse=True):
+    for cil_id, count in sorted(cilindro_amostras.items(), key=lambda x: cilindro_dict.get(x[0], str(x[0]))):
         cilindro_amostras_labels.append(cilindro_dict.get(cil_id, str(cil_id)))
         cilindro_amostras_values.append(count)
 
