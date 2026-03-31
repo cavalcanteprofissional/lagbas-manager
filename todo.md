@@ -170,3 +170,38 @@ frontend/
 
 ### 2026-03-28
 - Ordenação alfabética na legenda do card "Quantidade de Amostras por Cilindro" no dashboard
+
+### 2026-03-31 - Migração Railway → Vercel
+
+#### Motivação
+- Railway expirou o plano gratuito
+
+#### Deploy Vercel
+- URL: https://lagbas-manager.vercel.app/
+- Criado `vercel.json` na raiz do projeto
+- Configuração para servir app.py da pasta `frontend/`
+- Ajuste em app.py: debug=False por padrão (variação via FLASK_DEBUG)
+
+#### Configurações Necessárias no Vercel
+- `SECRET_KEY`: chave secreta para sessões
+- `SUPABASE_URL`: URL do projeto Supabase
+- `SUPABASE_KEY`: chave anônima do Supabase
+- `SUPABASE_SERVICE_KEY`: service role key (para operações admin)
+- Opcional: `FLASK_DEBUG=true` para desenvolvimento
+
+#### Estrutura de Arquivos
+```
+labgas-manager/
+├── vercel.json           # Configuração Vercel (NOVO)
+├── frontend/
+│   ├── app.py            # Flask app
+│   ├── blueprints/       # Blueprints
+│   ├── templates/        # Templates Jinja2
+│   └── requirements.txt
+└── backend/             # (não usado no Vercel)
+```
+
+#### Procedimento de Deploy
+1. Conectar repositório GitHub no Vercel
+2. Configurar variáveis de ambiente no painel Vercel
+3. Deploy automático ao push na branch principal
