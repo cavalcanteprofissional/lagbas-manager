@@ -178,9 +178,11 @@ frontend/
 
 #### Deploy Vercel
 - URL: https://lagbas-manager.vercel.app/
-- Criado `vercel.json` na raiz do projeto
-- Configuração para servir app.py da pasta `frontend/`
+- Criado `frontend/vercel.json` para deploy na pasta frontend
 - Ajuste em app.py: debug=False por padrão (variação via FLASK_DEBUG)
+
+#### Correção 2026-03-31 (NOT_FOUND error)
+- Moveu vercel.json de raiz para frontend/ (requerido pelo Vercel)
 
 #### Configurações Necessárias no Vercel
 - `SECRET_KEY`: chave secreta para sessões
