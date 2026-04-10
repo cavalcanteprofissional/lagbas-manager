@@ -68,7 +68,7 @@
                                     <input type="hidden" name="aba" value="temperatura">
                                     <input type="hidden" name="habilitar" value="{{ 'false' if temp_checked else 'true' }}">
                                     <button type="submit" class="btn btn-sm btn-{{ 'success' if temp_checked else 'outline-secondary' }} w-100 text-start" {% if user.role == 'admin' %}disabled title="Admin sempre tem acesso"{% endif %}>
-                                        <i class="bi bi-thermometer-half me-1"></i> Temperatura
+                                        <i class="bi bi-gauge me-1"></i> Pressão
                                     </button>
                                 </form>
                                 <form method="POST" action="{{ url_for('admin.update_habilitar_abas') }}" style="display:inline;">

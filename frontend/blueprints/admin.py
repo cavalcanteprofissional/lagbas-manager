@@ -54,15 +54,15 @@ def panel():
         cilindro_count = client.table("cilindro").select("id", count="exact").eq("user_id", user_id).execute()
         elemento_count = client.table("elemento").select("id", count="exact").eq("user_id", user_id).execute()
         amostra_count = client.table("amostra").select("id", count="exact").eq("user_id", user_id).execute()
-        temperatura_count = client.table("temperatura").select("id", count="exact").eq("user_id", user_id).execute()
+        pressao_count = client.table("pressao").select("id", count="exact").eq("user_id", user_id).execute()
         
         user["nome"] = user.get("nome") or user.get("email") or user_id
         user["cilindros"] = cilindro_count.count or 0
         user["elementos"] = elemento_count.count or 0
         user["amostras"] = amostra_count.count or 0
-        user["temperaturas"] = temperatura_count.count or 0
+        user["pressoes"] = pressao_count.count or 0
         if user.get("role") == "admin":
-            user["habilitar_abas"] = {"cilindro": True, "temperatura": True, "elemento": True, "amostra": True, "historico": True}
+            user["habilitar_abas"] = {"cilindro": True, "pressao": True, "elemento": True, "amostra": True, "historico": True}
         else:
             user["habilitar_abas"] = get_habilitar_abas(user["id"])
     
@@ -168,13 +168,13 @@ def update_habilitar_abas():
         flash("Parâmetros inválidos.", "danger")
         return redirect(url_for("admin.panel"))
     
-    if aba not in ["cilindro", "temperatura", "elemento", "amostra", "historico"]:
+    if aba not in ["cilindro", "pressao", "elemento", "amostra", "historico"]:
         flash("Aba inválida.", "danger")
         return redirect(url_for("admin.panel"))
     
     client = get_admin_client()
     
-    habilitar_abas = {"cilindro": False, "temperatura": False, "elemento": False, "amostra": False, "historico": False}
+    habilitar_abas = {"cilindro": False, "pressao": False, "elemento": False, "amostra": False, "historico": False}
     if perfil.data and perfil.data[0].get("habilitar_abas"):
         habilitar_abas = perfil.data[0].get("habilitar_abas")
     
@@ -183,7 +183,7 @@ def update_habilitar_abas():
     client.table("perfil").update({"habilitar_abas": habilitar_abas}).eq("id", target_user_id).execute()
     
     acao = "habilitada" if habilitar else "desabilitada"
-    nome_aba = {"cilindro": "Cilindros", "temperatura": "Temperatura", "elemento": "Elementos", "amostra": "Amostras", "historico": "Histórico"}.get(aba, aba)
+    nome_aba = {"cilindro": "Cilindros", "pressao": "Pressão", "elemento": "Elementos", "amostra": "Amostras", "historico": "Histórico"}.get(aba, aba)
     flash(f"Aba {nome_aba} {acao} com sucesso!", "success")
     
     client = get_admin_client()
@@ -208,12 +208,12 @@ def user_data(target_user_id):
     cilindro = client.table("cilindro").select("*").eq("user_id", target_user_id).execute().data or []
     elementos = client.table("elemento").select("*").eq("user_id", target_user_id).execute().data or []
     amostras = client.table("amostra").select("*").eq("user_id", target_user_id).execute().data or []
-    temperaturas = client.table("temperatura").select("*").eq("user_id", target_user_id).execute().data or []
+    pressoes = client.table("pressao").select("*").eq("user_id", target_user_id).execute().data or []
     
     perfil = client.table("perfil").select("*").eq("id", target_user_id).execute().data
     target_user = perfil[0] if perfil else {"id": target_user_id, "role": "unknown"}
     
-    habilitar_abas = get_habilitar_abas(target_user_id) if target_user.get("role") != "admin" else {"cilindro": True, "temperatura": True, "elemento": True, "amostra": True, "historico": True}
+    habilitar_abas = get_habilitar_abas(target_user_id) if target_user.get("role") != "admin" else {"cilindro": True, "pressao": True, "elemento": True, "amostra": True, "historico": True}
     
     return render_template(
         "admin_user_data.html",
@@ -221,7 +221,7 @@ def user_data(target_user_id):
         cilindro=cilindro,
         elementos=elementos,
         amostras=amostras,
-        temperaturas=temperaturas,
+        pressoes=pressoes,
         habilitar_abas=habilitar_abas
     )
 
@@ -247,7 +247,7 @@ def export_data():
     cilindro_data = client.table("cilindro").select("*").execute().data or []
     elementos_data = client.table("elemento").select("*").execute().data or []
     amostras_data = client.table("amostra").select("*").execute().data or []
-    temperaturas_data = client.table("temperatura").select("*").execute().data or []
+    pressoes_data = client.table("pressao").select("*").execute().data or []
     usuarios_data = client.table("perfil").select("id,email,nome").execute().data or []
     
     usuarios_dict = {u.get("id"): u for u in usuarios_data}
@@ -286,7 +286,7 @@ def export_data():
             "cilindros": cilindro_data,
             "elementos": elementos_data,
             "amostras": amostras_data,
-            "temperaturas": temperaturas_data
+            "temperaturas": pressoes_data
         }
         response = make_response(json.dumps(data, indent=2, default=str))
         response.headers["Content-Disposition"] = f"attachment; filename=labgas_export_{timestamp}.json"
@@ -325,8 +325,8 @@ def export_data():
                 output.write(",".join(values) + "\n")
         
         output.write("\n# TEMPERATURAS\n")
-        if temperaturas_data:
-            for t in temperaturas_data:
+        if pressoes_data:
+            for t in pressoes_data:
                 uid = t.get("user_id")
                 if uid:
                     u = usuarios_dict.get(uid, {})
@@ -336,7 +336,7 @@ def export_data():
             headers = ["id", "cilindro_id", "cilindro_codigo", "temperatura", "data", "hora",
                       "usuario_email", "usuario_nome", "created_at"]
             output.write(",".join(headers) + "\n")
-            for row in temperaturas_data:
+            for row in pressoes_data:
                 values = [str(row.get(h, "")) for h in headers]
                 output.write(",".join(values) + "\n")
         
@@ -389,14 +389,14 @@ def export_data():
                     row.get("usuario_email"), row.get("usuario_nome"), row.get("created_at")
                 ])
         
-        ws_temperaturas = wb.create_sheet("Temperaturas")
-        if temperaturas_data:
-            for t in temperaturas_data:
+        ws_pressoes = wb.create_sheet("Pressoes")
+        if pressoes_data:
+            for t in pressoes_data:
                 t["cilindro_codigo"] = cilindro_dict.get(t.get("cilindro_id"), "")
             headers = ["ID", "Cilindro ID", "Cilindro Código", "Temperatura (°C)", "Data", "Hora",
                       "Usuário Email", "Usuário Nome", "Criado em"]
             ws_temperaturas.append(headers)
-            for row in temperaturas_data:
+            for row in pressoes_data:
                 ws_temperaturas.append([
                     row.get("id"), row.get("cilindro_id"), row.get("cilindro_codigo"),
                     row.get("temperatura"), row.get("data"), row.get("hora"),
@@ -417,7 +417,7 @@ def export_data():
         
         md_output.write(f"# LabGas Manager - Exportação\n\n")
         md_output.write(f"**Exportado em:** {datetime.now().strftime('%d/%m/%Y %H:%M:%S')}\n\n")
-        md_output.write(f"**Total:** {len(cilindro_data)} Cilindros | {len(temperaturas_data)} Temperaturas | {len(elementos_data)} Elementos | {len(amostras_data)} Amostras\n\n")
+        md_output.write(f"**Total:** {len(cilindro_data)} Cilindros | {len(pressoes_data)} Pressoes | {len(elementos_data)} Elementos | {len(amostras_data)} Amostras\n\n")
         
         md_output.write("## Cilindros\n\n")
         if cilindro_data:
@@ -428,13 +428,13 @@ def export_data():
         else:
             md_output.write("*Nenhum cilindro encontrado.*\n\n")
         
-        md_output.write("\n## Temperaturas\n\n")
-        if temperaturas_data:
-            for t in temperaturas_data:
+        md_output.write("\n## Pressoes\n\n")
+        if pressoes_data:
+            for t in pressoes_data:
                 t["cilindro_codigo"] = cilindro_dict.get(t.get("cilindro_id"), "")
             md_output.write("| ID | Cilindro | Temperatura | Data | Hora | Usuário |\n")
             md_output.write("|---|---|---|---|---|---|\n")
-            for row in temperaturas_data:
+            for row in pressoes_data:
                 md_output.write(f"| {row.get('id')} | {row.get('cilindro_codigo')} | {row.get('temperatura')}°C | {row.get('data')} | {row.get('hora')} | {row.get('usuario_email')} |\n")
         else:
             md_output.write("*Nenhum registro de temperatura encontrado.*\n\n")

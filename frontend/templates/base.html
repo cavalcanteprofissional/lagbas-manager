@@ -190,9 +190,9 @@
                 <i class="bi bi-box-seam me-2"></i> <span>Cilindros</span>
             </a>
             {% endif %}
-            {% if is_admin or pode_acessar_aba('temperatura') %}
-            <a href="{{ url_for('temperatura.temperatura_list') }}" class="{% if request.endpoint == 'temperatura.temperatura_list' %}active{% endif %}">
-                <i class="bi bi-thermometer-half me-2"></i> <span>Temperatura</span>
+            {% if is_admin or pode_acessar_aba('pressao') %}
+            <a href="{{ url_for('pressao.pressao_list') }}" class="{% if request.endpoint == 'pressao.pressao_list' %}active{% endif %}">
+                <i class="bi bi-activity me-2"></i> <span>Pressão</span>
             </a>
             {% endif %}
             {% if is_admin or pode_acessar_aba('elemento') %}

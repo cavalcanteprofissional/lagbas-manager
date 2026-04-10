@@ -1,22 +1,22 @@
 {% extends "base.html" %}
 
-{% block title %}Temperatura - LabGas Manager{% endblock %}
+{% block title %}Pressão - LabGas Manager{% endblock %}
 
 {% block content %}
-<h2 class="mb-4"><i class="bi bi-thermometer-half"></i> Temperatura</h2>
+<h2 class="mb-4"><i class="bi bi-activity"></i> Pressão</h2>
 
 {% if not cilindro_list %}
 <div class="alert alert-warning">
-    <i class="bi bi-exclamation-triangle"></i> Nenhum cilindro cadastrado. Cadastre um cilindro primeiro para registrar temperaturas.
+    <i class="bi bi-exclamation-triangle"></i> Nenhum cilindro cadastrado. Cadastre um cilindro primeiro para registrar pressões.
 </div>
 {% else %}
 <div class="card mb-4">
     <div class="card-header">
-        <button class="btn btn-primary btn-lg w-100 w-md-auto" data-bs-toggle="collapse" data-bs-target="#formTemperatura">
+        <button class="btn btn-primary btn-lg w-100 w-md-auto" data-bs-toggle="collapse" data-bs-target="#formPressao">
             <i class="bi bi-plus-circle"></i> Nova Leitura
         </button>
     </div>
-    <div class="collapse" id="formTemperatura">
+    <div class="collapse" id="formPressao">
         <div class="card-body">
             <form method="POST" id="createForm">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
@@ -32,8 +32,8 @@
                         </select>
                     </div>
                     <div class="col-12 col-md-6 col-lg-3">
-                        <label class="form-label">Temperatura (°C) *</label>
-                        <input type="number" name="temperatura" class="form-control form-control-lg" placeholder="Ex: 25.5" step="0.1" min="-50" max="100" required>
+                        <label class="form-label">Pressão (bar) *</label>
+                        <input type="number" name="pressao" class="form-control form-control-lg" placeholder="Ex: 1.5" step="0.1" min="0" max="300" required>
                     </div>
                     <div class="col-12 col-md-6 col-lg-3">
                         <label class="form-label">Data *</label>
@@ -61,7 +61,7 @@
     <div class="card-header bg-light">
         <div class="row g-2 align-items-center">
             <div class="col-md-5">
-                <input type="text" id="searchTemperatura" class="form-control" placeholder="Buscar por cilindro...">
+                <input type="text" id="searchPressao" class="form-control" placeholder="Buscar por cilindro...">
             </div>
             <div class="col-md-5">
                 <select id="filterCilindro" class="form-select">
@@ -72,7 +72,7 @@
                 </select>
             </div>
             <div class="col-md-2">
-                <button class="btn btn-outline-secondary w-100" onclick="filterTemperatura()">
+                <button class="btn btn-outline-secondary w-100" onclick="filterPressao()">
                     <i class="bi bi-funnel"></i> Filtrar
                 </button>
             </div>
@@ -82,14 +82,14 @@
 
 <div class="card">
     <div class="card-body p-0">
-        {% if temperaturas %}
+        {% if pressoes %}
         <div class="table-responsive">
             <table class="table table-hover mb-0">
                 <thead class="table-light">
                     <tr>
                         <th style="width: 40px;"><input type="checkbox" id="selectAll"></th>
                         <th>Cilindro</th>
-                        <th>Temperatura</th>
+                        <th>Pressão</th>
                         <th class="d-none d-md-table-cell">Data</th>
                         <th class="d-none d-md-table-cell">Hora</th>
                         <th class="d-none d-lg-table-cell">Registrado em</th>
@@ -97,45 +97,45 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {% for t in temperaturas %}
+                    {% for p in pressoes %}
                     <tr>
-                        <td><input type="checkbox" name="temperatura_ids" value="{{ t.id }}" class="item-checkbox"></td>
+                        <td><input type="checkbox" name="pressao_ids" value="{{ p.id }}" class="item-checkbox"></td>
                         <td>
-                            <strong>{{ t.cilindro_codigo or t.cilindro_id }}</strong>
+                            <strong>{{ p.cilindro_codigo or p.cilindro_id }}</strong>
                         </td>
                         <td>
-                            <span class="badge bg-{{ 'danger' if t.temperatura > 30 else 'success' if t.temperatura < 20 else 'warning' }}">
-                                {{ "%.1f"|format(t.temperatura) }}°C
+                            <span class="badge bg-{{ 'danger' if p.pressao > 2.5 else 'success' if p.pressao < 0.5 else 'warning' }}">
+                                {{ "%.1f"|format(p.pressao) }} bar
                             </span>
                         </td>
-                        <td class="d-none d-md-table-cell">{{ t.data|formatar_data }}</td>
-                        <td class="d-none d-md-table-cell">{{ t.hora }}</td>
-                        <td class="d-none d-lg-table-cell">{{ t.created_at|formatar_data }}</td>
+                        <td class="d-none d-md-table-cell">{{ p.data|formatar_data }}</td>
+                        <td class="d-none d-md-table-cell">{{ p.hora }}</td>
+                        <td class="d-none d-lg-table-cell">{{ p.created_at|formatar_data }}</td>
                         <td>
                             <div class="btn-group" role="group">
-                                <button class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#editModal{{ t.id }}">
+                                <button class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#editModal{{ p.id }}">
                                     <i class="bi bi-pencil"></i>
                                 </button>
-                                <form method="POST" style="display:inline;" id="deleteForm{{ t.id }}">
+                                <form method="POST" style="display:inline;" id="deleteForm{{ p.id }}">
                                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                     <input type="hidden" name="action" value="delete">
-                                    <input type="hidden" name="temperatura_id" value="{{ t.id }}">
+                                    <input type="hidden" name="pressao_id" value="{{ p.id }}">
                                 </form>
-                                <button type="submit" form="deleteForm{{ t.id }}" class="btn btn-sm btn-danger" onclick="return confirm('Excluir registro de {{ t.cilindro_codigo or t.cilindro_id }}?')">
+                                <button type="submit" form="deleteForm{{ p.id }}" class="btn btn-sm btn-danger" onclick="return confirm('Excluir registro de {{ p.cilindro_codigo or p.cilindro_id }}?')">
                                     <i class="bi bi-trash"></i>
                                 </button>
                             </div>
                         </td>
                     </tr>
-                    <div class="modal fade" id="editModal{{ t.id }}" tabindex="-1">
+                    <div class="modal fade" id="editModal{{ p.id }}" tabindex="-1">
                         <div class="modal-dialog modal-dialog-centered">
                             <div class="modal-content">
-                                <form method="POST" onsubmit="return updateTemperatura(event, {{ t.id }})">
+                                <form method="POST" onsubmit="return updatePressao(event, {{ p.id }})">
                                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                     <input type="hidden" name="action" value="update">
-                                    <input type="hidden" name="temperatura_id" value="{{ t.id }}">
+                                    <input type="hidden" name="pressao_id" value="{{ p.id }}">
                                     <div class="modal-header">
-                                        <h5 class="modal-title">Editar Temperatura</h5>
+                                        <h5 class="modal-title">Editar Pressão</h5>
                                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                                     </div>
                                     <div class="modal-body">
@@ -143,21 +143,21 @@
                                             <label class="form-label">Cilindro</label>
                                             <select name="cilindro_id" class="form-select" required>
                                                 {% for c in cilindro_list %}
-                                                <option value="{{ c.id }}" {% if t.cilindro_id == c.id %}selected{% endif %}>{{ c.codigo }}</option>
+                                                <option value="{{ c.id }}" {% if p.cilindro_id == c.id %}selected{% endif %}>{{ c.codigo }}</option>
                                                 {% endfor %}
                                             </select>
                                         </div>
                                         <div class="mb-3">
-                                            <label class="form-label">Temperatura (°C)</label>
-                                            <input type="number" name="temperatura" class="form-control" value="{{ t.temperatura }}" step="0.1" min="-50" max="100" required>
+                                            <label class="form-label">Pressão (bar)</label>
+                                            <input type="number" name="pressao" class="form-control" value="{{ p.pressao }}" step="0.1" min="0" max="300" required>
                                         </div>
                                         <div class="mb-3">
                                             <label class="form-label">Data</label>
-                                            <input type="date" name="data" class="form-control" value="{{ t.data }}" required>
+                                            <input type="date" name="data" class="form-control" value="{{ p.data }}" required>
                                         </div>
                                         <div class="mb-3">
                                             <label class="form-label">Hora</label>
-                                            <input type="time" name="hora" class="form-control" value="{{ t.hora }}" required>
+                                            <input type="time" name="hora" class="form-control" value="{{ p.hora }}" required>
                                         </div>
                                     </div>
                                     <div class="modal-footer">
@@ -173,8 +173,8 @@
         </div>
         {% else %}
         <div class="text-center py-5 text-muted">
-            <i class="bi bi-thermometer-half fs-1"></i>
-            <p class="mt-2">Nenhum registro de temperatura.</p>
+            <i class="bi bi-activity fs-1"></i>
+            <p class="mt-2">Nenhum registro de pressão.</p>
         </div>
         {% endif %}
     </div>
@@ -223,8 +223,8 @@
 </div>
 
 <script>
-function filterTemperatura() {
-    const search = document.getElementById('searchTemperatura').value.toLowerCase();
+function filterPressao() {
+    const search = document.getElementById('searchPressao').value.toLowerCase();
     const cilindro = document.getElementById('filterCilindro').value;
     
     const rows = document.querySelectorAll('tbody tr');
@@ -239,7 +239,7 @@ function filterTemperatura() {
     });
 }
 
-document.getElementById('searchTemperatura').addEventListener('keyup', filterTemperatura);
+document.getElementById('searchPressao').addEventListener('keyup', filterPressao);
 
 document.getElementById('selectAll').addEventListener('change', function() {
     const checkboxes = document.querySelectorAll('.item-checkbox');
@@ -269,7 +269,7 @@ document.getElementById('bulkDeleteForm').addEventListener('submit', function(e)
     checkboxes.forEach(cb => {
         const input = document.createElement('input');
         input.type = 'hidden';
-        input.name = 'temperatura_ids';
+        input.name = 'pressao_ids';
         input.value = cb.value;
         this.appendChild(input);
     });

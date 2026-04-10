@@ -129,10 +129,10 @@
     <div class="col-12 col-lg-4 mb-4">
         <div class="card h-100">
             <div class="card-header" style="background: linear-gradient(135deg, #f59e0b, #fbbf24); color: white;">
-                <h5 class="mb-0"><i class="bi bi-thermometer-half"></i> Temperaturas ({{ temperaturas|length }})</h5>
+                <h5 class="mb-0"><i class="bi bi-gauge"></i> Pressões ({{ pressoes|length }})</h5>
             </div>
             <div class="card-body p-0">
-                {% if temperaturas %}
+                {% if pressoes %}
                 <div class="table-responsive">
                     <table class="table table-sm mb-0">
                         <thead>
@@ -143,7 +143,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            {% for t in temperaturas[:10] %}
+                            {% for t in pressoes[:10] %}
                             <tr>
                                 <td>{{ t.cilindro_id }}</td>
                                 <td>{{ "%.1f"|format(t.temperatura) }}°C</td>
@@ -152,8 +152,8 @@
                             {% endfor %}
                         </tbody>
                     </table>
-                    {% if temperaturas|length > 10 %}
-                    <p class="text-muted small p-2">Mostrando 10 de {{ temperaturas|length }} registros</p>
+                    {% if pressoes|length > 10 %}
+                    <p class="text-muted small p-2">Mostrando 10 de {{ pressoes|length }} registros</p>
                     {% endif %}
                 </div>
                 {% else %}
