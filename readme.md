@@ -1,6 +1,6 @@
 # LabGas Manager
 
-**Versão: 1.9.1**
+**Versão: 1.9.2**
 
 Dashboard para gestão de cilindro de gás e elementos analisados em laboratório de química, utilizando **Flask** com **Jinja2** para o frontend web e **Supabase** como banco de dados PostgreSQL.
 
@@ -14,7 +14,7 @@ Dashboard para gestão de cilindro de gás e elementos analisados em laboratóri
 |-----|-----------------|
 | **Dashboard** | Cards com estatísticas, gráficos de amostras por cilindro, elementos mais analisados, eficiência de cylinders |
 | **Cilindros** | CRUD completo, código CIL-XXX, status (ativo/esgotado), compartilhamento |
-| **Pressão** | CRUD completo, pressão do cilindro (bar), data e hora, vinculado a cilindro |
+| **Pressão** | CRUD completo, pressão (bar), temperatura (°C), data e hora, vinculado a cilindro |
 | **Elementos** | CRUD completo, consumo em L/min, 20 elementos padrão pré-carregados |
 | **Amostras** | CRUD completo, vinculado a cilindro/elemento, tempo de chama, quantidade |
 | **Histórico** | Log de todas as operações CRUD, filtros por tipo/ação |
@@ -40,15 +40,20 @@ Dashboard para gestão de cilindro de gás e elementos analisados em laboratóri
 - **Expiração de Sessão**: Sessão expira após 10 minutos de inatividade
   - Usuário é redirecionado para login com mensagem explicativa
 
-### Novidades v1.9.0
+### Novidades v1.9.2
 
-- **Nova Aba Pressão**: Registro de pressão dos cilindos
+- **Pressão com Temperatura**: Nova aba Pressão agora inclui campo de temperatura
   - Pressão em bar (entre 0 e 300)
+  - Temperatura em °C (entre -50 e 100)
   - Data default como data atual
   - Hora editável (formato HH:MM)
   - Vinculado a cilindro cadastrado
   - Múltiplos registros por cilindro
   - Admin pode controlar acesso por abas
+
+### Novidades v1.9.0
+
+- **Nova Aba Pressão**: Registro de pressão dos cilindos (versão inicial)
 
 ### Recursos de Segurança v1.5.0
 
@@ -165,9 +170,10 @@ O frontend estará disponível em: `http://localhost:5000`
 - Valores padrão: 1kg = 956L, R$290
 - Status: ativo, esgotado
 
-### Temperatura
+### Pressão
 - Vinculado a cilindro existente
-- Temperatura em °C (entre -50 e 100)
+- Pressão em bar (entre 0 e 300)
+- Temperatura em °C (entre -50 e 100), opcional
 - Data default como data atual
 - Hora editável (formato HH:MM)
 - Múltiplos registros por cilindro
@@ -240,6 +246,7 @@ O frontend estará disponível em: `http://localhost:5000`
 
 | Versão | Descrição |
 |--------|-----------|
+| v1.9.2 | Adicionar campo temperatura à aba Pressão |
 | v1.9.1 | Renomear aba Temperatura para Pressão, ícone bi-activity |
 | v1.9.0 | Nova aba Temperatura - registro de temperatura dos cilindos |
 | v1.8.0 | Sistema de expiração de sessão por inatividade (10 min) |

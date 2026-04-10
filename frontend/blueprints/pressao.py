@@ -29,11 +29,12 @@ def pressao_list():
         if action == "create":
             cilindro_id = request.form.get("cilindro_id", "").strip()
             pressao = request.form.get("pressao", "").strip()
+            temperatura = request.form.get("temperatura", "").strip()
             data = request.form.get("data", "").strip()
             hora = request.form.get("hora", "").strip()
             
             if not cilindro_id or not pressao or not data or not hora:
-                flash("Cilindro, pressão, data e hora são obrigatórios", "danger")
+                flash("Cilindro, pressão, temperatura, data e hora são obrigatórios", "danger")
                 return redirect(url_for("pressao.pressao_list"))
             
             try:
@@ -44,6 +45,17 @@ def pressao_list():
             except ValueError as e:
                 flash(f"Pressão inválida: {str(e)}", "danger")
                 return redirect(url_for("pressao.pressao_list"))
+            
+            temp_val = None
+            if temperatura:
+                try:
+                    temp_val = safe_float(temperatura, 25.0)
+                    if temp_val < -50 or temp_val > 100:
+                        flash("Temperatura deve estar entre -50°C e 100°C", "danger")
+                        return redirect(url_for("pressao.pressao_list"))
+                except ValueError as e:
+                    flash(f"Temperatura inválida: {str(e)}", "danger")
+                    return redirect(url_for("pressao.pressao_list"))
             
             try:
                 datetime.strptime(data, "%Y-%m-%d")
@@ -71,6 +83,7 @@ def pressao_list():
                 data_insert = {
                     "cilindro_id": int(cilindro_id),
                     "pressao": pressao_val,
+                    "temperatura": temp_val,
                     "data": data,
                     "hora": hora,
                     "user_id": user_id
@@ -82,7 +95,8 @@ def pressao_list():
                     client = get_authenticated_client()
                 
                 client.table("pressao").insert(data_insert).execute()
-                registrar_historico("pressao", "criado", f"{cilindro_codigo} - {pressao_val} bar", user_id)
+                temp_str = f", {temp_val}°C" if temp_val is not None else ""
+                registrar_historico("pressao", "criado", f"{cilindro_codigo} - {pressao_val} bar{temp_str}", user_id)
                 flash("Pressão registrada com sucesso!", "success")
             except Exception as e:
                 error_str = str(e)
@@ -92,11 +106,12 @@ def pressao_list():
             pressao_id = request.form.get("pressao_id", "").strip()
             cilindro_id = request.form.get("cilindro_id", "").strip()
             pressao = request.form.get("pressao", "").strip()
+            temperatura = request.form.get("temperatura", "").strip()
             data = request.form.get("data", "").strip()
             hora = request.form.get("hora", "").strip()
             
             if not pressao_id or not cilindro_id or not pressao or not data or not hora:
-                flash("ID, cilindro, pressão, data e hora são obrigatórios", "danger")
+                flash("ID, cilindro, pressão, temperatura, data e hora são obrigatórios", "danger")
                 return redirect(url_for("pressao.pressao_list"))
             
             try:
@@ -107,6 +122,17 @@ def pressao_list():
             except ValueError as e:
                 flash(f"Pressão inválida: {str(e)}", "danger")
                 return redirect(url_for("pressao.pressao_list"))
+            
+            temp_val = None
+            if temperatura:
+                try:
+                    temp_val = safe_float(temperatura, 25.0)
+                    if temp_val < -50 or temp_val > 100:
+                        flash("Temperatura deve estar entre -50°C e 100°C", "danger")
+                        return redirect(url_for("pressao.pressao_list"))
+                except ValueError as e:
+                    flash(f"Temperatura inválida: {str(e)}", "danger")
+                    return redirect(url_for("pressao.pressao_list"))
             
             try:
                 cilindro_check = get_admin_client().table("cilindro").select("codigo").eq("id", cilindro_id).execute()
@@ -122,6 +148,7 @@ def pressao_list():
                 data_update = {
                     "cilindro_id": int(cilindro_id),
                     "pressao": pressao_val,
+                    "temperatura": temp_val,
                     "data": data,
                     "hora": hora
                 }
@@ -131,7 +158,8 @@ def pressao_list():
                 else:
                     get_supabase_client().table("pressao").update(data_update).eq("id", pressao_id).execute()
                 
-                registrar_historico("pressao", "atualizado", f"{cilindro_codigo} - {pressao_val} bar", user_id)
+                temp_str = f", {temp_val}°C" if temp_val is not None else ""
+                registrar_historico("pressao", "atualizado", f"{cilindro_codigo} - {pressao_val} bar{temp_str}", user_id)
                 flash("Pressão atualizada com sucesso!", "success")
             except Exception as e:
                 flash(f"Erro ao atualizar pressão: {str(e)}", "danger")
@@ -155,13 +183,15 @@ def pressao_list():
                 
                 cilindro_id = pressao_info[0].get("cilindro_id")
                 pressao_val = pressao_info[0].get("pressao")
+                temp_val = pressao_info[0].get("temperatura")
                 
                 cilindro_info = get_supabase_client().table("cilindro").select("codigo").eq("id", cilindro_id).execute().data
                 cilindro_codigo = cilindro_info[0].get("codigo") if cilindro_info else str(cilindro_id)
                 
                 get_admin_client().table("pressao").delete().eq("id", pressao_id).execute()
                 
-                registrar_historico("pressao", "excluido", f"{cilindro_codigo} - {pressao_val} bar", user_id)
+                temp_str = f", {temp_val}°C" if temp_val is not None else ""
+                registrar_historico("pressao", "excluido", f"{cilindro_codigo} - {pressao_val} bar{temp_str}", user_id)
                 flash("Registro de pressão excluído com sucesso!", "success")
             except Exception as e:
                 flash(f"Erro ao excluir pressão: {str(e)}", "danger")
@@ -181,7 +211,7 @@ def pressao_list():
                 
                 for pressao_id in pressao_ids:
                     try:
-                        pressao_info = get_supabase_client().table("pressao").select("cilindro_id,pressao,user_id").eq("id", pressao_id).execute().data
+                        pressao_info = get_supabase_client().table("pressao").select("cilindro_id,pressao,temperatura,user_id").eq("id", pressao_id).execute().data
                         if not pressao_info:
                             continue
                         
@@ -191,13 +221,15 @@ def pressao_list():
                         
                         cilindro_id = pressao_info[0].get("cilindro_id")
                         pressao_val = pressao_info[0].get("pressao")
+                        temp_val = pressao_info[0].get("temperatura")
                         
                         cilindro_info = get_supabase_client().table("cilindro").select("codigo").eq("id", cilindro_id).execute().data
                         cilindro_codigo = cilindro_info[0].get("codigo") if cilindro_info else str(cilindro_id)
                         
                         get_admin_client().table("pressao").delete().eq("id", pressao_id).execute()
                         
-                        registrar_historico("pressao", "excluido", f"{cilindro_codigo} - {pressao_val} bar", user_id)
+                        temp_str = f", {temp_val}°C" if temp_val is not None else ""
+                        registrar_historico("pressao", "excluido", f"{cilindro_codigo} - {pressao_val} bar{temp_str}", user_id)
                         deleted_count += 1
                     except Exception:
                         continue

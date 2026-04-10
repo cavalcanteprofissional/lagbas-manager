@@ -36,6 +36,10 @@
                         <input type="number" name="pressao" class="form-control form-control-lg" placeholder="Ex: 1.5" step="0.1" min="0" max="300" required>
                     </div>
                     <div class="col-12 col-md-6 col-lg-3">
+                        <label class="form-label">Temperatura (°C)</label>
+                        <input type="number" name="temperatura" class="form-control form-control-lg" placeholder="Ex: 25.0" step="0.1" min="-50" max="100">
+                    </div>
+                    <div class="col-12 col-md-6 col-lg-3">
                         <label class="form-label">Data *</label>
                         <input type="date" name="data" class="form-control form-control-lg" value="{{ today }}" required>
                     </div>
@@ -90,6 +94,7 @@
                         <th style="width: 40px;"><input type="checkbox" id="selectAll"></th>
                         <th>Cilindro</th>
                         <th>Pressão</th>
+                        <th>Temperatura</th>
                         <th class="d-none d-md-table-cell">Data</th>
                         <th class="d-none d-md-table-cell">Hora</th>
                         <th class="d-none d-lg-table-cell">Registrado em</th>
@@ -107,6 +112,15 @@
                             <span class="badge bg-{{ 'danger' if p.pressao > 2.5 else 'success' if p.pressao < 0.5 else 'warning' }}">
                                 {{ "%.1f"|format(p.pressao) }} bar
                             </span>
+                        </td>
+                        <td>
+                            {% if p.temperatura %}
+                            <span class="badge bg-{{ 'danger' if p.temperatura > 30 else 'success' if p.temperatura < 20 else 'warning' }}">
+                                {{ "%.1f"|format(p.temperatura) }}°C
+                            </span>
+                            {% else %}
+                            <span class="text-muted">-</span>
+                            {% endif %}
                         </td>
                         <td class="d-none d-md-table-cell">{{ p.data|formatar_data }}</td>
                         <td class="d-none d-md-table-cell">{{ p.hora }}</td>
@@ -150,6 +164,10 @@
                                         <div class="mb-3">
                                             <label class="form-label">Pressão (bar)</label>
                                             <input type="number" name="pressao" class="form-control" value="{{ p.pressao }}" step="0.1" min="0" max="300" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Temperatura (°C)</label>
+                                            <input type="number" name="temperatura" class="form-control" value="{{ p.temperatura or '' }}" step="0.1" min="-50" max="100" placeholder="Ex: 25.0">
                                         </div>
                                         <div class="mb-3">
                                             <label class="form-label">Data</label>

@@ -15,6 +15,7 @@
                 <select id="filterType" class="form-select">
                     <option value="">Todos os Tipos</option>
                     <option value="cilindro">Cilindros</option>
+                    <option value="pressao">Pressões</option>
                     <option value="elemento">Elementos</option>
                     <option value="amostra">Amostras</option>
                 </select>
@@ -54,7 +55,7 @@
                             <small>{{ h.data|formatar_data if h.data else '-' }}</small>
                         </td>
                         <td>
-                            <span class="badge bg-{{ 'success' if h.tipo == 'cilindro' else 'primary' if h.tipo == 'elemento' else 'info' }}">
+                            <span class="badge bg-{{ 'success' if h.tipo == 'cilindro' else 'warning' if h.tipo == 'pressao' else 'primary' if h.tipo == 'elemento' else 'info' }}">
                                 {{ h.tipo|title }}
                             </span>
                         </td>
@@ -91,7 +92,7 @@ function filterHistory() {
         let rowType = cells[1].textContent.trim().toLowerCase();
         let rowAction = cells[2].textContent.trim().toLowerCase();
         
-        const typeMap = { 'cilindro': 'cilindro', 'elemento': 'elemento', 'amostra': 'amostra' };
+        const typeMap = { 'cilindro': 'cilindro', 'pressao': 'pressao', 'elemento': 'elemento', 'amostra': 'amostra' };
         rowType = typeMap[rowType] || rowType;
         
         const actionMap = { 'criado': 'criado', 'atualizado': 'atualizado', 'excluído': 'excluido' };

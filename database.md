@@ -1,5 +1,6 @@
 -- ============================================
 -- SCHEMA DO BANCO DE DADOS - LabGas Manager
+-- Versão: 1.9.2
 -- ============================================
 
 -- ============================================
@@ -63,11 +64,12 @@ CREATE TABLE historico_log (
     created_at TIMESTAMP DEFAULT NOW()
 );
 
--- Tabela de Pressão (v1.9.0)
+-- Tabela de Pressão (v1.9.1)
 CREATE TABLE pressao (
     id SERIAL PRIMARY KEY,
     cilindro_id INTEGER REFERENCES cilindro(id),
     pressao DECIMAL(5,2) NOT NULL,
+    temperatura DECIMAL(5,2),
     data DATE NOT NULL,
     hora TIME NOT NULL,
     user_id UUID REFERENCES auth.users(id),
