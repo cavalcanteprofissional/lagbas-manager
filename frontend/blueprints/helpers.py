@@ -111,7 +111,7 @@ def registrar_historico(tipo, acao, nome, user_id):
         logger.error(f"Erro ao registrar histórico: {str(e)}")
 
 
-ABAS_DISPONIVEIS = ["cilindro", "elemento", "amostra", "historico"]
+ABAS_DISPONIVEIS = ["cilindro", "temperatura", "elemento", "amostra", "historico"]
 ABAS_DEFAULT = {aba: True for aba in ABAS_DISPONIVEIS}
 
 

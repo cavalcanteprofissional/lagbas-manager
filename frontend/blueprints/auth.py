@@ -114,7 +114,7 @@ def login():
                             "ativo": True,
                             "nome": nome,
                             "email": email,
-                            "habilitar_abas": {"cilindro": True, "elemento": True, "amostra": True, "historico": True}
+                            "habilitar_abas": {"cilindro": True, "temperatura": True, "elemento": True, "amostra": True, "historico": True}
                         }).execute()
                         flash("Perfil criado com sucesso!", "success")
 

@@ -190,6 +190,11 @@
                 <i class="bi bi-box-seam me-2"></i> <span>Cilindros</span>
             </a>
             {% endif %}
+            {% if is_admin or pode_acessar_aba('temperatura') %}
+            <a href="{{ url_for('temperatura.temperatura_list') }}" class="{% if request.endpoint == 'temperatura.temperatura_list' %}active{% endif %}">
+                <i class="bi bi-thermometer-half me-2"></i> <span>Temperatura</span>
+            </a>
+            {% endif %}
             {% if is_admin or pode_acessar_aba('elemento') %}
             <a href="{{ url_for('elemento.list') }}" class="{% if request.endpoint == 'elemento.list' %}active{% endif %}">
                 <i class="bi bi-droplet me-2"></i> <span>Elementos</span>

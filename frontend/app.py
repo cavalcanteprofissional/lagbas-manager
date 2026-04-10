@@ -103,7 +103,14 @@ def add_cors_headers(response):
 @app.context_processor
 def inject_user_info():
     from blueprints.helpers import is_admin, get_user_role, get_user_name, pode_acessar_aba
-    return dict(is_admin=is_admin(), user_role=get_user_role(), user_name=get_user_name(), pode_acessar_aba=pode_acessar_aba)
+    from datetime import datetime
+    return dict(
+        is_admin=is_admin(), 
+        user_role=get_user_role(), 
+        user_name=get_user_name(), 
+        pode_acessar_aba=pode_acessar_aba,
+        today=datetime.now().strftime("%Y-%m-%d")
+    )
 
 
 @app.template_filter("formatar_data")
@@ -266,7 +273,7 @@ def perfil():
     user_nome = perfil_data.get("nome", "")
     
     if is_admin():
-        habilitar_abas = {"cilindro": True, "elemento": True, "amostra": True, "historico": True}
+        habilitar_abas = {"cilindro": True, "temperatura": True, "elemento": True, "amostra": True, "historico": True}
     else:
         habilitar_abas = get_habilitar_abas(user_id)
 
@@ -315,6 +322,7 @@ from blueprints.elemento import elemento_bp
 from blueprints.amostra import amostra_bp
 from blueprints.admin import admin_bp
 from blueprints.historico import historico_bp
+from blueprints.temperatura import temperatura_bp
 
 app.register_blueprint(auth_bp)
 app.register_blueprint(cilindro_bp)
@@ -322,6 +330,7 @@ app.register_blueprint(elemento_bp)
 app.register_blueprint(amostra_bp)
 app.register_blueprint(admin_bp)
 app.register_blueprint(historico_bp)
+app.register_blueprint(temperatura_bp)
 
 
 if __name__ == "__main__":

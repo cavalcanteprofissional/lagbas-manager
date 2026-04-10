@@ -49,7 +49,7 @@ CREATE TABLE perfil (
     ativo BOOLEAN DEFAULT true,
     nome VARCHAR(100),
     email VARCHAR(255),
-    habilitar_abas JSONB DEFAULT '{"cilindro": true, "elemento": true, "amostra": true, "historico": true}',
+    habilitar_abas JSONB DEFAULT '{"cilindro": true, "elemento": true, "amostra": true, "historico": true, "temperatura": true}',
     criado_em TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
@@ -59,6 +59,17 @@ CREATE TABLE historico_log (
     tipo VARCHAR(20) NOT NULL,
     acao VARCHAR(20) NOT NULL,
     nome VARCHAR(100) NOT NULL,
+    user_id UUID REFERENCES auth.users(id),
+    created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Tabela de Temperatura (v1.9.0)
+CREATE TABLE temperatura (
+    id SERIAL PRIMARY KEY,
+    cilindro_id INTEGER REFERENCES cilindro(id),
+    temperatura DECIMAL(5,2) NOT NULL,
+    data DATE NOT NULL,
+    hora TIME NOT NULL,
     user_id UUID REFERENCES auth.users(id),
     created_at TIMESTAMP DEFAULT NOW()
 );
@@ -74,6 +85,8 @@ CREATE UNIQUE INDEX idx_elemento_nome_user ON elemento(user_id, nome);
 -- Índices para campos adicionais
 CREATE INDEX idx_perfil_role ON perfil(role);
 CREATE INDEX idx_perfil_ativo ON perfil(ativo);
+CREATE INDEX idx_temperatura_cilindro ON temperatura(cilindro_id);
+CREATE INDEX idx_temperatura_user ON temperatura(user_id);
 
 -- ============================================
 -- ROW LEVEL SECURITY (RLS)
@@ -85,6 +98,7 @@ ALTER TABLE elemento ENABLE ROW LEVEL SECURITY;
 ALTER TABLE amostra ENABLE ROW LEVEL SECURITY;
 ALTER TABLE perfil ENABLE ROW LEVEL SECURITY;
 ALTER TABLE historico_log ENABLE ROW LEVEL SECURITY;
+ALTER TABLE temperatura ENABLE ROW LEVEL SECURITY;
 
 -- ============================================
 -- POLÍTICAS RLS - Cilindro
@@ -179,6 +193,27 @@ DROP POLICY IF EXISTS "Users can view historico_log" ON historico_log;
 
 CREATE POLICY "Users can view historico_log" ON historico_log
     FOR SELECT USING (true);
+
+-- ============================================
+-- POLÍTICAS RLS - Temperatura (v1.9.0)
+-- ============================================
+
+DROP POLICY IF EXISTS "Anyone can view temperatura" ON temperatura;
+DROP POLICY IF EXISTS "Users can insert temperatura" ON temperatura;
+DROP POLICY IF EXISTS "Users can update temperatura" ON temperatura;
+DROP POLICY IF EXISTS "Users can delete temperatura" ON temperatura;
+
+CREATE POLICY "Anyone can view temperatura" ON temperatura
+    FOR SELECT USING (true);
+
+CREATE POLICY "Users can insert temperatura" ON temperatura
+    FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Users can update temperatura" ON temperatura
+    FOR UPDATE USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can delete temperatura" ON temperatura
+    FOR DELETE USING (auth.uid() = user_id);
 
 -- ============================================
 -- CRIAR PRIMEIRO ADMIN

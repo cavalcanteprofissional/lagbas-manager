@@ -53,6 +53,15 @@
                 </div>
             </div>
             <div class="col-6 col-md-3 mb-2">
+                <div class="p-3 rounded {{ 'bg-success bg-opacity-10' if habilitar_abas.temperatura else 'bg-secondary bg-opacity-10' }}">
+                    <i class="bi bi-thermometer-half fs-4 {{ 'text-success' if habilitar_abas.temperatura else 'text-secondary' }}"></i>
+                    <p class="mb-0 mt-2"><strong>Temperatura</strong></p>
+                    <span class="badge bg-{{ 'success' if habilitar_abas.temperatura else 'secondary' }}">
+                        {{ 'Habilitado' if habilitar_abas.temperatura else 'Desabilitado' }}
+                    </span>
+                </div>
+            </div>
+            <div class="col-6 col-md-3 mb-2">
                 <div class="p-3 rounded {{ 'bg-success bg-opacity-10' if habilitar_abas.elemento else 'bg-secondary bg-opacity-10' }}">
                     <i class="bi bi-droplet fs-4 {{ 'text-success' if habilitar_abas.elemento else 'text-secondary' }}"></i>
                     <p class="mb-0 mt-2"><strong>Elementos</strong></p>
@@ -112,6 +121,43 @@
                 </div>
                 {% else %}
                 <p class="text-muted p-3">Nenhum cilindro.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 col-lg-4 mb-4">
+        <div class="card h-100">
+            <div class="card-header" style="background: linear-gradient(135deg, #f59e0b, #fbbf24); color: white;">
+                <h5 class="mb-0"><i class="bi bi-thermometer-half"></i> Temperaturas ({{ temperaturas|length }})</h5>
+            </div>
+            <div class="card-body p-0">
+                {% if temperaturas %}
+                <div class="table-responsive">
+                    <table class="table table-sm mb-0">
+                        <thead>
+                            <tr>
+                                <th>Cilindro</th>
+                                <th>Temp</th>
+                                <th>Data</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for t in temperaturas[:10] %}
+                            <tr>
+                                <td>{{ t.cilindro_id }}</td>
+                                <td>{{ "%.1f"|format(t.temperatura) }}°C</td>
+                                <td>{{ t.data|formatar_data if t.data else '-' }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% if temperaturas|length > 10 %}
+                    <p class="text-muted small p-2">Mostrando 10 de {{ temperaturas|length }} registros</p>
+                    {% endif %}
+                </div>
+                {% else %}
+                <p class="text-muted p-3">Nenhum registro.</p>
                 {% endif %}
             </div>
         </div>

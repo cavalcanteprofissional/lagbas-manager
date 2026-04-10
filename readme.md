@@ -1,6 +1,6 @@
 # LabGas Manager
 
-**Versão: 1.8.0**
+**Versão: 1.9.0**
 
 Dashboard para gestão de cilindro de gás e elementos analisados em laboratório de química, utilizando **Flask** com **Jinja2** para o frontend web e **Supabase** como banco de dados PostgreSQL.
 
@@ -14,6 +14,7 @@ Dashboard para gestão de cilindro de gás e elementos analisados em laboratóri
 |-----|-----------------|
 | **Dashboard** | Cards com estatísticas, gráficos de amostras por cilindro, elementos mais analisados, eficiência de cylinders |
 | **Cilindros** | CRUD completo, código CIL-XXX, status (ativo/esgotado), compartilhamento |
+| **Temperatura** | CRUD completo, temperatura do cilindro (°C), data e hora, vinculado a cilindro |
 | **Elementos** | CRUD completo, consumo em L/min, 20 elementos padrão pré-carregados |
 | **Amostras** | CRUD completo, vinculado a cilindro/elemento, tempo de chama, quantidade |
 | **Histórico** | Log de todas as operações CRUD, filtros por tipo/ação |
@@ -38,6 +39,15 @@ Dashboard para gestão de cilindro de gás e elementos analisados em laboratóri
 
 - **Expiração de Sessão**: Sessão expira após 10 minutos de inatividade
   - Usuário é redirecionado para login com mensagem explicativa
+
+### Novidades v1.9.0
+
+- **Nova Aba Temperatura**: Registro de temperatura dos cilindos
+  - Temperatura em °C (entre -50 e 100)
+  - Data e hora do registro (data default = hoje)
+  - Vinculado a cilindro cadastrado
+  - Múltiplos registros por cilindro
+  - Admin pode controlar acesso por abas
 
 ### Recursos de Segurança v1.5.0
 
@@ -85,6 +95,7 @@ labgas-manager/
 │   ├── blueprints/            # Blueprints Flask
 │   │   ├── auth.py           # Login, register, logout
 │   │   ├── cilindro.py       # CRUD Cilindros
+│   │   ├── temperatura.py    # CRUD Temperatura
 │   │   ├── elemento.py       # CRUD Elementos
 │   │   ├── amostra.py        # CRUD Amostras
 │   │   ├── admin.py          # Funções admin
@@ -152,6 +163,13 @@ O frontend estará disponível em: `http://localhost:5000`
 - Código deve seguir formato CIL-XXX (ex: CIL-001, CIL-002)
 - Valores padrão: 1kg = 956L, R$290
 - Status: ativo, esgotado
+
+### Temperatura
+- Vinculado a cilindro existente
+- Temperatura em °C (entre -50 e 100)
+- Data default como data atual
+- Hora editável (formato HH:MM)
+- Múltiplos registros por cilindro
 
 ### Elemento
 - Lista pré-carregada automática (20 elementos padrão)
@@ -221,6 +239,7 @@ O frontend estará disponível em: `http://localhost:5000`
 
 | Versão | Descrição |
 |--------|-----------|
+| v1.9.0 | Nova aba Temperatura - registro de temperatura dos cilindos |
 | v1.8.0 | Sistema de expiração de sessão por inatividade (10 min) |
 | v1.7.0 | Correções RLS, mensagens de erro amigáveis |
 | v1.6.0 | Exportação de dados (JSON/CSV/Excel/Markdown) + Controle de acesso por abas |
