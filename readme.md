@@ -1,6 +1,6 @@
 # LabGas Manager
 
-**Versão: 1.9.2**
+**Versão: 1.9.3**
 
 Dashboard para gestão de cilindro de gás e elementos analisados em laboratório de química, utilizando **Flask** com **Jinja2** para o frontend web e **Supabase** como banco de dados PostgreSQL.
 
@@ -39,6 +39,12 @@ Dashboard para gestão de cilindro de gás e elementos analisados em laboratóri
 
 - **Expiração de Sessão**: Sessão expira após 10 minutos de inatividade
   - Usuário é redirecionado para login com mensagem explicativa
+
+### Novidades v1.9.3
+
+- **Pressão sem Obrigatoriedade**: Campos de registro na aba Pressão agora são opcionais
+  - Cilindro, Pressão, Data e Hora são campos facultativos
+  - Usuário pode registrar apenas os dados disponíveis
 
 ### Novidades v1.9.2
 
@@ -246,6 +252,7 @@ O frontend estará disponível em: `http://localhost:5000`
 
 | Versão | Descrição |
 |--------|-----------|
+| v1.9.3 | Remover obrigatoriedade dos campos na aba Pressão |
 | v1.9.2 | Adicionar campo temperatura à aba Pressão |
 | v1.9.1 | Renomear aba Temperatura para Pressão, ícone bi-activity |
 | v1.9.0 | Nova aba Temperatura - registro de temperatura dos cilindos |
