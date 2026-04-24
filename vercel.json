@@ -1,0 +1,9 @@
+{
+  "buildCommand": "cd frontend && pip install -r requirements.txt",
+  "outputDirectory": "frontend",
+  "installCommand": "cd frontend && pip install -r requirements.txt",
+  "framework": null,
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/frontend/app.py" }
+  ]
+}
