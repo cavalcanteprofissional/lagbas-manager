@@ -58,7 +58,7 @@
                                     <input type="hidden" name="user_id" value="{{ user.id }}">
                                     <input type="hidden" name="aba" value="cilindro">
                                     <input type="hidden" name="habilitar" value="{{ 'false' if cil_checked else 'true' }}">
-                                    <button type="submit" class="btn btn-sm btn-{{ 'success' if cil_checked else 'outline-secondary' }} w-100 text-start" {% if user.role == 'admin' %}disabled title="Admin sempre tem acesso"{% endif %}>
+                                    <button type="submit" class="btn btn-sm btn-{{ 'primary' if cil_checked else 'outline-secondary' }} w-100 text-start" {% if user.role == 'admin' %}disabled title="Admin sempre tem acesso"{% endif %}>
                                         <i class="bi bi-box-seam me-1"></i> Cilindros
                                     </button>
                                 </form>
@@ -67,7 +67,7 @@
                                     <input type="hidden" name="user_id" value="{{ user.id }}">
                                     <input type="hidden" name="aba" value="temperatura">
                                     <input type="hidden" name="habilitar" value="{{ 'false' if temp_checked else 'true' }}">
-                                    <button type="submit" class="btn btn-sm btn-{{ 'success' if temp_checked else 'outline-secondary' }} w-100 text-start" {% if user.role == 'admin' %}disabled title="Admin sempre tem acesso"{% endif %}>
+                                    <button type="submit" class="btn btn-sm btn-{{ 'primary' if temp_checked else 'outline-secondary' }} w-100 text-start" {% if user.role == 'admin' %}disabled title="Admin sempre tem acesso"{% endif %}>
                                         <i class="bi bi-gauge me-1"></i> Pressão
                                     </button>
                                 </form>
@@ -76,7 +76,7 @@
                                     <input type="hidden" name="user_id" value="{{ user.id }}">
                                     <input type="hidden" name="aba" value="elemento">
                                     <input type="hidden" name="habilitar" value="{{ 'false' if ele_checked else 'true' }}">
-                                    <button type="submit" class="btn btn-sm btn-{{ 'success' if ele_checked else 'outline-secondary' }} w-100 text-start" {% if user.role == 'admin' %}disabled title="Admin sempre tem acesso"{% endif %}>
+                                    <button type="submit" class="btn btn-sm btn-{{ 'primary' if ele_checked else 'outline-secondary' }} w-100 text-start" {% if user.role == 'admin' %}disabled title="Admin sempre tem acesso"{% endif %}>
                                         <i class="bi bi-droplet me-1"></i> Elementos
                                     </button>
                                 </form>
@@ -85,7 +85,7 @@
                                     <input type="hidden" name="user_id" value="{{ user.id }}">
                                     <input type="hidden" name="aba" value="amostra">
                                     <input type="hidden" name="habilitar" value="{{ 'false' if amo_checked else 'true' }}">
-                                    <button type="submit" class="btn btn-sm btn-{{ 'success' if amo_checked else 'outline-secondary' }} w-100 text-start" {% if user.role == 'admin' %}disabled title="Admin sempre tem acesso"{% endif %}>
+                                    <button type="submit" class="btn btn-sm btn-{{ 'primary' if amo_checked else 'outline-secondary' }} w-100 text-start" {% if user.role == 'admin' %}disabled title="Admin sempre tem acesso"{% endif %}>
                                         <i class="bi bi-graph-up me-1"></i> Amostras
                                     </button>
                                 </form>
@@ -94,7 +94,7 @@
                                     <input type="hidden" name="user_id" value="{{ user.id }}">
                                     <input type="hidden" name="aba" value="historico">
                                     <input type="hidden" name="habilitar" value="{{ 'false' if his_checked else 'true' }}">
-                                    <button type="submit" class="btn btn-sm btn-{{ 'success' if his_checked else 'outline-secondary' }} w-100 text-start" {% if user.role == 'admin' %}disabled title="Admin sempre tem acesso"{% endif %}>
+                                    <button type="submit" class="btn btn-sm btn-{{ 'primary' if his_checked else 'outline-secondary' }} w-100 text-start" {% if user.role == 'admin' %}disabled title="Admin sempre tem acesso"{% endif %}>
                                         <i class="bi bi-clock-history me-1"></i> Histórico
                                     </button>
                                 </form>
@@ -102,14 +102,14 @@
                         </td>
                         <td>
                             <div class="btn-group" role="group">
-                                <a href="{{ url_for('admin.user_data', target_user_id=user.id) }}" class="btn btn-sm btn-info" title="Ver dados">
+                                <a href="{{ url_for('admin.user_data', target_user_id=user.id) }}" class="btn btn-sm btn-primary" title="Ver dados">
                                     <i class="bi bi-eye"></i>
                                 </a>
                                 <form method="POST" action="{{ url_for('admin.toggle_user') }}" style="display:inline;">
                                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                     <input type="hidden" name="user_id" value="{{ user.id }}">
                                     <input type="hidden" name="ativo" value="{{ 'false' if user.ativo else 'true' }}">
-                                    <button type="submit" class="btn btn-sm btn-{{ 'warning' if user.ativo else 'success' }}" 
+                                    <button type="submit" class="btn btn-sm btn-{{ 'outline-primary' if user.ativo else 'primary' }}" 
                                             onclick="return confirm('{{ 'Desativar' if user.ativo else 'Ativar' }} usuário?')">
                                         <i class="bi bi-{{ 'person-dash' if user.ativo else 'person-check' }}"></i>
                                     </button>
@@ -118,7 +118,7 @@
                                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                     <input type="hidden" name="user_id" value="{{ user.id }}">
                                     <input type="hidden" name="role" value="{{ 'usuario' if user.role == 'admin' else 'admin' }}">
-                                    <button type="submit" class="btn btn-sm btn-{{ 'outline-danger' if user.role == 'admin' else 'outline-primary' }}"
+                                    <button type="submit" class="btn btn-sm btn-{{ 'outline-primary' if user.role == 'admin' else 'primary' }}"
                                             onclick="return confirm('{{ 'Remover admin' if user.role == 'admin' else 'Tornar admin' }}?')">
                                         <i class="bi bi-{{ 'arrow-down-circle' if user.role == 'admin' else 'arrow-up-circle' }}"></i>
                                     </button>

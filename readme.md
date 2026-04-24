@@ -1,8 +1,28 @@
 # LabGas Manager
 
-**Versão: 1.9.3**
+**Versão: 2.0.0-beta** (Branch: v2-cores)
 
 Dashboard para gestão de cilindro de gás e elementos analisados em laboratório de química, utilizando **Flask** com **Jinja2** para o frontend web e **Supabase** como banco de dados PostgreSQL.
+
+---
+
+## Sistema de Cores v2.0.0
+
+### Cor Primária
+- **Principal**: `#0070b8` (derivada do ícone TSA)
+
+### Paleta de Cores (CSS Variables)
+
+| Variável | Hex | Uso |
+|----------|-----|-----|
+| `--primary-darkest` | #002a47 | Sidebar, textos escuros |
+| `--primary-dark` | #003a5e | Sidebar hover, headers |
+| `--primary` | #0070b8 | Brand, botões |
+| `--primary-light` | #4da3e8 | Gradientes, cards |
+| `--primary-lighter` | #6cccff | Gráficos, acentos |
+| `--primary-lightest` | #88d4ff | Highlights |
+| `--accent` | #005f96 | Cilindro |
+| `--accent-alt` | #4da3e8 | Elemento |
 
 ---
 
@@ -252,6 +272,7 @@ O frontend estará disponível em: `http://localhost:5000`
 
 | Versão | Descrição |
 |--------|-----------|
+| v2.0.0-beta | Novo padrão de cores #0070b8, UI modernizada |
 | v1.9.3 | Remover obrigatoriedade dos campos na aba Pressão |
 | v1.9.2 | Adicionar campo temperatura à aba Pressão |
 | v1.9.1 | Renomear aba Temperatura para Pressão, ícone bi-activity |
@@ -262,6 +283,33 @@ O frontend estará disponível em: `http://localhost:5000`
 | v1.5.0 | Correções de segurança (CSRF, IDOR, Rate Limiting, RLS) |
 | v1.4.1 | Correções de UX e mensagens amigáveis, formatação de datas |
 | v1.4.0 | Refatoração para Blueprints, código modular |
+
+---
+
+## Deploy Vercel
+
+### Configuração do Projeto
+
+1. **Conectar Repositório**
+   - Acesse: https://vercel.com/new
+   - Selecione "Import Project"
+   - Escolha o repositório `labgas-manager`
+
+2. **Configurações do Projeto**
+   - Framework Preset: **Other**
+   - Build Command: *(deixe vazio)*
+   - Output Directory: *(deixe vazio)*
+   - Install Command: *(deixe vazio)*
+
+3. **Environment Variables**
+   - `SECRET_KEY`: sua chave secreta
+   - `SUPABASE_URL`: https://seu-projeto.supabase.co
+   - `SUPABASE_KEY`: sua chave anon
+   - `SUPABASE_SERVICE_KEY`: sua service role key
+
+4. **Configurar Domains**
+   - Branch `main`: labgas-manager.vercel.app (produção)
+   - Branch `v2-cores`: v2.labgas-manager.vercel.app (preview/homologação)
 
 ---
 

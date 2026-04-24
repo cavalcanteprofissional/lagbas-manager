@@ -369,3 +369,168 @@ python -m venv venv
 - v1.5.0 - Correções de segurança (CSRF, IDOR, Rate Limiting, RLS)
 - v1.4.1 - Correções de UX e mensagens amigáveis, formatação de datas
 - v1.4.0 - Refatoração para Blueprints, código modular
+
+## Sistema de Cores
+
+### Cor Primária
+- **Principal**: #0070b8
+- **Descrição**: Cor base do projeto, derivada do ícone TSA
+
+### Paleta de Cores (CSS Variables)
+
+| Variável | Hex | Uso |
+|----------|-----|-----|
+| `--primary-darkest` | #002a47 | Sidebar background, textos muito escuros |
+| `--primary-dark` | #003a5e | Sidebar hover, headers escuros |
+| `--primary` | #0070b8 | Brand, botões primários |
+| `--primary-light` | #4da3e8 | Gradientes, cards |
+| `--primary-lighter` | #6cccff | Gráficos, acentos |
+| `--primary-lightest` | #88d4ff | Highlights, bordas |
+| `--accent` | #005f96 | Cilindro (variação) |
+| `--accent-alt` | #4da3e8 | Elemento (variação) |
+
+### Aplicações por Tipo
+
+| Tipo | Gradient | Hex (início → fim) |
+|------|----------|-----------------|
+| Cilindro | linear-gradient | #005f96 → #4da3e8 |
+| Elemento | linear-gradient | #003a5e → #4da3e8 |
+| Amostra | linear-gradient | #0070b8 → #6cccff |
+| Ativos | linear-gradient | #002a47 → #003a5e |
+| Admin | linear-gradient | #002a47 → #004475 |
+| Login/Register | linear-gradient | #0070b8 → #4da3e8 |
+
+### Arquivos de Estilo
+- **base.html**: CSS variables no :root + classes .stat-card
+- **constants.py**: COR_TIPO com novas variações
+- **login.html/register.html**: Gradiente unificado
+- **dashboard.html**: Cards + gráficos
+- **admin_user_data.html**: Headers dos cards
+
+---
+
+## v2.0.0 - Padrão de Cores #0070b8
+
+### Visão Geral
+Nova versão com padrão de cores unificado baseado na cor primária `#0070b8` (derivada do ícone TSA).
+
+### Alterações de Cores
+
+#### Sistema de Cores Global
+- **Cor Primária**: `#0070b8`
+- **8 variações de cores**: CSS Variables no :root
+- **Todos os elementos ahora usam o padrão**: Botões, badges, gradientes, gráficos
+
+#### Arquivos Modificados
+
+| Arquivo | Alteração |
+|---------|-----------|
+| base.html | CSS Variables, botões Bootstrap, paginação, sidebar |
+| constants.py | COR_TIPO + ELEMENTO_CORES (20 cores) |
+| login.html | Gradient #0070b8 |
+| register.html | Gradient #0070b8 |
+| dashboard.html | 8 stat-cards + gráficos |
+| admin.html | Botões admin |
+| admin_user_data.html | Cards + paginação |
+| perfil.html | 4 stat-cards |
+| historico.html | Cores + paginação |
+| amostra.html | Badges + alerta + modal |
+| cilindro.html | Alerta de seleção |
+| pressao.html | Alerta de seleção |
+| elemento.html | Alerta de seleção |
+
+#### Paleta de Cores (CSS Variables)
+
+```css
+:root {
+    --primary-darkest: #002a47;
+    --primary-dark: #003a5e;
+    --primary: #0070b8;
+    --primary-light: #4da3e8;
+    --primary-lighter: #6cccff;
+    --primary-lightest: #88d4ff;
+    --accent: #005f96;
+    --accent-alt: #4da3e8;
+}
+```
+
+#### Aplicações por Tipo
+
+| Tipo | Classe CSS | Gradient |
+|------|------------|----------|
+| Cilindro | stat-card | #005f96 → #4da3e8 |
+| Pressão | stat-card.blue | #003a5e → #4da3e8 |
+| Elementos | stat-card.pink | #0070b8 → #6cccff |
+| Amostras | stat-card.purple | #002a47 → #003a5e |
+| Ativos | stat-card.purple | #002a47 → #003a5e |
+| Admin | stat-card | #002a47 → #004475 |
+| Login/Register | background | #0070b8 → #4da3e8 |
+
+### Novas Funcionalidades
+
+#### estatisticas do Perfil
+- 4 stat-cards: Cilindros, Pressões, Elementos, Amostras
+- Grid 2x2 com cores diferenciadas
+
+#### Dados do Usuário (Admin)
+- Grid 2x2 com total de registros
+- Card de Histórico com paginação e filtros
+
+#### Histórico
+- Paginação (20 itens por página)
+- Filtros: Tipo, Ação
+- Busca por nome
+- Cores padronizadas nos badges
+
+#### Cores de Elementos nos Gráficos
+- Paleta de 20 cores para diferenciação de elementos
+- Função JavaScript `getCoresPorElemento()` para atribuição dinâmica
+
+### Correções de UI
+
+- Alerta de seleção em massa padronizado
+- Modal de edição com header gradiente
+- Badges padronizados com cores do projeto
+- Header do filtro "bg-light" → #f0f8ff
+- Sidebar background: #0d1117 → #002a47
+
+### Deploy Vercel
+
+| Branch | URL Produção | Status |
+|--------|---------------|--------|
+| main | labgas-manager.vercel.app | Produção atual |
+| v2-cores | (em configuração) | Beta/Novo |
+
+---
+
+## Deploy Guide (Vercel)
+
+### Configuração do Projeto Vercel
+
+1. **Conectar Repositório**
+   - Acesse: https://vercel.com/new
+   - Selecione "Import Project"
+   - Escolha o repositório `labgas-manager`
+
+2. **Configurações do Projeto**
+   - Framework Preset: **Other**
+   - Build Command: *(deixe vazio)*
+   - Output Directory: *(deixe vazio)*
+   - Install Command: *(deixe vazio)*
+
+3. **Environment Variables**
+   - `SECRET_KEY`: sua chave secreta
+   - `SUPABASE_URL`: https://seu-projeto.supabase.co
+   - `SUPABASE_KEY`: sua chave anon
+   - `SUPABASE_SERVICE_KEY`: sua service role key
+
+4. **Configurar domains Extras (opcional)**
+   - Para produção: `labgas-manager.vercel.app`
+   - Para v2: `v2.labgas-manager.vercel.app` (ou subdomain diferente)
+
+### Versionamento
+
+| Versão | Branch | Descrição |
+|--------|--------|-----------|
+| 1.x.x | main | Versão original |
+| 2.x.x | v2-cores | Nova versão com padrão de cores |

@@ -1,5 +1,5 @@
 # Historico blueprint - Activity history
-from flask import Blueprint, render_template, flash, redirect
+from flask import Blueprint, render_template, flash, redirect, request, url_for
 
 from utils.supabase_utils import get_supabase_client
 from utils.supabase_utils import buscar_perfis_usuarios
@@ -12,15 +12,18 @@ historico_bp = Blueprint('historico', __name__)
 def list():
     if not pode_acessar_aba("historico"):
         flash("Você não tem permissão para acessar esta aba.", "warning")
-        from flask import url_for
         return redirect(url_for("dashboard"))
     
     user_id = get_user_id()
     admin = is_admin()
     
-    limit = 20
+    page = int(request.args.get("page", 1))
+    per_page = 20
+    offset = (page - 1) * per_page
     
-    historico_log = get_supabase_client().table("historico_log").select("*").order("created_at", desc=True).limit(limit).execute().data or []
+    historico_log = get_supabase_client().table("historico_log").select("*").order("created_at", desc=True).range(offset, offset + per_page - 1).execute().data or []
+    
+    total = get_supabase_client().table("historico_log").select("*", count="exact").execute().count or 0
     
     all_user_ids = {h.get("user_id") for h in historico_log if h.get("user_id")}
     user_map = buscar_perfis_usuarios(all_user_ids)
@@ -39,4 +42,4 @@ def list():
             "usuario_nome": user_map.get(h.get("user_id"), '-')
         })
     
-    return render_template("historico.html", history=history)
+    return render_template("historico.html", history=history, page=page, per_page=per_page, total=total)

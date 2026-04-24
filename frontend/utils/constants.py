@@ -8,32 +8,32 @@ CUSTO_DEFAULT = 290.00
 
 CILINDRO_STATUS = ["ativo", "esgotado"]
 
-# Padrão de cores por tipo (CSS classes e gradients)
+# Sistema de cores - Paleta baseada em #0070b8
 COR_TIPO = {
     "cilindro": {
         "class": "green",
-        "gradient": "linear-gradient(135deg, #10b981, #34d399)",
-        "badge": "success"
+        "gradient": "linear-gradient(135deg, #005f96, #4da3e8)",
+        "badge": "info"
     },
     "elemento": {
         "class": "blue", 
-        "gradient": "linear-gradient(135deg, #3b82f6, #60a5fa)",
+        "gradient": "linear-gradient(135deg, #003a5e, #4da3e8)",
         "badge": "primary"
     },
     "amostra": {
         "class": "pink",
-        "gradient": "linear-gradient(135deg, #ec4899, #f472b6)",
-        "badge": "pink"
+        "gradient": "linear-gradient(135deg, #0070b8, #6cccff)",
+        "badge": "info"
     },
     "ativos": {
         "class": "purple",
-        "gradient": "linear-gradient(135deg, #8b5cf6, #a78bfa)",
-        "badge": "purple"
+        "gradient": "linear-gradient(135deg, #002a47, #003a5e)",
+        "badge": "primary"
     },
     "admin": {
         "class": "danger",
-        "gradient": "linear-gradient(135deg, #ef4444, #f87171)",
-        "badge": "danger"
+        "gradient": "linear-gradient(135deg, #002a47, #004475)",
+        "badge": "primary"
     }
 }
 
@@ -58,4 +58,11 @@ ELEMENTOS_PADRAO = [
     {"nome": "Selênio", "consumo_lpm": 2.0},
     {"nome": "Zinco", "consumo_lpm": 1.5},
     {"nome": "Tálio", "consumo_lpm": 1.5},
+]
+
+ELEMENTO_CORES = [
+    "#0070b8", "#0069a3", "#005f96", "#005a8e", "#004475",
+    "#003a5e", "#002a47", "#4da3e8", "#5cb8e8", "#6cccff",
+    "#7ad0ff", "#88d4ff", "#94ddff", "#8bbed4", "#6a9ab8",
+    "#4a7a98", "#2a5a78", "#1a4a58", "#0a3a48", "#002a38"
 ]

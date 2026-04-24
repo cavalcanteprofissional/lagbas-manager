@@ -194,7 +194,7 @@ def update_habilitar_abas():
     return redirect(url_for("admin.panel"))
 
 
-@admin_bp.route("/admin/user-data/<target_user_id>")
+@admin_bp.route("/admin/user-data/<target_user_id>", methods=["GET"])
 def user_data(target_user_id):
     if not is_admin():
         flash("Acesso restrito a administradores.", "danger")
@@ -205,10 +205,28 @@ def user_data(target_user_id):
         return error
     
     client = get_admin_client()
-    cilindro = client.table("cilindro").select("*").eq("user_id", target_user_id).execute().data or []
-    elementos = client.table("elemento").select("*").eq("user_id", target_user_id).execute().data or []
-    amostras = client.table("amostra").select("*").eq("user_id", target_user_id).execute().data or []
-    pressoes = client.table("pressao").select("*").eq("user_id", target_user_id).execute().data or []
+    
+    page = int(request.args.get("page", 1))
+    per_page = 20
+    
+    cilindro_total = client.table("cilindro").select("*", count="exact").eq("user_id", target_user_id).execute().count or 0
+    elementos_total = client.table("elemento").select("*", count="exact").eq("user_id", target_user_id).execute().count or 0
+    amostras_total = client.table("amostra").select("*", count="exact").eq("user_id", target_user_id).execute().count or 0
+    pressoes_total = client.table("pressao").select("*", count="exact").eq("user_id", target_user_id).execute().count or 0
+    
+    historico_offset = (page - 1) * per_page
+    historico_log = client.table("historico_log").select(
+        "tipo, acao, nome, created_at"
+    ).eq("user_id", target_user_id).order("created_at", desc=True).range(historico_offset, historico_offset + per_page - 1).execute().data or []
+    
+    historico_total = client.table("historico_log").select("*", count="exact").eq("user_id", target_user_id).execute().count or 0
+    
+    history = [{
+        "tipo": h.get("tipo"),
+        "acao": h.get("acao"),
+        "nome": h.get("nome"),
+        "data": h.get("created_at")
+    } for h in historico_log]
     
     perfil = client.table("perfil").select("*").eq("id", target_user_id).execute().data
     target_user = perfil[0] if perfil else {"id": target_user_id, "role": "unknown"}
@@ -218,11 +236,15 @@ def user_data(target_user_id):
     return render_template(
         "admin_user_data.html",
         target_user=target_user,
-        cilindro=cilindro,
-        elementos=elementos,
-        amostras=amostras,
-        pressoes=pressoes,
-        habilitar_abas=habilitar_abas
+        cilindro_total=cilindro_total,
+        elementos_total=elementos_total,
+        amostras_total=amostras_total,
+        pressoes_total=pressoes_total,
+        habilitar_abas=habilitar_abas,
+        history=history,
+        historico_total=historico_total,
+        page=page,
+        per_page=per_page
     )
 
 
