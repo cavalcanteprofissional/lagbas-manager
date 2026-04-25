@@ -127,17 +127,17 @@
                             </span>
                         </td>
                         <td>
-                            <div class="btn-group" role="group">
-                                <button class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#editModal{{ c.id }}">
-                                    <i class="bi bi-pencil"></i>
+                            <div class="d-flex flex-column gap-1">
+                                <button class="btn btn-sm admin-permission-btn btn-warning w-100 text-start" data-bs-toggle="modal" data-bs-target="#editModal{{ c.id }}">
+                                    <i class="bi bi-pencil me-1"></i> Editar
                                 </button>
-                                <form method="POST" style="display:inline;" id="deleteForm{{ c.id }}">
+                                <form method="POST" id="deleteForm{{ c.id }}">
                                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                     <input type="hidden" name="action" value="delete">
                                     <input type="hidden" name="cilindro_id" value="{{ c.id }}">
                                 </form>
-                                <button type="submit" form="deleteForm{{ c.id }}" class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal{{ c.id }}">
-                                    <i class="bi bi-trash"></i>
+                                <button type="button" class="btn btn-sm admin-permission-btn btn-danger w-100 text-start" data-bs-toggle="modal" data-bs-target="#deleteModal{{ c.id }}">
+                                    <i class="bi bi-trash me-1"></i> Excluir
                                 </button>
                             </div>
                         </td>
