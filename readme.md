@@ -60,6 +60,14 @@ Dashboard para gestão de cilindro de gás e elementos analisados em laboratóri
 - **Expiração de Sessão**: Sessão expira após 10 minutos de inatividade
   - Usuário é redirecionado para login com mensagem explicativa
 
+### Novidades v2.0.1
+
+- **Log de Usuários no Histórico**: Registro automático de eventos de usuários
+  - Cadastro de novo usuário (tipo: perfil, ação: criado)
+  - Alteração de role admin/usuário (tipo: perfil, ação: atualizado)
+  - Ativação/desativação de usuário (tipo: perfil, ação: atualizado)
+  - Alteração de permissões de abas (tipo: perfil, ação: atualizado)
+
 ### Novidades v1.9.3
 
 - **Pressão sem Obrigatoriedade**: Campos de registro na aba Pressão agora são opcionais
@@ -245,8 +253,9 @@ O frontend estará disponível em: `http://localhost:5000`
 
 ### Histórico
 - Registro de todas as operações CRUD
-- Filtros por tipo (cilindro/elemento/amostra) e ação (criado/atualizado/excluido)
+- Filtros por tipo (cilindro/elemento/amostra/perfil) e ação (criado/atualizado/excluido)
 - Exibição do usuário que realizou a ação
+- **Log de usuários**: Cadastro, alteração de role, ativação/desativação, permissões de abas
 
 ### Validações
 - Não permitir duplicatas (código de cilindro, nome de elemento)
@@ -272,6 +281,7 @@ O frontend estará disponível em: `http://localhost:5000`
 
 | Versão | Descrição |
 |--------|-----------|
+| v2.0.1 | Log de usuários no histórico (cadastro, role, permissões) |
 | v2.0.0-beta | Novo padrão de cores #0070b8, UI modernizada |
 | v1.9.3 | Remover obrigatoriedade dos campos na aba Pressão |
 | v1.9.2 | Adicionar campo temperatura à aba Pressão |

@@ -207,3 +207,42 @@ labgas-manager/
 1. Conectar repositório GitHub no Vercel
 2. Configurar variáveis de ambiente no painel Vercel
 3. Deploy automático ao push na branch principal
+
+---
+
+## Fase 6 - Log de Usuários no Histórico ✅ CONCLUÍDO
+
+### Descrição
+Implementar registro no histórico de eventos relacionados a usuários (cadastro, alteração de role, permissões de abas).
+
+### Tarefas
+
+#### 6.1 Log de Cadastro de Usuário
+- [x] Adicionar `registrar_historico()` em `auth.py` após criar perfil
+- [x] Tipo: `perfil`, Ação: `criado`, Nome: email do usuário
+- [x] Arquivo: `frontend/blueprints/auth.py`
+
+#### 6.2 Log de Alteração de Role
+- [x] Adicionar registro em `admin.py:set_role()` após atualizar role
+- [x] Tipo: `perfil`, Ação: `atualizado`, Nome: "Role alterada para admin/usuario"
+- [x] Arquivo: `frontend/blueprints/admin.py`
+
+#### 6.3 Log de Ativação/Desativação de Usuário
+- [x] Adicionar registro em `admin.py:toggle_user()` após atualizar status
+- [x] Tipo: `perfil`, Ação: `atualizado`, Nome: "Usuário ativado/desativado"
+- [x] Arquivo: `frontend/blueprints/admin.py`
+
+#### 6.4 Log de Alteração de Permissões de Abas
+- [x] Rota `update_habilitar_abas` já existia - adicionado registro
+- [x] Adicionar registro após alterar permissões
+- [x] Tipo: `perfil`, Ação: `atualizado`, Nome: "Aba X habilitada/desabilitada"
+- [x] Arquivo: `frontend/blueprints/admin.py`
+
+### Estrutura de Dados no Histórico
+
+| Campo | Exemplo Cadastro | Exemplo Role | Exemplo Toggle | Exemplo Permissões |
+|-------|------------------|--------------|----------------|-------------------|
+| tipo | perfil | perfil | perfil | perfil |
+| ação | criado | atualizado | atualizado | atualizado |
+| nome | "usuario@email.com" | "Role alterada para admin" | "Usuário ativado" | "Aba Cilindros habilitada" |
+| user_id | ID do novo usuário | ID do admin | ID do admin | ID do admin |

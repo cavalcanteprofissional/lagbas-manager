@@ -7,7 +7,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash,
 from openpyxl import Workbook
 
 from utils.supabase_utils import get_admin_client
-from blueprints.helpers import get_user_id, is_admin, get_user_role, get_habilitar_abas
+from blueprints.helpers import get_user_id, is_admin, get_user_role, get_habilitar_abas, registrar_historico
 
 admin_bp = Blueprint('admin', __name__)
 
@@ -90,6 +90,11 @@ def toggle_user():
     
     client = get_admin_client()
     client.table("perfil").update({"ativo": ativo}).eq("id", target_user_id).execute()
+    
+    # Registrar no histórico
+    acao = "ativado" if ativo else "desativado"
+    registrar_historico("perfil", "atualizado", f"Usuário {acao}", get_user_id())
+    
     flash(f"Usuário {'ativado' if ativo else 'desativado'} com sucesso!", "success")
     
     return redirect(url_for("admin.panel"))
@@ -118,6 +123,10 @@ def set_role():
     
     client = get_admin_client()
     client.table("perfil").update({"role": role}).eq("id", target_user_id).execute()
+    
+    # Registrar alteração de role no histórico
+    registrar_historico("perfil", "atualizado", f"Role alterada para {role}", get_user_id())
+    
     flash(f"Função do usuário alterada para {role}!", "success")
     
     return redirect(url_for("admin.panel"))
@@ -175,6 +184,7 @@ def update_habilitar_abas():
     client = get_admin_client()
     
     habilitar_abas = {"cilindro": False, "pressao": False, "elemento": False, "amostra": False, "historico": False}
+    perfil = client.table("perfil").select("habilitar_abas").eq("id", target_user_id).execute()
     if perfil.data and perfil.data[0].get("habilitar_abas"):
         habilitar_abas = perfil.data[0].get("habilitar_abas")
     
@@ -182,14 +192,12 @@ def update_habilitar_abas():
     
     client.table("perfil").update({"habilitar_abas": habilitar_abas}).eq("id", target_user_id).execute()
     
+    # Registrar alteração de permissões no histórico
     acao = "habilitada" if habilitar else "desabilitada"
     nome_aba = {"cilindro": "Cilindros", "pressao": "Pressão", "elemento": "Elementos", "amostra": "Amostras", "historico": "Histórico"}.get(aba, aba)
+    registrar_historico("perfil", "atualizado", f"Aba {nome_aba} {acao}", get_user_id())
+    
     flash(f"Aba {nome_aba} {acao} com sucesso!", "success")
-    
-    client = get_admin_client()
-    client.table("perfil").update({"habilitar_abas": habilitar_abas}).eq("id", target_user_id).execute()
-    
-    flash("Permissões de acesso atualizadas!", "success")
     
     return redirect(url_for("admin.panel"))
 
