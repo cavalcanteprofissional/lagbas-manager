@@ -1,0 +1,7 @@
+{
+    "cilindro": true,
+    "pressao": true,
+    "elemento": true,
+    "amostra": true,
+    "historico": true
+}
