@@ -67,6 +67,9 @@ Dashboard para gestão de cilindro de gás e elementos analisados em laboratóri
   - Alteração de role admin/usuário (tipo: perfil, ação: atualizado)
   - Ativação/desativação de usuário (tipo: perfil, ação: atualizado)
   - Alteração de permissões de abas (tipo: perfil, ação: atualizado)
+- **Visualizar Senha**: Ícone de alternância para mostrar/ocultar senha
+  - Disponível nas telas de Login e Registro
+  - Ícone de olho (bi-eye / bi-eye-slash)
 
 ### Novidades v1.9.3
 
