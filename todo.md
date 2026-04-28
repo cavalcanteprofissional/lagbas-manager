@@ -249,7 +249,31 @@ Implementar registro no histórico de eventos relacionados a usuários (cadastro
 
 ---
 
-## Fase 7 - Auditoria Frontend vs Backend (2ª Verificação) ⏳
+## Fase 7 - Auditoria Frontend vs Backend (3ª Verificação) ⏳
+
+### Inconsistências Encontradas
+
+#### 7.7 admin.py - JSON export usa "temperaturas"
+- **Arquivo**: `frontend/blueprints/admin.py`
+- **Linha**: 321
+- **Problema**: O JSON export usa `"temperaturas": pressoes_data` mas deveria ser `"pressoes": pressoes_data`
+- **Status**: [x] Concluído ✅
+
+#### 7.8 admin.py - CSV export usa "TEMPERATURAS"
+- **Arquivo**: `frontend/blueprints/admin.py`
+- **Linha**: 359
+- **Problema**: O CSV export usa `# TEMPERATURAS\n` mas deveria ser `# PRESSOES\n`
+- **Status**: [x] Concluído ✅
+
+#### 7.9 admin.py - CSV export não inclui campo "pressao"
+- **Arquivo**: `frontend/blueprints/admin.py`
+- **Linha**: 368
+- **Problema**: Os headers do CSV para pressoes não incluem o campo "pressao" (apenas inclui temperatura)
+- **Status**: [x] Concluído ✅
+
+---
+
+## Fase 7 - Auditoria Frontend vs Backend (2ª Verificação) ✅ CONCLUÍDO
 
 ### Inconsistências Encontradas
 

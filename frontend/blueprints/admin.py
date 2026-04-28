@@ -318,7 +318,7 @@ def export_data():
             "cilindros": cilindro_data,
             "elementos": elementos_data,
             "amostras": amostras_data,
-            "temperaturas": pressoes_data
+            "pressoes": pressoes_data
         }
         response = make_response(json.dumps(data, indent=2, default=str))
         response.headers["Content-Disposition"] = f"attachment; filename=labgas_export_{timestamp}.json"
@@ -356,7 +356,7 @@ def export_data():
                 values = [str(row.get(h, "")) for h in headers]
                 output.write(",".join(values) + "\n")
         
-        output.write("\n# TEMPERATURAS\n")
+        output.write("\n# PRESSOES\n")
         if pressoes_data:
             for t in pressoes_data:
                 uid = t.get("user_id")
@@ -365,7 +365,7 @@ def export_data():
                     t["usuario_email"] = u.get("email", "")
                     t["usuario_nome"] = u.get("nome", "")
                 t["cilindro_codigo"] = cilindro_dict.get(t.get("cilindro_id"), "")
-            headers = ["id", "cilindro_id", "cilindro_codigo", "temperatura", "data", "hora",
+            headers = ["id", "cilindro_id", "cilindro_codigo", "pressao", "temperatura", "data", "hora",
                       "usuario_email", "usuario_nome", "created_at"]
             output.write(",".join(headers) + "\n")
             for row in pressoes_data:
