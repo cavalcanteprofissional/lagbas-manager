@@ -58,13 +58,13 @@
                             </span>
                         </td>
                         <td class="text-center" data-label="Cilindros">{{ user.cilindros }}</td>
-                        <td class="text-center" data-label="Pressão">{{ user.temperaturas }}</td>
+                        <td class="text-center" data-label="Pressão">{{ user.pressoes }}</td>
                         <td class="text-center" data-label="Elementos">{{ user.elementos }}</td>
                         <td class="text-center" data-label="Amostras">{{ user.amostras }}</td>
                         <td data-label="Acesso às Abas">
                             <div class="d-flex flex-column gap-1">
                                 {% set cil_checked = user.habilitar_abas.cilindro if user.habilitar_abas.cilindro is defined else true %}
-                                {% set temp_checked = user.habilitar_abas.temperatura if user.habilitar_abas.temperatura is defined else true %}
+                                {% set temp_checked = user.habilitar_abas.pressao if user.habilitar_abas.pressao is defined else true %}
                                 {% set ele_checked = user.habilitar_abas.elemento if user.habilitar_abas.elemento is defined else true %}
                                 {% set amo_checked = user.habilitar_abas.amostra if user.habilitar_abas.amostra is defined else true %}
                                 {% set his_checked = user.habilitar_abas.historico if user.habilitar_abas.historico is defined else true %}
@@ -80,7 +80,7 @@
                                 <form method="POST" action="{{ url_for('admin.update_habilitar_abas') }}" style="display:inline;">
                                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                     <input type="hidden" name="user_id" value="{{ user.id }}">
-                                    <input type="hidden" name="aba" value="temperatura">
+                                    <input type="hidden" name="aba" value="pressao">
                                     <input type="hidden" name="habilitar" value="{{ 'false' if temp_checked else 'true' }}">
                                     <button type="submit" class="btn btn-sm btn-{{ 'primary' if temp_checked else 'outline-secondary' }} w-100 text-start" {% if user.role == 'admin' %}disabled title="Admin sempre tem acesso"{% endif %}>
                                         <i class="bi bi-activity me-1"></i> Pressão
@@ -181,7 +181,7 @@
                             <strong>{{ user.cilindros }}</strong><br><small class="text-muted">Cilindros</small>
                         </div>
                         <div class="col">
-                            <strong>{{ user.temperaturas }}</strong><br><small class="text-muted">Pressão</small>
+                            <strong>{{ user.pressoes }}</strong><br><small class="text-muted">Pressão</small>
                         </div>
                         <div class="col">
                             <strong>{{ user.elementos }}</strong><br><small class="text-muted">Elementos</small>
@@ -197,7 +197,7 @@
                         <div class="collapse mt-1" id="perms-{{ user.id }}">
                             <div class="d-flex flex-column gap-1">
                                 {% set cil_checked = user.habilitar_abas.cilindro if user.habilitar_abas.cilindro is defined else true %}
-                                {% set temp_checked = user.habilitar_abas.temperatura if user.habilitar_abas.temperatura is defined else true %}
+                                {% set temp_checked = user.habilitar_abas.pressao if user.habilitar_abas.pressao is defined else true %}
                                 {% set ele_checked = user.habilitar_abas.elemento if user.habilitar_abas.elemento is defined else true %}
                                 {% set amo_checked = user.habilitar_abas.amostra if user.habilitar_abas.amostra is defined else true %}
                                 {% set his_checked = user.habilitar_abas.historico if user.habilitar_abas.historico is defined else true %}
@@ -213,7 +213,7 @@
                                 <form method="POST" action="{{ url_for('admin.update_habilitar_abas') }}">
                                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                     <input type="hidden" name="user_id" value="{{ user.id }}">
-                                    <input type="hidden" name="aba" value="temperatura">
+                                    <input type="hidden" name="aba" value="pressao">
                                     <input type="hidden" name="habilitar" value="{{ 'false' if temp_checked else 'true' }}">
                                     <button type="submit" class="btn btn-sm admin-permission-btn btn-{{ 'primary' if temp_checked else 'outline-secondary' }} w-100" {% if user.role == 'admin' %}disabled{% endif %}>
                                         <i class="bi bi-activity me-1"></i> Pressão

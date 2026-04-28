@@ -246,3 +246,74 @@ Implementar registro no histórico de eventos relacionados a usuários (cadastro
 | ação | criado | atualizado | atualizado | atualizado |
 | nome | "usuario@email.com" | "Role alterada para admin" | "Usuário ativado" | "Aba Cilindros habilitada" |
 | user_id | ID do novo usuário | ID do admin | ID do admin | ID do admin |
+
+---
+
+## Fase 7 - Auditoria Frontend vs Backend (2ª Verificação) ⏳
+
+### Inconsistências Encontradas
+
+#### 7.6 auth.py - Falta "pressao" no habilitar_abas do registro
+- **Arquivo**: `frontend/blueprints/auth.py`
+- **Linha**: 196
+- **Problema**: Ao criar novo usuário via registro, o campo `habilitar_abas` não inclui "pressao"
+- **Código atual**: `{"cilindro": True, "elemento": True, "amostra": True, "historico": True}`
+- **Deveria ser**: `{"cilindro": True, "pressao": True, "elemento": True, "amostra": True, "historico": True}`
+- **Status**: [x] Concluído ✅
+
+### Resumo das Correções
+
+| # | Arquivo | Linha | Problema | Solução |
+|---|---------|-------|----------|---------|
+| 1 | auth.py | 196 | Falta "pressao" no habilitar_abas | Adicionar "pressao": True ao JSON |
+
+---
+
+## Fase 7 - Auditoria Frontend vs Backend (1ª Verificação) ✅ CONCLUÍDO
+
+### Descrição
+Analise completa do projeto para verificar consistência entre as chamadas do frontend e a estrutura do banco de dados Supabase.
+
+### Inconsistências Encontradas
+
+#### 7.1 Bug Crítico - Exportação Excel em admin.py
+- **Arquivo**: `frontend/blueprints/admin.py`
+- **Linha**: 428
+- **Problema**: Na exportação Excel, o sheet é criado como `ws_pressoes` mas na hora de adicionar dados, referencia `ws_temperaturas` que não existe
+- **Código atual**: `ws_temperaturas.append(headers)`
+- **Deveria ser**: `ws_pressoes.append(headers)`
+- **Status**: [x] Concluído ✅
+
+#### 7.2 Inconsistência "temperatura" vs "pressao" no admin.html
+- **Arquivo**: `frontend/templates/admin.html`
+- **Linha**: 61
+- **Problema**: Usa `user.temperaturas` mas a variável correta é `user.pressoes`
+- **Status**: [x] Concluído ✅
+
+#### 7.3 Inconsistência no habilitar_abas (admin.html)
+- **Arquivo**: `frontend/templates/admin.html`
+- **Linha**: 67, 200
+- **Problema**: Usa `user.habilitar_abas.temperatura` mas o campo correto é `user.habilitar_abas.pressao`
+- **Status**: [x] Concluído ✅
+
+#### 7.4 ABA errada no admin.html
+- **Arquivo**: `frontend/templates/admin.html`
+- **Linha**: 83, 216
+- **Problema**: Usa `aba="temperatura"` mas deveria ser `aba="pressao"`
+- **Status**: [x] Concluído ✅
+
+#### 7.5 Delete não remove dados relacionados (admin.py)
+- **Arquivo**: `frontend/blueprints/admin.py`
+- **Linha**: 151-155
+- **Problema**: Ao deletar usuário, não remove os registros de `pressao` e `historico_log` vinculados ao user_id
+- **Status**: [x] Concluído ✅
+
+### Resumo das Correções
+
+| # | Arquivo | Linha | Problema | Solução |
+|---|---------|-------|----------|---------|
+| 1 | admin.py | 428 | `ws_temperaturas` → `ws_pressoes` | Corrigir nome da variável |
+| 2 | admin.html | 61 | `user.temperaturas` → `user.pressoes` | Corrigir nome do campo |
+| 3 | admin.html | 67 | `.temperatura` → `.pressao` | Corrigir nome do campo JSON |
+| 4 | admin.html | 83 | `aba="temperatura"` → `aba="pressao"` | Corrigir valor do campo |
+| 5 | admin.py | 151-155 | Adicionar deletes para pressao e historico_log | Adicionar client.table("pressao").delete() e client.table("historico_log").delete() |

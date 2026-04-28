@@ -152,6 +152,8 @@ def delete_user():
     client.table("cilindro").delete().eq("user_id", target_user_id).execute()
     client.table("elemento").delete().eq("user_id", target_user_id).execute()
     client.table("amostra").delete().eq("user_id", target_user_id).execute()
+    client.table("pressao").delete().eq("user_id", target_user_id).execute()
+    client.table("historico_log").delete().eq("user_id", target_user_id).execute()
     client.table("perfil").delete().eq("id", target_user_id).execute()
     
     flash("Usuário e todos os seus dados foram excluídos!", "success")
@@ -423,13 +425,13 @@ def export_data():
         if pressoes_data:
             for t in pressoes_data:
                 t["cilindro_codigo"] = cilindro_dict.get(t.get("cilindro_id"), "")
-            headers = ["ID", "Cilindro ID", "Cilindro Código", "Temperatura (°C)", "Data", "Hora",
+            headers = ["ID", "Cilindro ID", "Cilindro Código", "Pressão (bar)", "Temperatura (°C)", "Data", "Hora",
                       "Usuário Email", "Usuário Nome", "Criado em"]
-            ws_temperaturas.append(headers)
+            ws_pressoes.append(headers)
             for row in pressoes_data:
-                ws_temperaturas.append([
+                ws_pressoes.append([
                     row.get("id"), row.get("cilindro_id"), row.get("cilindro_codigo"),
-                    row.get("temperatura"), row.get("data"), row.get("hora"),
+                    row.get("pressao"), row.get("temperatura"), row.get("data"), row.get("hora"),
                     row.get("usuario_email"), row.get("usuario_nome"), row.get("created_at")
                 ])
         
