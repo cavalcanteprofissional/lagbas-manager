@@ -5,13 +5,13 @@
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h2><i class="bi bi-person"></i> Dados do Usuário</h2>
-    <a href="{{ url_for('admin.panel') }}" class="btn btn-outline-secondary">
+    <a href="{{ url_for('admin.panel') }}" class="btn btn-outline-primary">
         <i class="bi bi-arrow-left"></i> Voltar
     </a>
 </div>
 
 <div class="card mb-4">
-    <div class="card-header">
+    <div class="card-header" style="background: linear-gradient(135deg, #0070b8, #4da3e8); color: white;">
         <h5 class="mb-0"><i class="bi bi-person-circle"></i> Informações do Usuário</h5>
     </div>
     <div class="card-body">
@@ -22,12 +22,12 @@
             </div>
             <div class="col-md-6">
                 <p><strong>Função:</strong> 
-                    <span class="badge bg-{{ 'danger' if target_user.role == 'admin' else 'secondary' }}">
+                    <span class="badge" style="background-color: {{ '#0070b8' if target_user.role == 'admin' else '#6cccff' }};">
                         {{ target_user.role|title }}
                     </span>
                 </p>
                 <p><strong>Status:</strong> 
-                    <span class="badge bg-{{ 'success' if target_user.ativo else 'warning' }}">
+                    <span class="badge" style="background-color: {{ '#005f96' if target_user.ativo else '#f59e0b' }};">
                         {{ 'Ativo' if target_user.ativo else 'Inativo' }}
                     </span>
                 </p>
@@ -38,52 +38,52 @@
 
 {% if target_user.role != 'admin' %}
 <div class="card mb-4">
-    <div class="card-header" style="background: linear-gradient(135deg, #8b5cf6, #a78bfa); color: white;">
+    <div class="card-header" style="background: linear-gradient(135deg, #002a47, #003a5e); color: white;">
         <h5 class="mb-0"><i class="bi bi-shield-lock"></i> Permissões de Acesso</h5>
     </div>
     <div class="card-body">
         <div class="row text-center">
             <div class="col-6 col-md-3 mb-2">
-                <div class="p-3 rounded {{ 'bg-success bg-opacity-10' if habilitar_abas.cilindro else 'bg-secondary bg-opacity-10' }}">
-                    <i class="bi bi-box-seam fs-4 {{ 'text-success' if habilitar_abas.cilindro else 'text-secondary' }}"></i>
+                <div class="p-3 rounded" style="background-color: {{ '#0070b8' if habilitar_abas.cilindro else '#f0f0f0' }}20;">
+                    <i class="bi bi-box-seam fs-4" style="color: {{ '#0070b8' if habilitar_abas.cilindro else '#6c757d' }};"></i>
                     <p class="mb-0 mt-2"><strong>Cilindros</strong></p>
-                    <span class="badge bg-{{ 'success' if habilitar_abas.cilindro else 'secondary' }}">
+                    <span class="badge" style="background-color: {{ '#0070b8' if habilitar_abas.cilindro else '#6c757d' }};">
                         {{ 'Habilitado' if habilitar_abas.cilindro else 'Desabilitado' }}
                     </span>
                 </div>
             </div>
             <div class="col-6 col-md-3 mb-2">
-                <div class="p-3 rounded {{ 'bg-success bg-opacity-10' if habilitar_abas.temperatura else 'bg-secondary bg-opacity-10' }}">
-                    <i class="bi bi-thermometer-half fs-4 {{ 'text-success' if habilitar_abas.temperatura else 'text-secondary' }}"></i>
-                    <p class="mb-0 mt-2"><strong>Temperatura</strong></p>
-                    <span class="badge bg-{{ 'success' if habilitar_abas.temperatura else 'secondary' }}">
-                        {{ 'Habilitado' if habilitar_abas.temperatura else 'Desabilitado' }}
+                <div class="p-3 rounded" style="background-color: {{ '#0070b8' if habilitar_abas.pressao else '#f0f0f0' }}20;">
+                    <i class="bi bi-activity fs-4" style="color: {{ '#0070b8' if habilitar_abas.pressao else '#6c757d' }};"></i>
+                    <p class="mb-0 mt-2"><strong>Pressão</strong></p>
+                    <span class="badge" style="background-color: {{ '#0070b8' if habilitar_abas.pressao else '#6c757d' }};">
+                        {{ 'Habilitado' if habilitar_abas.pressao else 'Desabilitado' }}
                     </span>
                 </div>
             </div>
             <div class="col-6 col-md-3 mb-2">
-                <div class="p-3 rounded {{ 'bg-success bg-opacity-10' if habilitar_abas.elemento else 'bg-secondary bg-opacity-10' }}">
-                    <i class="bi bi-droplet fs-4 {{ 'text-success' if habilitar_abas.elemento else 'text-secondary' }}"></i>
+                <div class="p-3 rounded" style="background-color: {{ '#0070b8' if habilitar_abas.elemento else '#f0f0f0' }}20;">
+                    <i class="bi bi-droplet fs-4" style="color: {{ '#0070b8' if habilitar_abas.elemento else '#6c757d' }};"></i>
                     <p class="mb-0 mt-2"><strong>Elementos</strong></p>
-                    <span class="badge bg-{{ 'success' if habilitar_abas.elemento else 'secondary' }}">
+                    <span class="badge" style="background-color: {{ '#0070b8' if habilitar_abas.elemento else '#6c757d' }};">
                         {{ 'Habilitado' if habilitar_abas.elemento else 'Desabilitado' }}
                     </span>
                 </div>
             </div>
             <div class="col-6 col-md-3 mb-2">
-                <div class="p-3 rounded {{ 'bg-success bg-opacity-10' if habilitar_abas.amostra else 'bg-secondary bg-opacity-10' }}">
-                    <i class="bi bi-graph-up fs-4 {{ 'text-success' if habilitar_abas.amostra else 'text-secondary' }}"></i>
+                <div class="p-3 rounded" style="background-color: {{ '#0070b8' if habilitar_abas.amostra else '#f0f0f0' }}20;">
+                    <i class="bi bi-graph-up fs-4" style="color: {{ '#0070b8' if habilitar_abas.amostra else '#6c757d' }};"></i>
                     <p class="mb-0 mt-2"><strong>Amostras</strong></p>
-                    <span class="badge bg-{{ 'success' if habilitar_abas.amostra else 'secondary' }}">
+                    <span class="badge" style="background-color: {{ '#0070b8' if habilitar_abas.amostra else '#6c757d' }};">
                         {{ 'Habilitado' if habilitar_abas.amostra else 'Desabilitado' }}
                     </span>
                 </div>
             </div>
             <div class="col-6 col-md-3 mb-2">
-                <div class="p-3 rounded {{ 'bg-success bg-opacity-10' if habilitar_abas.historico else 'bg-secondary bg-opacity-10' }}">
-                    <i class="bi bi-clock-history fs-4 {{ 'text-success' if habilitar_abas.historico else 'text-secondary' }}"></i>
+                <div class="p-3 rounded" style="background-color: {{ '#0070b8' if habilitar_abas.historico else '#f0f0f0' }}20;">
+                    <i class="bi bi-clock-history fs-4" style="color: {{ '#0070b8' if habilitar_abas.historico else '#6c757d' }};"></i>
                     <p class="mb-0 mt-2"><strong>Histórico</strong></p>
-                    <span class="badge bg-{{ 'success' if habilitar_abas.historico else 'secondary' }}">
+                    <span class="badge" style="background-color: {{ '#0070b8' if habilitar_abas.historico else '#6c757d' }};">
                         {{ 'Habilitado' if habilitar_abas.historico else 'Desabilitado' }}
                     </span>
                 </div>
@@ -93,138 +93,146 @@
 </div>
 {% endif %}
 
-<div class="row">
-    <div class="col-12 col-lg-4 mb-4">
-        <div class="card h-100">
-            <div class="card-header" style="background: linear-gradient(135deg, #10b981, #34d399); color: white;">
-                <h5 class="mb-0"><i class="bi bi-box-seam"></i> Cilindros ({{ cilindro|length }})</h5>
-            </div>
-            <div class="card-body p-0">
-                {% if cilindro %}
-                <div class="table-responsive">
-                    <table class="table table-sm mb-0">
-                        <thead>
-                            <tr>
-                                <th>Código</th>
-                                <th>Status</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for c in cilindro %}
-                            <tr>
-                                <td>{{ c.codigo }}</td>
-                                <td><span class="badge bg-{{ 'success' if c.status == 'ativo' else 'danger' }}">{{ c.status }}</span></td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-                {% else %}
-                <p class="text-muted p-3">Nenhum cilindro.</p>
-                {% endif %}
+<div class="row g-3 mb-4">
+    <div class="col-6 col-lg-3">
+        <div class="card stat-card h-100">
+            <div class="card-body d-flex flex-column justify-content-center">
+                <h5 class="card-title"><i class="bi bi-box-seam me-1"></i> Cilindros</h5>
+                <h2 class="mb-0">{{ cilindro_total }}</h2>
             </div>
         </div>
     </div>
-
-    <div class="col-12 col-lg-4 mb-4">
-        <div class="card h-100">
-            <div class="card-header" style="background: linear-gradient(135deg, #f59e0b, #fbbf24); color: white;">
-                <h5 class="mb-0"><i class="bi bi-gauge"></i> Pressões ({{ pressoes|length }})</h5>
-            </div>
-            <div class="card-body p-0">
-                {% if pressoes %}
-                <div class="table-responsive">
-                    <table class="table table-sm mb-0">
-                        <thead>
-                            <tr>
-                                <th>Cilindro</th>
-                                <th>Temp</th>
-                                <th>Data</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for t in pressoes[:10] %}
-                            <tr>
-                                <td>{{ t.cilindro_id }}</td>
-                                <td>{{ "%.1f"|format(t.temperatura) }}°C</td>
-                                <td>{{ t.data|formatar_data if t.data else '-' }}</td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                    {% if pressoes|length > 10 %}
-                    <p class="text-muted small p-2">Mostrando 10 de {{ pressoes|length }} registros</p>
-                    {% endif %}
-                </div>
-                {% else %}
-                <p class="text-muted p-3">Nenhum registro.</p>
-                {% endif %}
+    <div class="col-6 col-lg-3">
+        <div class="card stat-card blue h-100">
+            <div class="card-body d-flex flex-column justify-content-center">
+                <h5 class="card-title"><i class="bi bi-activity me-1"></i> Pressões</h5>
+                <h2 class="mb-0">{{ pressoes_total }}</h2>
             </div>
         </div>
     </div>
-
-    <div class="col-12 col-lg-4 mb-4">
-        <div class="card h-100">
-            <div class="card-header" style="background: linear-gradient(135deg, #3b82f6, #60a5fa); color: white;">
-                <h5 class="mb-0"><i class="bi bi-droplet"></i> Elementos ({{ elementos|length }})</h5>
-            </div>
-            <div class="card-body p-0">
-                {% if elementos %}
-                <div class="table-responsive">
-                    <table class="table table-sm mb-0">
-                        <thead>
-                            <tr>
-                                <th>Nome</th>
-                                <th>Consumo</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for e in elementos %}
-                            <tr>
-                                <td>{{ e.nome }}</td>
-                                <td>{{ e.consumo_lpm }}</td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-                {% else %}
-                <p class="text-muted p-3">Nenhum elemento.</p>
-                {% endif %}
+    <div class="col-6 col-lg-3">
+        <div class="card stat-card pink h-100">
+            <div class="card-body d-flex flex-column justify-content-center">
+                <h5 class="card-title"><i class="bi bi-droplet me-1"></i> Elementos</h5>
+                <h2 class="mb-0">{{ elementos_total }}</h2>
             </div>
         </div>
     </div>
-
-    <div class="col-12 col-lg-4 mb-4">
-        <div class="card h-100">
-            <div class="card-header" style="background: linear-gradient(135deg, #ec4899, #f472b6); color: white;">
-                <h5 class="mb-0"><i class="bi bi-graph-up"></i> Amostras ({{ amostras|length }})</h5>
-            </div>
-            <div class="card-body p-0">
-                {% if amostras %}
-                <div class="table-responsive">
-                    <table class="table table-sm mb-0">
-                        <thead>
-                            <tr>
-                                <th>Data</th>
-                                <th>Qtd</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for a in amostras %}
-                            <tr>
-                                <td>{{ a.data|formatar_data if a.data else '-' }}</td>
-                                <td>{{ a.quantidade_amostras }}</td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-                {% else %}
-                <p class="text-muted p-3">Nenhuma amostra.</p>
-                {% endif %}
+    <div class="col-6 col-lg-3">
+        <div class="card stat-card purple h-100">
+            <div class="card-body d-flex flex-column justify-content-center">
+                <h5 class="card-title"><i class="bi bi-graph-up me-1"></i> Amostras</h5>
+                <h2 class="mb-0">{{ amostras_total }}</h2>
             </div>
         </div>
     </div>
 </div>
+
+<div class="card mb-4">
+    <div class="card-header" style="background: linear-gradient(135deg, #002a47, #003a5e); color: white;">
+        <div class="row g-2 align-items-center">
+            <div class="col-md-6">
+                <h5 class="mb-0"><i class="bi bi-clock-history me-1"></i> Histórico de Atividades ({{ historico_total }})</h5>
+            </div>
+            <div class="col-md-2">
+                <select id="filterType" class="form-select form-select-sm">
+                    <option value="">Todos os Tipos</option>
+                    <option value="cilindro">Cilindros</option>
+                    <option value="pressao">Pressões</option>
+                    <option value="elemento">Elementos</option>
+                    <option value="amostra">Amostras</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <select id="filterAction" class="form-select form-select-sm">
+                    <option value="">Todas as Ações</option>
+                    <option value="criado">Criado</option>
+                    <option value="atualizado">Atualizado</option>
+                    <option value="excluido">Excluído</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button class="btn btn-sm btn-outline-light w-100" onclick="filterHistory()">
+                    <i class="bi bi-funnel"></i> Filtrar
+                </button>
+            </div>
+        </div>
+    </div>
+    <div class="card-body p-0">
+        {% if history %}
+        <div class="table-responsive">
+            <table class="table table-hover mb-0" id="historyTable">
+                <thead class="table-light">
+                    <tr>
+                        <th>Data/Hora</th>
+                        <th>Tipo</th>
+                        <th>Ação</th>
+                        <th>Item</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for h in history %}
+                    <tr>
+                        <td><small>{{ h.data|formatar_data if h.data else '-' }}</small></td>
+                        <td>
+                            <span class="badge" style="background-color: {{ '#0070b8' if h.tipo == 'cilindro' else '#f59e0b' if h.tipo == 'pressao' else '#4da3e8' if h.tipo == 'elemento' else '#6cccff' }};">{{ h.tipo|title }}</span>
+                        </td>
+                        <td>
+                            <span class="badge" style="background-color: {{ '#0070b8' if h.acao == 'criado' else '#f59e0b' if h.acao == 'atualizado' else '#dc3545' if h.acao == 'excluido' else '#6c757d' }};">{{ h.acao|title }}</span>
+                        </td>
+                        <td><strong>{{ h.nome }}</strong></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% if historico_total > per_page %}
+        <div class="card-footer">
+            <ul class="pagination pagination-sm mb-0 justify-content-center">
+                <li class="page-item {{ 'disabled' if page == 1 }}"><a class="page-link" href="{{ url_for('admin.user_data', target_user_id=target_user.id, page=page-1) }}">Anterior</a></li>
+                {% set pages = ((historico_total / per_page)|round(method='ceil'))|int %}
+                {% for p in range(1, pages + 1) %}
+                <li class="page-item {{ 'active' if p == page }}"><a class="page-link" href="{{ url_for('admin.user_data', target_user_id=target_user.id, page=p) }}">{{ p }}</a></li>
+                {% endfor %}
+                <li class="page-item {{ 'disabled' if page == pages }}"><a class="page-link" href="{{ url_for('admin.user_data', target_user_id=target_user.id, page=page+1) }}">Próxima</a></li>
+            </ul>
+        </div>
+        {% endif %}
+        {% else %}
+        <div class="text-center py-5 text-muted">
+            <i class="bi bi-clock-history fs-1"></i>
+            <p class="mt-2">Nenhuma atividade registrada.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+function filterHistory() {
+    const type = document.getElementById('filterType').value;
+    const action = document.getElementById('filterAction').value;
+    
+    const rows = document.querySelectorAll('#historyTable tbody tr');
+    rows.forEach(row => {
+        const cells = row.cells;
+        let rowType = cells[1].textContent.trim().toLowerCase();
+        let rowAction = cells[2].textContent.trim().toLowerCase();
+        
+        const typeMap = { 'cilindro': 'cilindro', 'pressão': 'pressao', 'elemento': 'elemento', 'amostra': 'amostra' };
+        rowType = typeMap[rowType] || rowType;
+        
+        const actionMap = { 'criado': 'criado', 'atualizado': 'atualizado', 'excluído': 'excluido' };
+        rowAction = actionMap[rowAction] || rowAction;
+        
+        let show = true;
+        if (type && !rowType.includes(type)) show = false;
+        if (action && !rowAction.includes(action)) show = false;
+        
+        row.style.display = show ? '' : 'none';
+    });
+}
+
+document.getElementById('filterType').addEventListener('change', filterHistory);
+document.getElementById('filterAction').addEventListener('change', filterHistory);
+</script>
 {% endblock %}

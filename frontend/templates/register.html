@@ -7,7 +7,7 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(135deg, #0070b8 0%, #4da3e8 100%);
         padding: 20px;
     }
     .login-card {
@@ -57,11 +57,21 @@
                 </div>
                 <div class="mb-3">
                     <label class="form-label">Senha</label>
-                    <input type="password" name="password" class="form-control form-control-lg" placeholder="Mínimo 6 caracteres" required minlength="6">
+                    <div class="input-group">
+                        <input type="password" name="password" id="password" class="form-control form-control-lg" placeholder="Mínimo 6 caracteres" required minlength="6">
+                        <button type="button" class="btn btn-outline-secondary" onclick="togglePassword('password', 'togglePasswordBtn')">
+                            <i class="bi bi-eye" id="togglePasswordBtn"></i>
+                        </button>
+                    </div>
                 </div>
                 <div class="mb-3">
                     <label class="form-label">Confirmar Senha</label>
-                    <input type="password" name="confirm_password" class="form-control form-control-lg" placeholder="Confirme sua senha" required>
+                    <div class="input-group">
+                        <input type="password" name="confirm_password" id="confirm_password" class="form-control form-control-lg" placeholder="Confirme sua senha" required>
+                        <button type="button" class="btn btn-outline-secondary" onclick="togglePassword('confirm_password', 'toggleConfirmPasswordBtn')">
+                            <i class="bi bi-eye" id="toggleConfirmPasswordBtn"></i>
+                        </button>
+                    </div>
                 </div>
                 <button type="submit" class="btn btn-success btn-lg w-100 mb-3">
                     <i class="bi bi-person-plus me-2"></i> Criar Conta
@@ -71,7 +81,20 @@
             <div class="text-center mt-3">
                 <p class="mb-0">Já tem conta? <a href="{{ url_for('auth.login') }}" class="fw-bold">Entrar</a></p>
             </div>
+</div>
         </div>
     </div>
-</div>
+    <script>
+        function togglePassword(inputId, btnId) {
+            const input = document.getElementById(inputId);
+            const btn = document.getElementById(btnId);
+            if (input.type === 'password') {
+                input.type = 'text';
+                btn.classList.replace('bi-eye', 'bi-eye-slash');
+            } else {
+                input.type = 'password';
+                btn.classList.replace('bi-eye-slash', 'bi-eye');
+            }
+        }
+    </script>
 {% endblock %}

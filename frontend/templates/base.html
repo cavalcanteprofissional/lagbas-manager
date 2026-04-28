@@ -3,11 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}">
     <title>{% block title %}LabGas Manager{% endblock %}</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     <style>
         :root {
+            --primary-darkest: #002a47;
+            --primary-dark: #003a5e;
+            --primary: #0070b8;
+            --primary-light: #4da3e8;
+            --primary-lighter: #6cccff;
+            --primary-lightest: #88d4ff;
+            --accent: #005f96;
+            --accent-alt: #4da3e8;
             --sidebar-width: 260px;
         }
         body {
@@ -20,7 +29,7 @@
             left: 0;
             width: var(--sidebar-width);
             height: 100vh;
-            background: #0d1117;
+            background: var(--primary-darkest);
             color: white;
             z-index: 1040;
             transform: translateX(-100%);
@@ -53,7 +62,7 @@
             transition: all 0.2s ease;
         }
         .sidebar a:hover, .sidebar a.active {
-            background: #21262d;
+            background: var(--primary-dark);
             color: white;
         }
         .sidebar a i {
@@ -66,28 +75,27 @@
             box-shadow: 0 2px 10px rgba(0,0,0,0.08);
         }
         .stat-card {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
             color: white;
             transition: transform 0.2s ease;
         }
         .stat-card:active {
             transform: scale(0.98);
         }
-        /* Padrão de cores por tipo */
         .stat-card.green, .stat-card.cilindro {
-            background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+            background: linear-gradient(135deg, var(--accent) 0%, var(--accent-alt) 100%);
         }
         .stat-card.blue, .stat-card.elemento {
-            background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);
+            background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary-light) 100%);
         }
         .stat-card.pink, .stat-card.amostra {
-            background: linear-gradient(135deg, #ec4899 0%, #f472b6 100%);
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-lighter) 100%);
         }
         .stat-card.purple, .stat-card.ativos {
-            background: linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%);
+            background: linear-gradient(135deg, var(--primary-darkest) 0%, var(--primary-dark) 100%);
         }
         .stat-card.orange {
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary-light) 100%);
         }
         .stat-card .card-title {
             font-size: 0.85rem;
@@ -99,7 +107,7 @@
         }
         .navbar-brand {
             font-weight: 700;
-            color: #667eea !important;
+            color: var(--primary) !important;
         }
         .page-content {
             min-height: calc(100vh - 60px);
@@ -117,6 +125,7 @@
             }
             .sidebar-overlay {
                 display: none !important;
+            }
             }
         }
         @media (max-width: 576px) {
@@ -160,13 +169,96 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            background: #0d1117;
+            background: var(--primary-darkest);
             border: none;
             border-radius: 8px;
             color: white;
         }
         .mobile-toggle:focus {
             box-shadow: none;
+        }
+        /* Sobrescrever botões Bootstrap com cores #0070b8 */
+        .btn-primary {
+            background-color: var(--primary);
+            border-color: var(--primary);
+        }
+        .btn-primary:hover, .btn-primary:focus {
+            background-color: var(--primary-dark);
+            border-color: var(--primary-dark);
+        }
+        .btn-success {
+            background-color: #005f96;
+            border-color: #005f96;
+        }
+        .btn-success:hover {
+            background-color: #003a5e;
+            border-color: #003a5e;
+        }
+        .btn-warning {
+            background-color: #f59e0b;
+            border-color: #f59e0b;
+            color: #000;
+        }
+        .btn-warning:hover {
+            background-color: #d97706;
+            border-color: #d97706;
+            color: #000;
+        }
+        .btn-danger {
+            background-color: #dc3545;
+            border-color: #dc3545;
+        }
+        .btn-danger:hover {
+            background-color: #bb2d3b;
+            border-color: #bb2d3b;
+        }
+        .btn-info {
+            background-color: var(--primary-light);
+            border-color: var(--primary-light);
+            color: #000;
+        }
+        .btn-info:hover {
+            background-color: var(--primary);
+            border-color: var(--primary);
+            color: #fff;
+        }
+        .btn-outline-primary {
+            color: var(--primary);
+            border-color: var(--primary);
+        }
+.btn-outline-primary:hover {
+            background-color: var(--primary);
+            border-color: var(--primary);
+        }
+        /* Sobrescrever botões outline */
+        .btn-outline-success {
+            color: var(--primary);
+            border-color: var(--primary);
+        }
+        .btn-outline-success:hover {
+            background-color: var(--primary);
+            border-color: var(--primary);
+        }
+        .btn-outline-secondary {
+            color: var(--primary);
+            border-color: var(--primary);
+        }
+        .btn-outline-secondary:hover {
+            background-color: var(--primary);
+            border-color: var(--primary);
+        }
+        .btn-outline-light {
+            color: var(--primary);
+            border-color: var(--primary-light);
+        }
+        .btn-outline-light:hover {
+            background-color: var(--primary);
+            border-color: var(--primary);
+            color: #fff;
+        }
+        .admin-permission-btn {
+            font-size: 0.7rem;
+            padding: 0.25rem 0.5rem;
         }
     </style>
     {% block extra_css %}{% endblock %}

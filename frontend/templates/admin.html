@@ -3,22 +3,37 @@
 {% block title %}Administração - LabGas Manager{% endblock %}
 
 {% block content %}
+<style>
+.admin-table th, .admin-table td {
+    white-space: nowrap;
+    font-size: 0.85rem;
+    vertical-align: middle;
+}
+@media (max-width: 991px) {
+    .admin-table { display: none; }
+    .admin-cards { display: block; }
+}
+@media (min-width: 992px) {
+    .admin-cards { display: none; }
+}
+</style>
 <h2 class="mb-4"><i class="bi bi-gear"></i> Painel de Administração</h2>
 
-<div class="card mb-4">
+<!-- Desktop Table View -->
+<div class="card mb-4 d-none d-lg-block">
     <div class="card-header">
         <h5 class="mb-0"><i class="bi bi-people"></i> Gerenciar Usuários</h5>
     </div>
     <div class="card-body p-0">
         <div class="table-responsive">
-            <table class="table table-hover mb-0">
+            <table class="table table-hover mb-0 admin-table">
                 <thead class="table-light">
                     <tr>
                         <th>Usuário</th>
                         <th>Função</th>
                         <th>Status</th>
                         <th>Cilindros</th>
-                        <th>Temp.</th>
+                        <th>Pressão</th>
                         <th>Elementos</th>
                         <th>Amostras</th>
                         <th>Acesso às Abas</th>
@@ -28,28 +43,28 @@
                 <tbody>
                     {% for user in users %}
                     <tr class="{% if not user.ativo %}table-secondary{% endif %}">
-                        <td>
+                        <td data-label="Usuário">
                             <strong>{{ user.nome }}</strong>
-                            <div class="small text-muted">{{ user.id }}</div>
+                            <div class="small text-muted text-truncate" style="max-width: 120px;">{{ user.email }}</div>
                         </td>
-                        <td>
-                            <span class="badge bg-{{ 'danger' if user.role == 'admin' else 'secondary' }}">
+                        <td data-label="Função">
+                            <span class="badge" style="background-color: {{ '#0070b8' if user.role == 'admin' else '#6cccff' }};">
                                 {{ user.role|title }}
                             </span>
                         </td>
-                        <td>
-                            <span class="badge bg-{{ 'success' if user.ativo else 'warning' }}">
+                        <td data-label="Status">
+                            <span class="badge" style="background-color: {{ '#005f96' if user.ativo else '#f59e0b' }};">
                                 {{ 'Ativo' if user.ativo else 'Inativo' }}
                             </span>
                         </td>
-                        <td class="text-center">{{ user.cilindros }}</td>
-                        <td class="text-center">{{ user.temperaturas }}</td>
-                        <td class="text-center">{{ user.elementos }}</td>
-                        <td class="text-center">{{ user.amostras }}</td>
-                        <td>
+                        <td class="text-center" data-label="Cilindros">{{ user.cilindros }}</td>
+                        <td class="text-center" data-label="Pressão">{{ user.pressoes }}</td>
+                        <td class="text-center" data-label="Elementos">{{ user.elementos }}</td>
+                        <td class="text-center" data-label="Amostras">{{ user.amostras }}</td>
+                        <td data-label="Acesso às Abas">
                             <div class="d-flex flex-column gap-1">
                                 {% set cil_checked = user.habilitar_abas.cilindro if user.habilitar_abas.cilindro is defined else true %}
-                                {% set temp_checked = user.habilitar_abas.temperatura if user.habilitar_abas.temperatura is defined else true %}
+                                {% set temp_checked = user.habilitar_abas.pressao if user.habilitar_abas.pressao is defined else true %}
                                 {% set ele_checked = user.habilitar_abas.elemento if user.habilitar_abas.elemento is defined else true %}
                                 {% set amo_checked = user.habilitar_abas.amostra if user.habilitar_abas.amostra is defined else true %}
                                 {% set his_checked = user.habilitar_abas.historico if user.habilitar_abas.historico is defined else true %}
@@ -58,17 +73,17 @@
                                     <input type="hidden" name="user_id" value="{{ user.id }}">
                                     <input type="hidden" name="aba" value="cilindro">
                                     <input type="hidden" name="habilitar" value="{{ 'false' if cil_checked else 'true' }}">
-                                    <button type="submit" class="btn btn-sm btn-{{ 'success' if cil_checked else 'outline-secondary' }} w-100 text-start" {% if user.role == 'admin' %}disabled title="Admin sempre tem acesso"{% endif %}>
+                                    <button type="submit" class="btn btn-sm admin-permission-btn btn-{{ 'primary' if cil_checked else 'outline-secondary' }} w-100 text-start" {% if user.role == 'admin' %}disabled title="Admin sempre tem acesso"{% endif %}>
                                         <i class="bi bi-box-seam me-1"></i> Cilindros
                                     </button>
                                 </form>
                                 <form method="POST" action="{{ url_for('admin.update_habilitar_abas') }}" style="display:inline;">
                                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                     <input type="hidden" name="user_id" value="{{ user.id }}">
-                                    <input type="hidden" name="aba" value="temperatura">
+                                    <input type="hidden" name="aba" value="pressao">
                                     <input type="hidden" name="habilitar" value="{{ 'false' if temp_checked else 'true' }}">
-                                    <button type="submit" class="btn btn-sm btn-{{ 'success' if temp_checked else 'outline-secondary' }} w-100 text-start" {% if user.role == 'admin' %}disabled title="Admin sempre tem acesso"{% endif %}>
-                                        <i class="bi bi-gauge me-1"></i> Pressão
+                                    <button type="submit" class="btn btn-sm btn-{{ 'primary' if temp_checked else 'outline-secondary' }} w-100 text-start" {% if user.role == 'admin' %}disabled title="Admin sempre tem acesso"{% endif %}>
+                                        <i class="bi bi-activity me-1"></i> Pressão
                                     </button>
                                 </form>
                                 <form method="POST" action="{{ url_for('admin.update_habilitar_abas') }}" style="display:inline;">
@@ -76,7 +91,7 @@
                                     <input type="hidden" name="user_id" value="{{ user.id }}">
                                     <input type="hidden" name="aba" value="elemento">
                                     <input type="hidden" name="habilitar" value="{{ 'false' if ele_checked else 'true' }}">
-                                    <button type="submit" class="btn btn-sm btn-{{ 'success' if ele_checked else 'outline-secondary' }} w-100 text-start" {% if user.role == 'admin' %}disabled title="Admin sempre tem acesso"{% endif %}>
+                                    <button type="submit" class="btn btn-sm btn-{{ 'primary' if ele_checked else 'outline-secondary' }} w-100 text-start" {% if user.role == 'admin' %}disabled title="Admin sempre tem acesso"{% endif %}>
                                         <i class="bi bi-droplet me-1"></i> Elementos
                                     </button>
                                 </form>
@@ -85,7 +100,7 @@
                                     <input type="hidden" name="user_id" value="{{ user.id }}">
                                     <input type="hidden" name="aba" value="amostra">
                                     <input type="hidden" name="habilitar" value="{{ 'false' if amo_checked else 'true' }}">
-                                    <button type="submit" class="btn btn-sm btn-{{ 'success' if amo_checked else 'outline-secondary' }} w-100 text-start" {% if user.role == 'admin' %}disabled title="Admin sempre tem acesso"{% endif %}>
+                                    <button type="submit" class="btn btn-sm btn-{{ 'primary' if amo_checked else 'outline-secondary' }} w-100 text-start" {% if user.role == 'admin' %}disabled title="Admin sempre tem acesso"{% endif %}>
                                         <i class="bi bi-graph-up me-1"></i> Amostras
                                     </button>
                                 </form>
@@ -94,40 +109,41 @@
                                     <input type="hidden" name="user_id" value="{{ user.id }}">
                                     <input type="hidden" name="aba" value="historico">
                                     <input type="hidden" name="habilitar" value="{{ 'false' if his_checked else 'true' }}">
-                                    <button type="submit" class="btn btn-sm btn-{{ 'success' if his_checked else 'outline-secondary' }} w-100 text-start" {% if user.role == 'admin' %}disabled title="Admin sempre tem acesso"{% endif %}>
+                                    <button type="submit" class="btn btn-sm btn-{{ 'primary' if his_checked else 'outline-secondary' }} w-100 text-start" {% if user.role == 'admin' %}disabled title="Admin sempre tem acesso"{% endif %}>
                                         <i class="bi bi-clock-history me-1"></i> Histórico
                                     </button>
                                 </form>
                             </div>
                         </td>
-                        <td>
-                            <div class="btn-group" role="group">
-                                <a href="{{ url_for('admin.user_data', target_user_id=user.id) }}" class="btn btn-sm btn-info" title="Ver dados">
-                                    <i class="bi bi-eye"></i>
+                        <td data-label="Ações">
+                            <div class="d-flex flex-column gap-1">
+                                <a href="{{ url_for('admin.user_data', target_user_id=user.id) }}" class="btn btn-sm admin-permission-btn btn-primary w-100 text-start" title="Ver dados">
+                                    <i class="bi bi-eye me-1"></i> Ver Dados
                                 </a>
-                                <form method="POST" action="{{ url_for('admin.toggle_user') }}" style="display:inline;">
+                                <form method="POST" action="{{ url_for('admin.toggle_user') }}">
                                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                     <input type="hidden" name="user_id" value="{{ user.id }}">
                                     <input type="hidden" name="ativo" value="{{ 'false' if user.ativo else 'true' }}">
-                                    <button type="submit" class="btn btn-sm btn-{{ 'warning' if user.ativo else 'success' }}" 
-                                            onclick="return confirm('{{ 'Desativar' if user.ativo else 'Ativar' }} usuário?')">
-                                        <i class="bi bi-{{ 'person-dash' if user.ativo else 'person-check' }}"></i>
+                                    <button type="button" class="btn btn-sm admin-permission-btn {{ 'btn-success' if user.ativo else 'btn-secondary' }} w-100 text-start"
+                                            data-bs-toggle="modal" data-bs-target="#toggleModal{{ user.id }}">
+                                        <i class="bi bi-{{ 'person-dash' if user.ativo else 'person-check' }} me-1"></i> {{ 'Desativar' if user.ativo else 'Ativar' }}
                                     </button>
                                 </form>
-                                <form method="POST" action="{{ url_for('admin.set_role') }}" style="display:inline;">
+                                <form method="POST" action="{{ url_for('admin.set_role') }}">
                                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                     <input type="hidden" name="user_id" value="{{ user.id }}">
                                     <input type="hidden" name="role" value="{{ 'usuario' if user.role == 'admin' else 'admin' }}">
-                                    <button type="submit" class="btn btn-sm btn-{{ 'outline-danger' if user.role == 'admin' else 'outline-primary' }}"
-                                            onclick="return confirm('{{ 'Remover admin' if user.role == 'admin' else 'Tornar admin' }}?')">
-                                        <i class="bi bi-{{ 'arrow-down-circle' if user.role == 'admin' else 'arrow-up-circle' }}"></i>
+                                    <button type="button" class="btn btn-sm admin-permission-btn {{ 'btn-warning' if user.role == 'admin' else 'btn-outline-warning' }} w-100 text-start"
+                                            data-bs-toggle="modal" data-bs-target="#roleModal{{ user.id }}">
+                                        <i class="bi bi-{{ 'arrow-down-circle' if user.role == 'admin' else 'arrow-up-circle' }} me-1"></i> {{ 'Tornar User' if user.role == 'admin' else 'Tornar Admin' }}
                                     </button>
                                 </form>
-                                <form method="POST" action="{{ url_for('admin.delete_user') }}" style="display:inline;">
+                                <form method="POST" action="{{ url_for('admin.delete_user') }}">
                                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                     <input type="hidden" name="user_id" value="{{ user.id }}">
-                                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('EXCLUIR USUÁRIO E TODOS OS SEUS DADOS? Esta ação não pode ser desfeita!')">
-                                        <i class="bi bi-trash"></i>
+                                    <button type="button" class="btn btn-sm admin-permission-btn btn-danger w-100 text-start" 
+                                            data-bs-toggle="modal" data-bs-target="#deleteUserModal{{ user.id }}">
+                                        <i class="bi bi-trash me-1"></i> Excluir
                                     </button>
                                 </form>
                             </div>
@@ -140,14 +156,223 @@
     </div>
 </div>
 
-<div class="card">
+<!-- Mobile Cards View -->
+<div class="card mb-4 d-lg-none admin-cards">
     <div class="card-header">
-        <h5 class="mb-0"><i class="bi bi-info-circle"></i> Informações</h5>
+        <h5 class="mb-0"><i class="bi bi-people"></i> Gerenciar Usuários</h5>
     </div>
-    <div class="card-body">
-        <p>Total de usuários: <strong>{{ users|length }}</strong></p>
-        <p>Administradores: <strong>{{ users|selectattr('role', 'equalto', 'admin')|list|length }}</strong></p>
-        <p>Usuários ativos: <strong>{{ users|selectattr('ativo', 'equalto', true)|list|length }}</strong></p>
+    <div class="card-body p-2">
+        <div class="d-flex flex-column gap-2">
+            {% for user in users %}
+            <div class="card {% if not user.ativo %}bg-light{% endif %}" style="border-left: 4px solid var(--primary);">
+                <div class="card-header py-2 px-3 d-flex justify-content-between align-items-center bg-transparent">
+                    <div>
+                        <strong class="text-truncate">{{ user.nome }}</strong>
+                        <div class="small text-muted text-truncate" style="max-width: 150px;">{{ user.email }}</div>
+                    </div>
+                    <div class="d-flex gap-1">
+                        <span class="badge" style="background-color: {{ '#0070b8' if user.role == 'admin' else '#6cccff' }};">{{ user.role|title }}</span>
+                        <span class="badge" style="background-color: {{ '#005f96' if user.ativo else '#f59e0b' }};">{{ 'Ativo' if user.ativo else 'Inativo' }}</span>
+                    </div>
+                </div>
+                <div class="card-body py-2 px-3">
+                    <div class="row text-center mb-2">
+                        <div class="col">
+                            <strong>{{ user.cilindros }}</strong><br><small class="text-muted">Cilindros</small>
+                        </div>
+                        <div class="col">
+                            <strong>{{ user.pressoes }}</strong><br><small class="text-muted">Pressão</small>
+                        </div>
+                        <div class="col">
+                            <strong>{{ user.elementos }}</strong><br><small class="text-muted">Elementos</small>
+                        </div>
+                        <div class="col">
+                            <strong>{{ user.amostras }}</strong><br><small class="text-muted">Amostras</small>
+                        </div>
+                    </div>
+                    <div class="mb-2">
+                        <button class="btn btn-sm btn-primary w-100 text-white" data-bs-toggle="collapse" data-bs-target="#perms-{{ user.id }}">
+                            <i class="bi bi-gear me-1"></i> Permissões
+                        </button>
+                        <div class="collapse mt-1" id="perms-{{ user.id }}">
+                            <div class="d-flex flex-column gap-1">
+                                {% set cil_checked = user.habilitar_abas.cilindro if user.habilitar_abas.cilindro is defined else true %}
+                                {% set temp_checked = user.habilitar_abas.pressao if user.habilitar_abas.pressao is defined else true %}
+                                {% set ele_checked = user.habilitar_abas.elemento if user.habilitar_abas.elemento is defined else true %}
+                                {% set amo_checked = user.habilitar_abas.amostra if user.habilitar_abas.amostra is defined else true %}
+                                {% set his_checked = user.habilitar_abas.historico if user.habilitar_abas.historico is defined else true %}
+                                <form method="POST" action="{{ url_for('admin.update_habilitar_abas') }}">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <input type="hidden" name="user_id" value="{{ user.id }}">
+                                    <input type="hidden" name="aba" value="cilindro">
+                                    <input type="hidden" name="habilitar" value="{{ 'false' if cil_checked else 'true' }}">
+                                    <button type="submit" class="btn btn-sm admin-permission-btn btn-{{ 'primary' if cil_checked else 'outline-secondary' }} w-100" {% if user.role == 'admin' %}disabled{% endif %}>
+                                        <i class="bi bi-box-seam me-1"></i> Cilindros
+                                    </button>
+                                </form>
+                                <form method="POST" action="{{ url_for('admin.update_habilitar_abas') }}">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <input type="hidden" name="user_id" value="{{ user.id }}">
+                                    <input type="hidden" name="aba" value="pressao">
+                                    <input type="hidden" name="habilitar" value="{{ 'false' if temp_checked else 'true' }}">
+                                    <button type="submit" class="btn btn-sm admin-permission-btn btn-{{ 'primary' if temp_checked else 'outline-secondary' }} w-100" {% if user.role == 'admin' %}disabled{% endif %}>
+                                        <i class="bi bi-activity me-1"></i> Pressão
+                                    </button>
+                                </form>
+                                <form method="POST" action="{{ url_for('admin.update_habilitar_abas') }}">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <input type="hidden" name="user_id" value="{{ user.id }}">
+                                    <input type="hidden" name="aba" value="elemento">
+                                    <input type="hidden" name="habilitar" value="{{ 'false' if ele_checked else 'true' }}">
+                                    <button type="submit" class="btn btn-sm admin-permission-btn btn-{{ 'primary' if ele_checked else 'outline-secondary' }} w-100" {% if user.role == 'admin' %}disabled{% endif %}>
+                                        <i class="bi bi-droplet me-1"></i> Elementos
+                                    </button>
+                                </form>
+                                <form method="POST" action="{{ url_for('admin.update_habilitar_abas') }}">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <input type="hidden" name="user_id" value="{{ user.id }}">
+                                    <input type="hidden" name="aba" value="amostra">
+                                    <input type="hidden" name="habilitar" value="{{ 'false' if amo_checked else 'true' }}">
+                                    <button type="submit" class="btn btn-sm admin-permission-btn btn-{{ 'primary' if amo_checked else 'outline-secondary' }} w-100" {% if user.role == 'admin' %}disabled{% endif %}>
+                                        <i class="bi bi-graph-up me-1"></i> Amostras
+                                    </button>
+                                </form>
+                                <form method="POST" action="{{ url_for('admin.update_habilitar_abas') }}">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <input type="hidden" name="user_id" value="{{ user.id }}">
+                                    <input type="hidden" name="aba" value="historico">
+                                    <input type="hidden" name="habilitar" value="{{ 'false' if his_checked else 'true' }}">
+                                    <button type="submit" class="btn btn-sm admin-permission-btn btn-{{ 'primary' if his_checked else 'outline-secondary' }} w-100" {% if user.role == 'admin' %}disabled{% endif %}>
+                                        <i class="bi bi-clock-history me-1"></i> Histórico
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-2">
+                        <button class="btn btn-sm btn-primary w-100" data-bs-toggle="collapse" data-bs-target="#actions-{{ user.id }}">
+                            <i class="bi bi-gear-wide-connected me-1"></i> Ações
+                        </button>
+                        <div class="collapse mt-1" id="actions-{{ user.id }}">
+                            <div class="d-flex flex-column gap-1">
+                                <a href="{{ url_for('admin.user_data', target_user_id=user.id) }}" class="btn btn-sm admin-permission-btn btn-primary w-100">
+                                    <i class="bi bi-eye me-1"></i> Ver Dados
+                                </a>
+                                <form method="POST" action="{{ url_for('admin.toggle_user') }}">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <input type="hidden" name="user_id" value="{{ user.id }}">
+                                    <input type="hidden" name="ativo" value="{{ 'false' if user.ativo else 'true' }}">
+                                    <button type="button" class="btn btn-sm admin-permission-btn {{ 'btn-success' if user.ativo else 'btn-secondary' }} w-100" data-bs-toggle="modal" data-bs-target="#toggleModal{{ user.id }}">
+                                        <i class="bi bi-{{ 'person-dash' if user.ativo else 'person-check' }} me-1"></i> {{ 'Desativar' if user.ativo else 'Ativar' }}
+                                    </button>
+                                </form>
+                                <form method="POST" action="{{ url_for('admin.set_role') }}">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <input type="hidden" name="user_id" value="{{ user.id }}">
+                                    <input type="hidden" name="role" value="{{ 'usuario' if user.role == 'admin' else 'admin' }}">
+                                    <button type="button" class="btn btn-sm admin-permission-btn {{ 'btn-warning' if user.role == 'admin' else 'btn-outline-warning' }} w-100" data-bs-toggle="modal" data-bs-target="#roleModal{{ user.id }}">
+                                        <i class="bi bi-{{ 'arrow-down-circle' if user.role == 'admin' else 'arrow-up-circle' }} me-1"></i> {{ 'Tornar User' if user.role == 'admin' else 'Tornar Admin' }}
+                                    </button>
+                                </form>
+                                <form method="POST" action="{{ url_for('admin.delete_user') }}">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <input type="hidden" name="user_id" value="{{ user.id }}">
+                                    <button type="button" class="btn btn-sm admin-permission-btn btn-danger w-100" data-bs-toggle="modal" data-bs-target="#deleteUserModal{{ user.id }}">
+                                        <i class="bi bi-trash me-1"></i> Excluir
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
     </div>
 </div>
+
+<!-- Modais de Confirmação (fora da tabela, dentro do loop) -->
+{% for user in users %}
+<!-- Modal Toggle Ativo/Inativo -->
+<div class="modal fade" id="toggleModal{{ user.id }}" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title"><i class="bi bi-exclamation-triangle me-2"></i>Confirmar {{ 'Desativação' if user.ativo else 'Ativação' }}</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Tem certeza que deseja <strong>{{ 'desativar' if user.ativo else 'ativar' }}</strong> o usuário <strong>{{ user.email }}</strong>?</p>
+                <p class="text-muted small">{{ 'O usuário não poderá mais acessar o sistema.' if user.ativo else 'O usuário terá acesso ao sistema restaurado.' }}</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <form method="POST" action="{{ url_for('admin.toggle_user') }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <input type="hidden" name="user_id" value="{{ user.id }}">
+                    <input type="hidden" name="ativo" value="{{ 'false' if user.ativo else 'true' }}">
+                    <button type="submit" class="btn btn-primary">Confirmar</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Alterar Role -->
+<div class="modal fade" id="roleModal{{ user.id }}" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title"><i class="bi bi-shield-exclamation me-2"></i>Confirmar Alteração de Função</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Tem certeza que deseja <strong>{{ 'remover a função admin' if user.role == 'admin' else 'tornar admin' }}</strong> do usuário <strong>{{ user.email }}</strong>?</p>
+                <p class="text-muted small">{{ 'O usuário perderá acesso às funções administrativas.' if user.role == 'admin' else 'O usuário terá acesso completo ao painel administrativo.' }}</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <form method="POST" action="{{ url_for('admin.set_role') }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <input type="hidden" name="user_id" value="{{ user.id }}">
+                    <input type="hidden" name="role" value="{{ 'usuario' if user.role == 'admin' else 'admin' }}">
+                    <button type="submit" class="btn btn-primary">Confirmar</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Excluir Usuário -->
+<div class="modal fade" id="deleteUserModal{{ user.id }}" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-dark text-white">
+                <h5 class="modal-title"><i class="bi bi-exclamation-triangle me-2"></i>Confirmar Exclusão</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Tem certeza que deseja <strong>excluir</strong> o usuário <strong>{{ user.email }}</strong>?</p>
+                <p class="text-danger"><i class="bi bi-exclamation-circle"></i> Esta ação excluirá <strong>TODOS OS DADOS</strong> do usuário, incluindo:</p>
+                <ul class="text-muted small">
+                    <li>Cilindros cadastrados</li>
+                    <li>Elementos cadastrados</li>
+                    <li>Amostras registradas</li>
+                    <li>Registros de pressão</li>
+                    <li>Histórico de atividades</li>
+                </ul>
+                <p class="text-danger fw-bold">Esta ação não pode ser desfeita!</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <form method="POST" action="{{ url_for('admin.delete_user') }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <input type="hidden" name="user_id" value="{{ user.id }}">
+                    <button type="submit" class="btn btn-danger">Confirmar Exclusão</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
 {% endblock %}

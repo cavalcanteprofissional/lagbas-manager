@@ -1,8 +1,28 @@
 # LabGas Manager
 
-**Versão: 1.9.3**
+**Versão: 2.0.2** (Branch: v2-cores)
 
 Dashboard para gestão de cilindro de gás e elementos analisados em laboratório de química, utilizando **Flask** com **Jinja2** para o frontend web e **Supabase** como banco de dados PostgreSQL.
+
+---
+
+## Sistema de Cores v2.0.0
+
+### Cor Primária
+- **Principal**: `#0070b8` (derivada do ícone TSA)
+
+### Paleta de Cores (CSS Variables)
+
+| Variável | Hex | Uso |
+|----------|-----|-----|
+| `--primary-darkest` | #002a47 | Sidebar, textos escuros |
+| `--primary-dark` | #003a5e | Sidebar hover, headers |
+| `--primary` | #0070b8 | Brand, botões |
+| `--primary-light` | #4da3e8 | Gradientes, cards |
+| `--primary-lighter` | #6cccff | Gráficos, acentos |
+| `--primary-lightest` | #88d4ff | Highlights |
+| `--accent` | #005f96 | Cilindro |
+| `--accent-alt` | #4da3e8 | Elemento |
 
 ---
 
@@ -39,6 +59,17 @@ Dashboard para gestão de cilindro de gás e elementos analisados em laboratóri
 
 - **Expiração de Sessão**: Sessão expira após 10 minutos de inatividade
   - Usuário é redirecionado para login com mensagem explicativa
+
+### Novidades v2.0.1
+
+- **Log de Usuários no Histórico**: Registro automático de eventos de usuários
+  - Cadastro de novo usuário (tipo: perfil, ação: criado)
+  - Alteração de role admin/usuário (tipo: perfil, ação: atualizado)
+  - Ativação/desativação de usuário (tipo: perfil, ação: atualizado)
+  - Alteração de permissões de abas (tipo: perfil, ação: atualizado)
+- **Visualizar Senha**: Ícone de alternância para mostrar/ocultar senha
+  - Disponível nas telas de Login e Registro
+  - Ícone de olho (bi-eye / bi-eye-slash)
 
 ### Novidades v1.9.3
 
@@ -225,8 +256,9 @@ O frontend estará disponível em: `http://localhost:5000`
 
 ### Histórico
 - Registro de todas as operações CRUD
-- Filtros por tipo (cilindro/elemento/amostra) e ação (criado/atualizado/excluido)
+- Filtros por tipo (cilindro/elemento/amostra/perfil) e ação (criado/atualizado/excluido)
 - Exibição do usuário que realizou a ação
+- **Log de usuários**: Cadastro, alteração de role, ativação/desativação, permissões de abas
 
 ### Validações
 - Não permitir duplicatas (código de cilindro, nome de elemento)
@@ -252,16 +284,68 @@ O frontend estará disponível em: `http://localhost:5000`
 
 | Versão | Descrição |
 |--------|-----------|
+| v2.0.2 | Correções de consistência frontend vs backend (pressao/temperatura), documentação database/ |
+| v2.0.1 | Log de usuários no histórico (cadastro, role, permissões), visualizar senha |
+| v2.0.0 | Novo padrão de cores #0070b8, UI modernizada |
 | v1.9.3 | Remover obrigatoriedade dos campos na aba Pressão |
 | v1.9.2 | Adicionar campo temperatura à aba Pressão |
 | v1.9.1 | Renomear aba Temperatura para Pressão, ícone bi-activity |
-| v1.9.0 | Nova aba Temperatura - registro de temperatura dos cilindos |
+| v1.9.0 | Nova aba Pressão - registro de pressão dos cilindos |
 | v1.8.0 | Sistema de expiração de sessão por inatividade (10 min) |
 | v1.7.0 | Correções RLS, mensagens de erro amigáveis |
 | v1.6.0 | Exportação de dados (JSON/CSV/Excel/Markdown) + Controle de acesso por abas |
 | v1.5.0 | Correções de segurança (CSRF, IDOR, Rate Limiting, RLS) |
 | v1.4.1 | Correções de UX e mensagens amigáveis, formatação de datas |
 | v1.4.0 | Refatoração para Blueprints, código modular |
+
+---
+
+## Novidades v2.0.2
+
+### Correções de Bugs
+- **Inconsistência pressao/temperatura**: Corrige nomenclatura em templates admin
+  - `user.temperaturas` → `user.pressoes`
+  - `habilitar_abas.temperatura` → `habilitar_abas.pressao`
+  - `aba="temperatura"` → `aba="pressao"`
+- **Exportação Excel**: Corrige variável inexistente (`ws_temperaturas` → `ws_pressoes`)
+- **Exportação CSV**: Adiciona campo pressão, corrige header "TEMPERATURAS" → "PRESSOES"
+- **Exportação JSON**: Corrige chave "temperaturas" → "pressoes"
+- **Delete usuário**: Adiciona remoção de registros de pressão e histórico ao excluir usuário
+
+### Documentação
+- Adiciona diretório `database/` com schema SQL
+- Adiciona políticas RLS completas
+- Adiciona diagrama em formato Mermaid
+
+### Estrutura
+- Remove diretórios vazios (`codigo/`, `figuras/`)
+
+---
+
+## Deploy Vercel
+
+### Configuração do Projeto
+
+1. **Conectar Repositório**
+   - Acesse: https://vercel.com/new
+   - Selecione "Import Project"
+   - Escolha o repositório `labgas-manager`
+
+2. **Configurações do Projeto**
+   - Framework Preset: **Other**
+   - Build Command: *(deixe vazio)*
+   - Output Directory: *(deixe vazio)*
+   - Install Command: *(deixe vazio)*
+
+3. **Environment Variables**
+   - `SECRET_KEY`: sua chave secreta
+   - `SUPABASE_URL`: https://seu-projeto.supabase.co
+   - `SUPABASE_KEY`: sua chave anon
+   - `SUPABASE_SERVICE_KEY`: sua service role key
+
+4. **Configurar Domains**
+   - Branch `main`: labgas-manager.vercel.app (produção)
+   - Branch `v2-cores`: v2.labgas-manager.vercel.app (preview/homologação)
 
 ---
 

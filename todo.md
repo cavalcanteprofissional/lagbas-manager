@@ -50,27 +50,28 @@
 
 ---
 
-## Fase 5 - Controle de Acesso às Abas (Futuro) ⏳
+## Fase 5 - Controle de Acesso às Abas ✅ CONCLUÍDO
 
 ### Descrição
 Admin pode habilitar/desabilitar acesso às abas para usuários comuns.
 
 ### Abas Controladas
 - Cilindros
+- Pressão
 - Elementos
 - Amostras
 - Histórico
 
 ### Comportamento Default
-- Todas as abas **desabilitadas** para usuários comuns por padrão
+- Todas as abas **habilitadas** para novos usuários por padrão
 - Admin tem acesso a todas as abas
 
 ### Tarefas
-- [ ] Adicionar campo `habilitar_abas` na tabela perfil (JSON)
-- [ ] Criar função `pode_acessar_aba()` em helpers.py
-- [ ] Verificar permissão nas rotas de cilindro, elemento, amostra, historico
-- [ ] Adicionar UI no admin para gerenciar permissões
-- [ ] Ocultar menus das abas se usuário não tem permissão
+- [x] Adicionar campo `habilitar_abas` na tabela perfil (JSON)
+- [x] Criar função `pode_acessar_aba()` em helpers.py
+- [x] Verificar permissão nas rotas de cilindro, elemento, amostra, historico
+- [x] Adicionar UI no admin para gerenciar permissões
+- [x] Ocultar menus das abas se usuário não tem permissão
 
 ---
 
@@ -207,3 +208,187 @@ labgas-manager/
 1. Conectar repositório GitHub no Vercel
 2. Configurar variáveis de ambiente no painel Vercel
 3. Deploy automático ao push na branch principal
+
+---
+
+## Fase 6 - Log de Usuários no Histórico ✅ CONCLUÍDO
+
+### Descrição
+Implementar registro no histórico de eventos relacionados a usuários (cadastro, alteração de role, permissões de abas).
+
+### Tarefas
+
+#### 6.1 Log de Cadastro de Usuário
+- [x] Adicionar `registrar_historico()` em `auth.py` após criar perfil
+- [x] Tipo: `perfil`, Ação: `criado`, Nome: email do usuário
+- [x] Arquivo: `frontend/blueprints/auth.py`
+
+#### 6.2 Log de Alteração de Role
+- [x] Adicionar registro em `admin.py:set_role()` após atualizar role
+- [x] Tipo: `perfil`, Ação: `atualizado`, Nome: "Role alterada para admin/usuario"
+- [x] Arquivo: `frontend/blueprints/admin.py`
+
+#### 6.3 Log de Ativação/Desativação de Usuário
+- [x] Adicionar registro em `admin.py:toggle_user()` após atualizar status
+- [x] Tipo: `perfil`, Ação: `atualizado`, Nome: "Usuário ativado/desativado"
+- [x] Arquivo: `frontend/blueprints/admin.py`
+
+#### 6.4 Log de Alteração de Permissões de Abas
+- [x] Rota `update_habilitar_abas` já existia - adicionado registro
+- [x] Adicionar registro após alterar permissões
+- [x] Tipo: `perfil`, Ação: `atualizado`, Nome: "Aba X habilitada/desabilitada"
+- [x] Arquivo: `frontend/blueprints/admin.py`
+
+### Estrutura de Dados no Histórico
+
+| Campo | Exemplo Cadastro | Exemplo Role | Exemplo Toggle | Exemplo Permissões |
+|-------|------------------|--------------|----------------|-------------------|
+| tipo | perfil | perfil | perfil | perfil |
+| ação | criado | atualizado | atualizado | atualizado |
+| nome | "usuario@email.com" | "Role alterada para admin" | "Usuário ativado" | "Aba Cilindros habilitada" |
+| user_id | ID do novo usuário | ID do admin | ID do admin | ID do admin |
+
+---
+
+## Fase 7 - Auditoria Frontend vs Backend (3ª Verificação) ⏳
+
+### Inconsistências Encontradas
+
+#### 7.7 admin.py - JSON export usa "temperaturas"
+- **Arquivo**: `frontend/blueprints/admin.py`
+- **Linha**: 321
+- **Problema**: O JSON export usa `"temperaturas": pressoes_data` mas deveria ser `"pressoes": pressoes_data`
+- **Status**: [x] Concluído ✅
+
+#### 7.8 admin.py - CSV export usa "TEMPERATURAS"
+- **Arquivo**: `frontend/blueprints/admin.py`
+- **Linha**: 359
+- **Problema**: O CSV export usa `# TEMPERATURAS\n` mas deveria ser `# PRESSOES\n`
+- **Status**: [x] Concluído ✅
+
+#### 7.9 admin.py - CSV export não inclui campo "pressao"
+- **Arquivo**: `frontend/blueprints/admin.py`
+- **Linha**: 368
+- **Problema**: Os headers do CSV para pressoes não incluem o campo "pressao" (apenas inclui temperatura)
+- **Status**: [x] Concluído ✅
+
+---
+
+## Fase 7 - Auditoria Frontend vs Backend (2ª Verificação) ✅ CONCLUÍDO
+
+### Inconsistências Encontradas
+
+#### 7.6 auth.py - Falta "pressao" no habilitar_abas do registro
+- **Arquivo**: `frontend/blueprints/auth.py`
+- **Linha**: 196
+- **Problema**: Ao criar novo usuário via registro, o campo `habilitar_abas` não inclui "pressao"
+- **Código atual**: `{"cilindro": True, "elemento": True, "amostra": True, "historico": True}`
+- **Deveria ser**: `{"cilindro": True, "pressao": True, "elemento": True, "amostra": True, "historico": True}`
+- **Status**: [x] Concluído ✅
+
+### Resumo das Correções
+
+| # | Arquivo | Linha | Problema | Solução |
+|---|---------|-------|----------|---------|
+| 1 | auth.py | 196 | Falta "pressao" no habilitar_abas | Adicionar "pressao": True ao JSON |
+
+---
+
+## Fase 7 - Auditoria Frontend vs Backend (1ª Verificação) ✅ CONCLUÍDO
+
+### Descrição
+Analise completa do projeto para verificar consistência entre as chamadas do frontend e a estrutura do banco de dados Supabase.
+
+### Inconsistências Encontradas
+
+#### 7.1 Bug Crítico - Exportação Excel em admin.py
+- **Arquivo**: `frontend/blueprints/admin.py`
+- **Linha**: 428
+- **Problema**: Na exportação Excel, o sheet é criado como `ws_pressoes` mas na hora de adicionar dados, referencia `ws_temperaturas` que não existe
+- **Código atual**: `ws_temperaturas.append(headers)`
+- **Deveria ser**: `ws_pressoes.append(headers)`
+- **Status**: [x] Concluído ✅
+
+#### 7.2 Inconsistência "temperatura" vs "pressao" no admin.html
+- **Arquivo**: `frontend/templates/admin.html`
+- **Linha**: 61
+- **Problema**: Usa `user.temperaturas` mas a variável correta é `user.pressoes`
+- **Status**: [x] Concluído ✅
+
+#### 7.3 Inconsistência no habilitar_abas (admin.html)
+- **Arquivo**: `frontend/templates/admin.html`
+- **Linha**: 67, 200
+- **Problema**: Usa `user.habilitar_abas.temperatura` mas o campo correto é `user.habilitar_abas.pressao`
+- **Status**: [x] Concluído ✅
+
+#### 7.4 ABA errada no admin.html
+- **Arquivo**: `frontend/templates/admin.html`
+- **Linha**: 83, 216
+- **Problema**: Usa `aba="temperatura"` mas deveria ser `aba="pressao"`
+- **Status**: [x] Concluído ✅
+
+#### 7.5 Delete não remove dados relacionados (admin.py)
+- **Arquivo**: `frontend/blueprints/admin.py`
+- **Linha**: 151-155
+- **Problema**: Ao deletar usuário, não remove os registros de `pressao` e `historico_log` vinculados ao user_id
+- **Status**: [x] Concluído ✅
+
+### Resumo das Correções
+
+| # | Arquivo | Linha | Problema | Solução |
+|---|---------|-------|----------|---------|
+| 1 | admin.py | 428 | `ws_temperaturas` → `ws_pressoes` | Corrigir nome da variável |
+| 2 | admin.html | 61 | `user.temperaturas` → `user.pressoes` | Corrigir nome do campo |
+| 3 | admin.html | 67 | `.temperatura` → `.pressao` | Corrigir nome do campo JSON |
+| 4 | admin.html | 83 | `aba="temperatura"` → `aba="pressao"` | Corrigir valor do campo |
+| 5 | admin.py | 151-155 | Adicionar deletes para pressao e historico_log | Adicionar client.table("pressao").delete() e client.table("historico_log").delete() |
+
+---
+
+## Fase 7 - Auditoria Frontend vs Backend (3ª Verificação) ✅ CONCLUÍDO
+
+### Inconsistências Encontradas
+
+#### 7.7 admin.py - JSON export usa "temperaturas"
+- **Arquivo**: `frontend/blueprints/admin.py`
+- **Linha**: 321
+- **Problema**: O JSON export usa `"temperaturas": pressoes_data` mas deveria ser `"pressoes": pressoes_data`
+- **Status**: [x] Concluído ✅
+
+#### 7.8 admin.py - CSV export usa "TEMPERATURAS"
+- **Arquivo**: `frontend/blueprints/admin.py`
+- **Linha**: 359
+- **Problema**: O CSV export usa `# TEMPERATURAS\n` mas deveria ser `# PRESSOES\n`
+- **Status**: [x] Concluído ✅
+
+#### 7.9 admin.py - CSV export não inclui campo "pressao"
+- **Arquivo**: `frontend/blueprints/admin.py`
+- **Linha**: 368
+- **Problema**: Os headers do CSV para pressoes não incluem o campo "pressao" (apenas inclui temperatura)
+- **Status**: [x] Concluído ✅
+
+---
+
+## Fase 8 - Documentação do Banco de Dados ✅ CONCLUÍDO
+
+### Descrição
+Criar diretório database/ com schema, RLS, seed e diagrama do banco de dados.
+
+### Tarefas
+- [x] Criar diretório `database/`
+- [x] Criar `schema.sql` com CREATE TABLE + índices
+- [x] Criar `rls.sql` com políticas RLS
+- [x] Criar `seed.sql` com elementos padrão (referência)
+- [x] Criar `diagram.md` com diagrama em formato Mermaid
+
+---
+
+## Fase 9 - Limpeza de Arquivos ✅ CONCLUÍDO
+
+### Descrição
+Remover arquivos e diretórios desnecessários do projeto.
+
+### Tarefas
+- [x] Remover diretório `codigo/` (vazio)
+- [x] Remover diretório `figuras/` (vazio)
+- [x] Adicionar diretório `database/` à documentação

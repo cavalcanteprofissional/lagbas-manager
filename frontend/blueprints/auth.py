@@ -7,6 +7,7 @@ import logging
 import time
 
 from utils.supabase_utils import get_supabase_client, get_admin_client
+from blueprints.helpers import registrar_historico
 
 auth_bp = Blueprint('auth', __name__)
 logger = logging.getLogger(__name__)
@@ -192,8 +193,11 @@ def register():
                         "ativo": True,
                         "nome": nome,
                         "email": email,
-                        "habilitar_abas": {"cilindro": True, "elemento": True, "amostra": True, "historico": True}
+                        "habilitar_abas": {"cilindro": True, "pressao": True, "elemento": True, "amostra": True, "historico": True}
                     }).execute()
+                    
+                    # Registrar cadastro no histórico
+                    registrar_historico("perfil", "criado", email, response.user.id)
                 except Exception as perfil_error:
                     error_str = str(perfil_error)
                     if "23503" in error_str or "foreign key" in error_str.lower():

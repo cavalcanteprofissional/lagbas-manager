@@ -6,7 +6,7 @@
 <h2 class="mb-4"><i class="bi bi-clock-history"></i> Histórico de Atividades</h2>
 
 <div class="card">
-    <div class="card-header bg-light">
+    <div class="card-header" style="background: linear-gradient(135deg, #002a47, #003a5e); color: white;">
         <div class="row g-2 align-items-center">
             <div class="col-md-4">
                 <input type="text" id="searchHistory" class="form-control" placeholder="Buscar...">
@@ -29,7 +29,7 @@
                 </select>
             </div>
             <div class="col-md-2">
-                <button class="btn btn-outline-secondary w-100" onclick="filterHistory()">
+                <button class="btn btn-outline-primary w-100" onclick="filterHistory()">
                     <i class="bi bi-funnel"></i> Filtrar
                 </button>
             </div>
@@ -38,14 +38,14 @@
     <div class="card-body p-0">
         {% if history %}
         <div class="table-responsive">
-            <table class="table table-hover mb-0">
+            <table class="table table-hover mb-0" id="historyTable">
                 <thead class="table-light">
                     <tr>
                         <th>Data/Hora</th>
                         <th>Tipo</th>
                         <th>Ação</th>
                         <th>Item</th>
-                        <th>Usuário</th>
+                        {% if is_admin %}<th>Usuário</th>{% endif %}
                     </tr>
                 </thead>
                 <tbody>
@@ -55,22 +55,34 @@
                             <small>{{ h.data|formatar_data if h.data else '-' }}</small>
                         </td>
                         <td>
-                            <span class="badge bg-{{ 'success' if h.tipo == 'cilindro' else 'warning' if h.tipo == 'pressao' else 'primary' if h.tipo == 'elemento' else 'info' }}">
+                            <span class="badge" style="background-color: {{ '#0070b8' if h.tipo == 'cilindro' else '#f59e0b' if h.tipo == 'pressao' else '#4da3e8' if h.tipo == 'elemento' else '#6cccff' }};">
                                 {{ h.tipo|title }}
                             </span>
                         </td>
                         <td>
-                            <span class="badge bg-{{ 'success' if h.acao == 'criado' else 'warning' if h.acao == 'atualizado' else 'danger' }}">
+                            <span class="badge" style="background-color: {{ '#0070b8' if h.acao == 'criado' else '#f59e0b' if h.acao == 'atualizado' else '#dc3545' if h.acao == 'excluido' else '#6c757d' }};">
                                 {{ h.acao|title }}
                             </span>
                         </td>
                         <td><strong>{{ h.nome }}</strong></td>
-                        <td><small>{{ h.usuario_nome }}</small></td>
+                        {% if is_admin %}<td><small>{{ h.usuario_nome }}</small></td>{% endif %}
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
+        {% if total > per_page %}
+        <div class="card-footer">
+            <ul class="pagination pagination-sm mb-0 justify-content-center">
+                <li class="page-item {{ 'disabled' if page == 1 }}"><a class="page-link" href="{{ url_for('historico.list', page=page-1) }}">Anterior</a></li>
+                {% set pages = ((total / per_page)|round(method='ceil'))|int %}
+                {% for p in range(1, pages + 1) %}
+                <li class="page-item {{ 'active' if p == page }}"><a class="page-link" href="{{ url_for('historico.list', page=p) }}">{{ p }}</a></li>
+                {% endfor %}
+                <li class="page-item {{ 'disabled' if page == pages }}"><a class="page-link" href="{{ url_for('historico.list', page=page+1) }}">Próxima</a></li>
+            </ul>
+        </div>
+        {% endif %}
         {% else %}
         <div class="text-center py-5 text-muted">
             <i class="bi bi-clock-history fs-1"></i>
@@ -86,13 +98,13 @@ function filterHistory() {
     const type = document.getElementById('filterType').value;
     const action = document.getElementById('filterAction').value;
     
-    const rows = document.querySelectorAll('tbody tr');
+    const rows = document.querySelectorAll('#historyTable tbody tr');
     rows.forEach(row => {
         const cells = row.cells;
         let rowType = cells[1].textContent.trim().toLowerCase();
         let rowAction = cells[2].textContent.trim().toLowerCase();
         
-        const typeMap = { 'cilindro': 'cilindro', 'pressao': 'pressao', 'elemento': 'elemento', 'amostra': 'amostra' };
+        const typeMap = { 'cilindro': 'cilindro', 'pressão': 'pressao', 'elemento': 'elemento', 'amostra': 'amostra' };
         rowType = typeMap[rowType] || rowType;
         
         const actionMap = { 'criado': 'criado', 'atualizado': 'atualizado', 'excluído': 'excluido' };
@@ -108,5 +120,7 @@ function filterHistory() {
 }
 
 document.getElementById('searchHistory').addEventListener('keyup', filterHistory);
+document.getElementById('filterType').addEventListener('change', filterHistory);
+document.getElementById('filterAction').addEventListener('change', filterHistory);
 </script>
 {% endblock %}

@@ -59,7 +59,7 @@
 <div class="row">
     <div class="col-12 col-lg-6 mb-4">
         <div class="card h-100">
-            <div class="card-header" style="background: linear-gradient(135deg, #10b981, #34d399); color: white;">
+            <div class="card-header" style="background: linear-gradient(135deg, #005f96, #4da3e8); color: white;">
                 <h5 class="mb-0"><i class="bi bi-pie-chart"></i> Quantidade de Amostras por Cilindro</h5>
             </div>
             <div class="card-body">
@@ -75,7 +75,7 @@
     </div>
     <div class="col-12 col-lg-6 mb-4">
         <div class="card h-100">
-            <div class="card-header" style="background: linear-gradient(135deg, #3b82f6, #60a5fa); color: white;">
+            <div class="card-header" style="background: linear-gradient(135deg, #003a5e, #4da3e8); color: white;">
                 <h5 class="mb-0"><i class="bi bi-bar-chart"></i> Consumo por Elemento × Tempo de Chama</h5>
             </div>
             <div class="card-body">
@@ -94,7 +94,7 @@
 <div class="row g-3 mb-4">
     <div class="col-12 col-lg-6 mb-4">
         <div class="card h-100">
-            <div class="card-header" style="background: linear-gradient(135deg, #ec4899, #f472b6); color: white;">
+            <div class="card-header" style="background: linear-gradient(135deg, #0070b8, #6cccff); color: white;">
                 <h5 class="mb-0"><i class="bi bi-bar-chart-steps"></i> Elementos mais analisados por Amostras</h5>
             </div>
             <div class="card-body">
@@ -105,7 +105,7 @@
                         <div>
                             <strong>{{ item.nome }}</strong>
                         </div>
-                        <span class="badge bg-primary">{{ item.quantidade }} amostra(s)</span>
+                        <span class="badge" style="background-color: {{ elemento_cores[loop.index0] }};">{{ item.quantidade }} amostra(s)</span>
                     </div>
                     {% endfor %}
                 </div>
@@ -117,7 +117,7 @@
     </div>
     <div class="col-12 col-lg-6 mb-4">
         <div class="card h-100">
-            <div class="card-header d-flex justify-content-between align-items-center" style="background: linear-gradient(135deg, #8b5cf6, #a78bfa); color: white;">
+            <div class="card-header d-flex justify-content-between align-items-center" style="background: linear-gradient(135deg, #002a47, #003a5e); color: white;">
                 <h5 class="mb-0"><i class="bi bi-diagram-3"></i> Eficiência por Elemento</h5>
                 <div class="dropdown">
                     <button class="btn btn-sm btn-outline-light dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -160,7 +160,7 @@
     
     <div class="col-12 col-lg-4">
         <div class="card h-100">
-            <div class="card-header" style="background: linear-gradient(135deg, #10b981, #34d399); color: white;">
+            <div class="card-header" style="background: linear-gradient(135deg, #005f96, #4da3e8); color: white;">
                 <h6 class="mb-0"><i class="bi bi-box-seam"></i> Últimos Cilindros</h6>
             </div>
             <div class="card-body p-0">
@@ -179,7 +179,7 @@
                     {% endfor %}
                 </div>
                 <div class="card-footer text-center">
-                    <a href="{{ url_for('cilindro.list') }}" class="btn btn-sm btn-outline-success">Ver todos</a>
+                    <a href="{{ url_for('cilindro.list') }}" class="btn btn-sm btn-outline-primary">Ver todos</a>
                 </div>
                 {% else %}
                 <p class="text-muted text-center py-4">Nenhum cilindro</p>
@@ -190,7 +190,7 @@
     
     <div class="col-12 col-lg-4">
         <div class="card h-100">
-            <div class="card-header" style="background: linear-gradient(135deg, #3b82f6, #60a5fa); color: white;">
+            <div class="card-header" style="background: linear-gradient(135deg, #003a5e, #4da3e8); color: white;">
                 <h6 class="mb-0"><i class="bi bi-droplet"></i> Últimos Elementos</h6>
             </div>
             <div class="card-body p-0">
@@ -218,8 +218,8 @@
     
     <div class="col-12 col-lg-4">
         <div class="card h-100">
-            <div class="card-header" style="background: linear-gradient(135deg, #ec4899, #f472b6); color: white;">
-                <h6 class="mb-0"><i class="bi bi-graph-up"></i> Últimas Amostras</h6>
+            <div class="card-header" style="background: linear-gradient(135deg, #0070b8, #6cccff); color: white;">
+                <h6 class="mb-0"><i class="bi bi-clock-history"></i> Últimas Amostras</h6>
             </div>
             <div class="card-body p-0">
                 {% if amostras[:5] %}
@@ -227,15 +227,15 @@
                     {% for a in amostras[:5] %}
                     <div class="list-group-item d-flex justify-content-between align-items-center">
                         <div>
-                            <strong>{{ a.cilindro_nome or a.cilindro_id }}</strong>
-                            <small class="d-block text-muted">{{ a.elemento_nome or a.elemento_id }}</small>
+                            <span class="badge" style="background-color: var(--primary);">{{ cilindro_dict.get(a.cilindro_id, a.cilindro_id) }}</span>
+                            <span class="badge mx-1" style="background-color: var(--primary-light);">{{ elemento_dict.get(a.elemento_id, a.elemento_id) }}</span>
                         </div>
                         <small class="text-muted">{{ a.data|formatar_data if a.data else '-' }}</small>
                     </div>
                     {% endfor %}
                 </div>
                 <div class="card-footer text-center">
-                    <a href="{{ url_for('amostra.list') }}" class="btn btn-sm" style="border-color: #ec4899; color: #ec4899;">Ver todos</a>
+                    <a href="{{ url_for('amostra.list') }}" class="btn btn-sm btn-outline-primary">Ver todos</a>
                 </div>
                 {% else %}
                 <p class="text-muted text-center py-4">Nenhuma amostra</p>
@@ -256,7 +256,7 @@ new Chart(document.getElementById('statusChart'), {
         labels: {{ cilindro_amostras_labels|tojson }},
         datasets: [{
             data: {{ cilindro_amostras_values|tojson }},
-            backgroundColor: ['#10b981', '#34d399', '#3b82f6', '#60a5fa', '#ec4899', '#f472b6', '#8b5cf6', '#a78bfa']
+            backgroundColor: ['#0070b8', '#4da3e8', '#6cccff', '#88d4ff', '#005f96', '#003a5e', '#002a47', '#002a47']
         }]
     },
     options: {
@@ -264,7 +264,7 @@ new Chart(document.getElementById('statusChart'), {
         maintainAspectRatio: false,
         plugins: {
             legend: {
-                position: 'bottom',
+                position: 'right',
                 labels: {
                     padding: 15,
                     usePointStyle: true
@@ -276,6 +276,10 @@ new Chart(document.getElementById('statusChart'), {
 {% endif %}
 
 {% if elementos_labels %}
+const elementoCores = {{ elemento_cores|tojson }};
+function getCoresPorElemento(labels) {
+    return labels.map((_, i) => elementoCores[i % elementoCores.length]);
+}
 new Chart(document.getElementById('elementosChart'), {
     type: 'bar',
     data: {
@@ -283,7 +287,7 @@ new Chart(document.getElementById('elementosChart'), {
         datasets: [{
             label: 'Consumo × Tempo (L)',
             data: {{ elementos_consumo_tempo|tojson }},
-            backgroundColor: '#3b82f6',
+            backgroundColor: getCoresPorElemento({{ elementos_labels|tojson }}),
             borderRadius: 4
         }]
     },
@@ -347,7 +351,7 @@ const eficienciaChart = new Chart(document.getElementById('eficienciaChart'), {
         datasets: [{
             label: 'Qtd Amostras',
             data: getEficienciaFiltered().data,
-            backgroundColor: '#8b5cf6',
+            backgroundColor: getCoresPorElemento(getEficienciaFiltered().labels),
             borderRadius: 4
         }]
     },

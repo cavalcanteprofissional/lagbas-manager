@@ -1,0 +1,22 @@
+flowchart TD
+    subgraph Cliente["Navegador Web"]
+        UI[Interface Jinja2]
+    end
+    
+    subgraph Servidor["Servidor Flask"]
+        Auth[Autenticação JWT]
+        API[API REST]
+        Blueprints[Blueprints MVC]
+    end
+    
+    subgraph Banco["Supabase"]
+        DB[(PostgreSQL)]
+        RLS[Políticas RLS]
+    end
+    
+    UI -->|HTTP| Auth
+    Auth --> Blueprints
+    Blueprints -->|API REST| API
+    API -->|Consulta SQL| DB
+    API -->|HTML/CSS/JS| UI
+    RLS -.->|Segurança| DB

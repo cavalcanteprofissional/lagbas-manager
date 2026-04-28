@@ -9,6 +9,7 @@ from dotenv import load_dotenv
 from supabase import create_client, Client
 
 from blueprints.helpers import get_authenticated_client
+from utils.constants import ELEMENTO_CORES
 
 load_dotenv()
 
@@ -187,7 +188,7 @@ def dashboard():
 
     elemento_dict = {e.get("id"): e.get("nome") for e in elementos}
     elementos_mais_analisados = []
-    for elem_id, count in sorted(elemento_amostras_count.items(), key=lambda x: x[1], reverse=True):
+    for elem_id, count in sorted(elemento_amostras_count.items(), key=lambda x: x[1], reverse=True)[:5]:
         elementos_mais_analisados.append({
             "nome": elemento_dict.get(elem_id, str(elem_id)),
             "quantidade": count
@@ -255,6 +256,7 @@ def dashboard():
         eficiencia_data=eficiencia,
         cilindro_dict=cilindro_dict,
         elemento_dict=elemento_dict,
+        elemento_cores=ELEMENTO_CORES,
         total_quantidade_amostras=total_quantidade_amostras,
     )
 
@@ -306,11 +308,13 @@ def perfil():
     cilindro_response = supabase.table("cilindro").select("id").eq("user_id", user_id).execute()
     elementos_response = supabase.table("elemento").select("id").eq("user_id", user_id).execute()
     amostras_response = supabase.table("amostra").select("id").eq("user_id", user_id).execute()
+    pressoes_response = supabase.table("pressao").select("id").eq("user_id", user_id).execute()
 
     stats = {
         "cilindros": len(cilindro_response.data or []),
         "elementos": len(elementos_response.data or []),
         "amostras": len(amostras_response.data or []),
+        "pressoes": len(pressoes_response.data or []),
     }
 
     return render_template("perfil.html", stats=stats, user_role=user_role, user_nome=user_nome, habilitar_abas=habilitar_abas)

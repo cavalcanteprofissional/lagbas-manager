@@ -7,7 +7,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash,
 from openpyxl import Workbook
 
 from utils.supabase_utils import get_admin_client
-from blueprints.helpers import get_user_id, is_admin, get_user_role, get_habilitar_abas
+from blueprints.helpers import get_user_id, is_admin, get_user_role, get_habilitar_abas, registrar_historico
 
 admin_bp = Blueprint('admin', __name__)
 
@@ -90,6 +90,11 @@ def toggle_user():
     
     client = get_admin_client()
     client.table("perfil").update({"ativo": ativo}).eq("id", target_user_id).execute()
+    
+    # Registrar no histórico
+    acao = "ativado" if ativo else "desativado"
+    registrar_historico("perfil", "atualizado", f"Usuário {acao}", get_user_id())
+    
     flash(f"Usuário {'ativado' if ativo else 'desativado'} com sucesso!", "success")
     
     return redirect(url_for("admin.panel"))
@@ -118,6 +123,10 @@ def set_role():
     
     client = get_admin_client()
     client.table("perfil").update({"role": role}).eq("id", target_user_id).execute()
+    
+    # Registrar alteração de role no histórico
+    registrar_historico("perfil", "atualizado", f"Role alterada para {role}", get_user_id())
+    
     flash(f"Função do usuário alterada para {role}!", "success")
     
     return redirect(url_for("admin.panel"))
@@ -143,6 +152,8 @@ def delete_user():
     client.table("cilindro").delete().eq("user_id", target_user_id).execute()
     client.table("elemento").delete().eq("user_id", target_user_id).execute()
     client.table("amostra").delete().eq("user_id", target_user_id).execute()
+    client.table("pressao").delete().eq("user_id", target_user_id).execute()
+    client.table("historico_log").delete().eq("user_id", target_user_id).execute()
     client.table("perfil").delete().eq("id", target_user_id).execute()
     
     flash("Usuário e todos os seus dados foram excluídos!", "success")
@@ -175,6 +186,7 @@ def update_habilitar_abas():
     client = get_admin_client()
     
     habilitar_abas = {"cilindro": False, "pressao": False, "elemento": False, "amostra": False, "historico": False}
+    perfil = client.table("perfil").select("habilitar_abas").eq("id", target_user_id).execute()
     if perfil.data and perfil.data[0].get("habilitar_abas"):
         habilitar_abas = perfil.data[0].get("habilitar_abas")
     
@@ -182,19 +194,17 @@ def update_habilitar_abas():
     
     client.table("perfil").update({"habilitar_abas": habilitar_abas}).eq("id", target_user_id).execute()
     
+    # Registrar alteração de permissões no histórico
     acao = "habilitada" if habilitar else "desabilitada"
     nome_aba = {"cilindro": "Cilindros", "pressao": "Pressão", "elemento": "Elementos", "amostra": "Amostras", "historico": "Histórico"}.get(aba, aba)
+    registrar_historico("perfil", "atualizado", f"Aba {nome_aba} {acao}", get_user_id())
+    
     flash(f"Aba {nome_aba} {acao} com sucesso!", "success")
-    
-    client = get_admin_client()
-    client.table("perfil").update({"habilitar_abas": habilitar_abas}).eq("id", target_user_id).execute()
-    
-    flash("Permissões de acesso atualizadas!", "success")
     
     return redirect(url_for("admin.panel"))
 
 
-@admin_bp.route("/admin/user-data/<target_user_id>")
+@admin_bp.route("/admin/user-data/<target_user_id>", methods=["GET"])
 def user_data(target_user_id):
     if not is_admin():
         flash("Acesso restrito a administradores.", "danger")
@@ -205,10 +215,28 @@ def user_data(target_user_id):
         return error
     
     client = get_admin_client()
-    cilindro = client.table("cilindro").select("*").eq("user_id", target_user_id).execute().data or []
-    elementos = client.table("elemento").select("*").eq("user_id", target_user_id).execute().data or []
-    amostras = client.table("amostra").select("*").eq("user_id", target_user_id).execute().data or []
-    pressoes = client.table("pressao").select("*").eq("user_id", target_user_id).execute().data or []
+    
+    page = int(request.args.get("page", 1))
+    per_page = 20
+    
+    cilindro_total = client.table("cilindro").select("*", count="exact").eq("user_id", target_user_id).execute().count or 0
+    elementos_total = client.table("elemento").select("*", count="exact").eq("user_id", target_user_id).execute().count or 0
+    amostras_total = client.table("amostra").select("*", count="exact").eq("user_id", target_user_id).execute().count or 0
+    pressoes_total = client.table("pressao").select("*", count="exact").eq("user_id", target_user_id).execute().count or 0
+    
+    historico_offset = (page - 1) * per_page
+    historico_log = client.table("historico_log").select(
+        "tipo, acao, nome, created_at"
+    ).eq("user_id", target_user_id).order("created_at", desc=True).range(historico_offset, historico_offset + per_page - 1).execute().data or []
+    
+    historico_total = client.table("historico_log").select("*", count="exact").eq("user_id", target_user_id).execute().count or 0
+    
+    history = [{
+        "tipo": h.get("tipo"),
+        "acao": h.get("acao"),
+        "nome": h.get("nome"),
+        "data": h.get("created_at")
+    } for h in historico_log]
     
     perfil = client.table("perfil").select("*").eq("id", target_user_id).execute().data
     target_user = perfil[0] if perfil else {"id": target_user_id, "role": "unknown"}
@@ -218,11 +246,15 @@ def user_data(target_user_id):
     return render_template(
         "admin_user_data.html",
         target_user=target_user,
-        cilindro=cilindro,
-        elementos=elementos,
-        amostras=amostras,
-        pressoes=pressoes,
-        habilitar_abas=habilitar_abas
+        cilindro_total=cilindro_total,
+        elementos_total=elementos_total,
+        amostras_total=amostras_total,
+        pressoes_total=pressoes_total,
+        habilitar_abas=habilitar_abas,
+        history=history,
+        historico_total=historico_total,
+        page=page,
+        per_page=per_page
     )
 
 
@@ -286,7 +318,7 @@ def export_data():
             "cilindros": cilindro_data,
             "elementos": elementos_data,
             "amostras": amostras_data,
-            "temperaturas": pressoes_data
+            "pressoes": pressoes_data
         }
         response = make_response(json.dumps(data, indent=2, default=str))
         response.headers["Content-Disposition"] = f"attachment; filename=labgas_export_{timestamp}.json"
@@ -324,7 +356,7 @@ def export_data():
                 values = [str(row.get(h, "")) for h in headers]
                 output.write(",".join(values) + "\n")
         
-        output.write("\n# TEMPERATURAS\n")
+        output.write("\n# PRESSOES\n")
         if pressoes_data:
             for t in pressoes_data:
                 uid = t.get("user_id")
@@ -333,7 +365,7 @@ def export_data():
                     t["usuario_email"] = u.get("email", "")
                     t["usuario_nome"] = u.get("nome", "")
                 t["cilindro_codigo"] = cilindro_dict.get(t.get("cilindro_id"), "")
-            headers = ["id", "cilindro_id", "cilindro_codigo", "temperatura", "data", "hora",
+            headers = ["id", "cilindro_id", "cilindro_codigo", "pressao", "temperatura", "data", "hora",
                       "usuario_email", "usuario_nome", "created_at"]
             output.write(",".join(headers) + "\n")
             for row in pressoes_data:
@@ -393,13 +425,13 @@ def export_data():
         if pressoes_data:
             for t in pressoes_data:
                 t["cilindro_codigo"] = cilindro_dict.get(t.get("cilindro_id"), "")
-            headers = ["ID", "Cilindro ID", "Cilindro Código", "Temperatura (°C)", "Data", "Hora",
+            headers = ["ID", "Cilindro ID", "Cilindro Código", "Pressão (bar)", "Temperatura (°C)", "Data", "Hora",
                       "Usuário Email", "Usuário Nome", "Criado em"]
-            ws_temperaturas.append(headers)
+            ws_pressoes.append(headers)
             for row in pressoes_data:
-                ws_temperaturas.append([
+                ws_pressoes.append([
                     row.get("id"), row.get("cilindro_id"), row.get("cilindro_codigo"),
-                    row.get("temperatura"), row.get("data"), row.get("hora"),
+                    row.get("pressao"), row.get("temperatura"), row.get("data"), row.get("hora"),
                     row.get("usuario_email"), row.get("usuario_nome"), row.get("created_at")
                 ])
         
