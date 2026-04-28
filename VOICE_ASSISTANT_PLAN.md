@@ -10,32 +10,94 @@ Sistema de assistente de voz para interação com o LabGas Manager, permitindo r
 
 ## Arquitetura da Solução
 
+```mermaid
+flowchart TB
+    subgraph Browser["Navegador (Frontend)"]
+        Dashboard["Dashboard<br/>LabGas"]
+        VoiceButton["Botão Voice<br/>🎤"]
+        VoiceModal["Modal do<br/>Assistente"]
+        
+        subgraph WebSpeech["Web Speech API"]
+            STT["Speech-to-Text<br/>Reconhecimento de voz"]
+            TTS["Text-to-Speech<br/>Síntese de voz"]
+        end
+        
+        VoiceLogic["Lógica do<br/>Assistente"]
+    end
+    
+    subgraph Backend["Backend (Flask)"]
+        API["API Voice<br/>/api/voice/*"]
+        
+        subgraph VoiceProcessing["Processamento de Voz"]
+            Intent["Detecção de<br/>Intenção"]
+            Validate["Validação de<br/>Dados"]
+            Execute["Execução da<br/>Ação"]
+        end
+    end
+    
+    subgraph Database["Supabase"]
+        DB["Banco de Dados<br/>PostgreSQL"]
+    end
+    
+    Dashboard --> VoiceButton
+    VoiceButton --> VoiceModal
+    VoiceModal --> VoiceLogic
+    VoiceLogic --> STT
+    STT -->|"Texto"| VoiceLogic
+    VoiceLogic --> TTS
+    TTS -->|"Resposta de voz"| VoiceModal
+    
+    VoiceLogic -->|"HTTP POST"| API
+    API --> Intent
+    Intent --> Validate
+    Validate --> Execute
+    Execute -->|"CRUD"| DB
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                      FRONTEND (Voice)                          │
-├─────────────────────────────────────────────────────────────────┤
-│  ┌─────────────┐    ┌──────────────┐    ┌─────────────────────┐  │
-│  │  Dashboard  │───▶│ Voice Button │───▶│  Voice Assistant    │  │
-│  │             │    │   (new)      │    │   Modal/Sidebar     │  │
-│  └─────────────┘    └──────────────┘    └─────────┬───────────┘  │
-│                                                  │              │
-│  ┌──────────────────────────────────────────────▼───────────┐  │
-│  │            Web Speech API (navegador)                   │  │
-│  │  ┌─────────────────┐     ┌─────────────────────────────┐│  │
-│  │  │ Speech-to-Text  │────▶│  Text-to-Speech (voz)       ││  │
-│  │  │ (reconhecimento)│     │  (resposta do assistente)   ││  │
-│  │  └─────────────────┘     └─────────────────────────────┘│  │
-│  └─────────────────────────────────────────────────────────┘  │
-└────────────────────────────────────────────────────────────────┘
-                                │ API Calls
-                                ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                  BACKEND (Flask)                                │
-├─────────────────────────────────────────────────────────────────┤
-│  /api/voice/process          → Processa comando de voz         │
-│  /api/voice/validate        → Valida resposta do usuário       │
-│  /api/voice/confirm         → Confirma e executa ação         │
-└─────────────────────────────────────────────────────────────────┘
+
+---
+
+## Fluxo de Dados
+
+```mermaid
+sequenceDiagram
+    participant U as Usuário
+    participant V as Voice Modal
+    participant S as Speech-to-Text
+    participant A as Assistente (Lógica)
+    participant T as Text-to-Speech
+    participant API as Backend API
+    participant DB as Supabase
+
+    Note over U,T: Início da conversa
+    T->>U: "Olá! O que deseja registrar?"
+    
+    U->>V: Fala (microfone)
+    V->>S: Audio
+    S->>A: Texto reconhecido
+    A->>API: /api/voice/intent
+    API-->>A: Intenção identificada
+    
+    A->>T: Texto da pergunta
+    T->>U: Resposta por voz
+    
+    U->>V: Resposta do usuário
+    V->>S: Audio
+    S->>A: Texto
+    A->>API: /api/voice/validate
+    API-->>A: Dados validados
+    
+    A->>T: "Confirma? Sim ou não?"
+    T->>U: Pergunta de confirmação
+    
+    U->>V: "Sim"
+    V->>S: Audio
+    S->>A: Texto
+    A->>API: /api/voice/execute
+    API->>DB: Inserir dados
+    DB-->>API: Sucesso
+    
+    A->>T: "Dados salvos com sucesso!"
+    T->>U: Confirmação por voz
 ```
 
 ---
