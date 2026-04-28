@@ -50,27 +50,28 @@
 
 ---
 
-## Fase 5 - Controle de Acesso às Abas (Futuro) ⏳
+## Fase 5 - Controle de Acesso às Abas ✅ CONCLUÍDO
 
 ### Descrição
 Admin pode habilitar/desabilitar acesso às abas para usuários comuns.
 
 ### Abas Controladas
 - Cilindros
+- Pressão
 - Elementos
 - Amostras
 - Histórico
 
 ### Comportamento Default
-- Todas as abas **desabilitadas** para usuários comuns por padrão
+- Todas as abas **habilitadas** para novos usuários por padrão
 - Admin tem acesso a todas as abas
 
 ### Tarefas
-- [ ] Adicionar campo `habilitar_abas` na tabela perfil (JSON)
-- [ ] Criar função `pode_acessar_aba()` em helpers.py
-- [ ] Verificar permissão nas rotas de cilindro, elemento, amostra, historico
-- [ ] Adicionar UI no admin para gerenciar permissões
-- [ ] Ocultar menus das abas se usuário não tem permissão
+- [x] Adicionar campo `habilitar_abas` na tabela perfil (JSON)
+- [x] Criar função `pode_acessar_aba()` em helpers.py
+- [x] Verificar permissão nas rotas de cilindro, elemento, amostra, historico
+- [x] Adicionar UI no admin para gerenciar permissões
+- [x] Ocultar menus das abas se usuário não tem permissão
 
 ---
 
@@ -341,3 +342,53 @@ Analise completa do projeto para verificar consistência entre as chamadas do fr
 | 3 | admin.html | 67 | `.temperatura` → `.pressao` | Corrigir nome do campo JSON |
 | 4 | admin.html | 83 | `aba="temperatura"` → `aba="pressao"` | Corrigir valor do campo |
 | 5 | admin.py | 151-155 | Adicionar deletes para pressao e historico_log | Adicionar client.table("pressao").delete() e client.table("historico_log").delete() |
+
+---
+
+## Fase 7 - Auditoria Frontend vs Backend (3ª Verificação) ✅ CONCLUÍDO
+
+### Inconsistências Encontradas
+
+#### 7.7 admin.py - JSON export usa "temperaturas"
+- **Arquivo**: `frontend/blueprints/admin.py`
+- **Linha**: 321
+- **Problema**: O JSON export usa `"temperaturas": pressoes_data` mas deveria ser `"pressoes": pressoes_data`
+- **Status**: [x] Concluído ✅
+
+#### 7.8 admin.py - CSV export usa "TEMPERATURAS"
+- **Arquivo**: `frontend/blueprints/admin.py`
+- **Linha**: 359
+- **Problema**: O CSV export usa `# TEMPERATURAS\n` mas deveria ser `# PRESSOES\n`
+- **Status**: [x] Concluído ✅
+
+#### 7.9 admin.py - CSV export não inclui campo "pressao"
+- **Arquivo**: `frontend/blueprints/admin.py`
+- **Linha**: 368
+- **Problema**: Os headers do CSV para pressoes não incluem o campo "pressao" (apenas inclui temperatura)
+- **Status**: [x] Concluído ✅
+
+---
+
+## Fase 8 - Documentação do Banco de Dados ✅ CONCLUÍDO
+
+### Descrição
+Criar diretório database/ com schema, RLS, seed e diagrama do banco de dados.
+
+### Tarefas
+- [x] Criar diretório `database/`
+- [x] Criar `schema.sql` com CREATE TABLE + índices
+- [x] Criar `rls.sql` com políticas RLS
+- [x] Criar `seed.sql` com elementos padrão (referência)
+- [x] Criar `diagram.md` com diagrama em formato Mermaid
+
+---
+
+## Fase 9 - Limpeza de Arquivos ✅ CONCLUÍDO
+
+### Descrição
+Remover arquivos e diretórios desnecessários do projeto.
+
+### Tarefas
+- [x] Remover diretório `codigo/` (vazio)
+- [x] Remover diretório `figuras/` (vazio)
+- [x] Adicionar diretório `database/` à documentação
