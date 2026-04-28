@@ -6,97 +6,105 @@ Sistema de assistente de voz para interação com o LabGas Manager, permitindo r
 
 **Branch:** `feat/voice-assistant`
 
+## Decisões de Implementação
+
+| Decisão | Valor | Observação |
+|---------|-------|-------------|
+| **Processamento** | Frontend (JavaScript) | Sem API calls, mais rápido |
+| **Escopo inicial** | Apenas Cilindro | Outras entidades depois |
+| **Estado** | Client-side | JavaScript |
+| **Fallback** | Voz + Texto | Hybrid |
+| **Código cilíndro** | Ignora prefixo "CIL-", só números | "001" = CIL-001 |
+
 ---
 
-## Arquitetura da Solução
+## Fase 1: Cilindro Only (MVP)
 
-```mermaid
-flowchart TB
-    subgraph Browser["Navegador (Frontend)"]
-        Dashboard["Dashboard<br/>LabGas"]
-        VoiceButton["Botão Voice<br/>🎤"]
-        VoiceModal["Modal do<br/>Assistente"]
-        
-        subgraph WebSpeech["Web Speech API"]
-            STT["Speech-to-Text<br/>Reconhecimento de voz"]
-            TTS["Text-to-Speech<br/>Síntese de voz"]
-        end
-        
-        VoiceLogic["Lógica do<br/>Assistente"]
-    end
-    
-    subgraph Backend["Backend (Flask)"]
-        API["API Voice<br/>/api/voice/*"]
-        
-        subgraph VoiceProcessing["Processamento de Voz"]
-            Intent["Detecção de<br/>Intenção"]
-            Validate["Validação de<br/>Dados"]
-            Execute["Execução da<br/>Ação"]
-        end
-    end
-    
-    subgraph Database["Supabase"]
-        DB["Banco de Dados<br/>PostgreSQL"]
-    end
-    
-    Dashboard --> VoiceButton
-    VoiceButton --> VoiceModal
-    VoiceModal --> VoiceLogic
-    VoiceLogic --> STT
-    STT -->|"Texto"| VoiceLogic
-    VoiceLogic --> TTS
-    TTS -->|"Resposta de voz"| VoiceModal
-    
-    VoiceLogic -->|"HTTP POST"| API
-    API --> Intent
-    Intent --> Validate
-    Validate --> Execute
-    Execute -->|"CRUD"| DB
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    FRONTEND (Voice)                          │
+├─────────────────────────────────────────────────────────────────┤
+│  ┌─────────────┐    ┌──────────────┐    ┌─────────────────────┐  │
+│  │  Dashboard  │───▶│ Voice Button │───▶│  Voice Assistant    │  │
+│  │             │    │   (new)      │    │   Modal/Sidebar     │  │
+│  └─────────────┘    └──────────────┘    └─────────┬───────────┘  │
+│                                                  │              │
+│  ┌──────────────────────────────────────────────▼───────────┐  │
+│  │            Web Speech API (navegador)                   │  │
+│  │  ┌─────────────────┐     ┌─────────────────────────────┐│  │
+│  │  │ Speech-to-Text  │────▶│  Text-to-Speech (voz)       ││  │
+│  │  │ (reconhecimento)│     │  (resposta do assistente)   ││  │
+│  │  └─────────────────┘     └─────────────────────────────┘│  │
+│  └─────────────────────────────────────────────────────────┘  │
+└────────────────────────────────────────────────────────────────┘
+                                │
+                                ▼ Call API (Já existente)
+┌─────────────────────────────────────────────────────────────────┐
+│                  FLASK BACKEND                                │
+├─────────────────────────────────────────────────────────────────┤
+│  /cilindros (POST)        → Insere cilindro no banco          │
+└─────────────────────────────────────────────────────────────────┘
 ```
 
+**Notas:**
+- Todo processamento de intents em JavaScript (frontend)
+- Estado persistido em memória (client-side)
+- Integração com rotas existentes do Flask
+- Outras entidades (Pressão, Elementos, Amostras) serão implementadas **depois**
+
 ---
 
-## Fluxo de Dados
+## Fluxo de Dados - Fase 1: Cilindro Only
 
 ```mermaid
 sequenceDiagram
     participant U as Usuário
     participant V as Voice Modal
     participant S as Speech-to-Text
-    participant A as Assistente (Lógica)
+    participant A as Lógica JS
     participant T as Text-to-Speech
-    participant API as Backend API
+    participant API as Flask API
     participant DB as Supabase
 
     Note over U,T: Início da conversa
     T->>U: "Olá! O que deseja registrar?"
     
-    U->>V: Fala (microfone)
+    U->>V: Fala "cilindro"
     V->>S: Audio
     S->>A: Texto reconhecido
-    A->>API: /api/voice/intent
-    API-->>A: Intenção identificada
+    A->>A: Identifica intent: cilindro
     
-    A->>T: Texto da pergunta
-    T->>U: Resposta por voz
+    A->>T: "Qual o código? Apenas números."
+    T->>U: Pergunta por voz
     
-    U->>V: Resposta do usuário
+    U->>V: Fala "001"
     V->>S: Audio
-    S->>A: Texto
-    A->>API: /api/voice/validate
-    API-->>A: Dados validados
+    S->>A: Texto "001"
+    A->>A: Converte para CIL-001
     
-    A->>T: "Confirma? Sim ou não?"
+    A->>T: "Código 001. Confirma?"
     T->>U: Pergunta de confirmação
     
     U->>V: "Sim"
     V->>S: Audio
+    S->>A: Texto "sim"
+    A->>A: Confirmaintent
+    
+    Note over A,API: Coleta outros campos
+    A->>T: "Qual a data de compra?"
+    T->>U: Pergunta
+    
+    U->>V: Fala resposta...
+    V->>S: Audio
     S->>A: Texto
-    A->>API: /api/voice/execute
-    API->>DB: Inserir dados
+    A->>A: Converte
+    
+    Note over A,API: Após todos os campos
+    A->>API: POST /cilindros
+    API->>DB: Insert cilindro
     DB-->>API: Sucesso
     
-    A->>T: "Dados salvos com sucesso!"
+    A->>T: "Cilindro CIL-001 salvo com sucesso!"
     T->>U: Confirmação por voz
 ```
 
@@ -114,8 +122,45 @@ sequenceDiagram
 
 ---
 
-## Fluxo de Conversação
+## Fluxo de Conversação - Cilindro Only
 
+```
+╔════════════════════════════════════════════════════════════════════╗
+║                    ASSISTENTE DE VOZ - LABGAS                    ║
+╠════════════════════════════════════════════════════════════════════╣
+║                                                                    ║
+║  🎤 SISTEMA: "Olá! Sou seu assistente de voz do LabGas Manager." ║
+║              "O que você gostaria de registrar?"                  ║
+║                                                                    ║
+║  📋 OPÇÕES:                                                       ║
+║     1. Cilindro                                                   ║
+║     (mais opções depois)                                         ║
+║                                                                    ║
+║  🎤 USUÁRIO: "Cilindro" ou "Um"                                 ║
+║                                                                    ║
+║  ═══════════════════════════════════════════════════════════════ ║
+║                                                                    ║
+║  🎤 SISTEMA: "Certo! Vou Registrar um novo cilindro."            ║
+║              "Qual é o código?Apenas os números."                ║
+║              "Exemplo: zero zero um"                              ║
+║                                                                    ║
+║  🎤 USUÁRIO: "001" ou "um"                                       ║
+║                                                                    ║
+║  ═══════════════════════════════════════════════════════════════ ║
+║                                                                    ║
+║  🎤 SISTEMA: "Código 001. Confirma? Diga sim ou não."           ║
+║                                                                    ║
+║  🎤 USUÁRIO: "Sim"                                               ║
+║                                                                    ║
+║  ═══════════════════════════════════════════════════════════════ ║
+║                                                                    ║
+║  [Continua com as próximas perguntas do formulário...]           ║
+║    2. Data de compra                                              ║
+║    3. Gás (kg)                                                    ║
+║    4. Custo                                                       ║
+║    5. Status (ativo/esgotado)                                     ║
+║                                                                    ║
+╚════════════════════════════════════════════════════════════════════╝
 ```
 ╔════════════════════════════════════════════════════════════════════╗
 ║                    ASSISTENTE DE VOZ - LABGAS                    ║
@@ -155,49 +200,48 @@ sequenceDiagram
 
 ---
 
-## Estrutura de Arquivos a Criar
+## Estrutura de Arquivos a Criar - Fase 1
 
 ```
 frontend/
-├── app.py                          # Adicionar rota /voice/*
+├── app.py                                   # Ja existe (adicionar rota /voice)
 ├── blueprints/
-│   └── voice.py                    # [NOVO] Voice assistant logic
+│   └── voz.py                               # [NOVO] Voice assistant (opcional)
 ├── templates/
-│   ├── dashboard.html              # Adicionar botão Voice
-│   └── voice_modal.html            # [NOVO] Modal do assistente
+│   ├── dashboard.html                       # [MODIFICAR] Adicionar botão Voice
+│   └── voice_modal.html                     # [NOVO] Modal do assistente
 └── static/
     └── js/
-        └── voice_assistant.js      # [NOVO] Lógica de voz
+        └── voice_assistant.js              # [NOVO] Lógica de voz
 ```
 
-```
-backend/
-├── app.py                          # [NOVO] API de voz
-└── routes/
-    └── voice.py                    # [NOVO] Rotas de voz
-```
+**Notas da Fase 1:**
+- Não cria backend/分开 - usa rotas existentes
+- Integração com /cilindros (POST) existente
+- Todo processamento em JavaScript (client-side)
 
 ---
 
-## Diagrama de Estados (State Machine)
+## Diagrama de Estados (State Machine) - Fase 1: Cilindro Only
 
 ```
 ┌──────────────┐
 │   IDLE       │  ← Estado inicial, aguardando usuário
 └──────┬───────┘
-       │ Usuário fala
+       │ Usuário fala "cilindro" ou "um"
        ▼
 ┌──────────────┐
-│  INTENT      │  ← Identifica intenção (cilindro/pressão/etc)
+│  INTENT      │  ← Identifica intenção:cilindro
 └──────┬───────┘
-       │ Intenção identificada
+       │
        ▼
 ┌──────────────┐
 │  COLLECTING  │  ← Coleta dados (perguntas uma a uma)
-│              │    ├── Pergunta código
-│              │    ├── Pergunta data
-│              │    ├── Pergunta status
-│              │    └── Pergunta gás/kg
+│              │    ├── Pergunta 1: código (número)
+│              │    ├── Pergunta 2: data
+│              │    ├── Pergunta 3: kg
+│              │    ├── Pergunta 4: custo
+│              │    └── Pergunta 5: status
 └──────┬───────┘
        │ Dados coletados
        ▼
@@ -207,7 +251,7 @@ backend/
        │ Confirmação
        ▼
 ┌──────────────┐
-│   EXECUTE    │  ← Executa ação no banco
+│   EXECUTE    │  ← Chama API existing /cilindros
 └──────┬───────┘
        │ Sucesso/Erro
        ▼
@@ -223,64 +267,70 @@ backend/
 
 ---
 
-## Endpoints da API (Backend)
+## Endpoints da API - Fase 1
 
-| Método | Endpoint | Descrição |
-|--------|----------|-----------|
-| POST | `/api/voice/intent` | Identifica intenção do usuário |
-| POST | `/api/voice/validate` | Valida resposta do usuário |
-| POST | `/api/voice/execute` | Executa ação confirmada |
-| GET | `/api/voice/state` | Retorna estado atual da conversa |
-| POST | `/api/voice/reset` | Reseta conversa para início |
+|Método|Endpoint|Descrição|
+|------|--------|-----------|
+|POST|`/cilindros`|Insere novo cilindro (rota existente)|
+
+**Sem novos endpoints para Fase 1:**
+- Todo processamento em JavaScript (frontend)
+- Integração com rota existente `/cilindros` (POST)
 
 ---
 
-## Intenções (Intents)
+## Intenções (Intents) - Fase 1: Cilindro Only
 
 | Intent | Descrição | Parâmetros |
 |--------|-----------|------------|
-| `registrar_cilindro` | Cadastrar novo cilindro | código, data_compra |
-| `registrar_pressao` | Registrar pressão | cilindro_id, pressao |
-| `registrar_elemento` | Cadastrar novo elemento | nome, consumo_lpm |
-| `registrar_amostra` | Registrar análise | cilindro_id, elemento_id, tempo_chama |
-| `consultar_cilindro` | Buscar informações do cilindro | código |
-| `listar_cilindros` | Listar todos cilindros | - |
-| `cancelar` | Cancelar operação | - |
+| `registrar_cilindro` | Cadastrar novo cilindro | código, data_compra, gas_kg, custo, status |
+
+**Outras intenções serão adicionadas depois:**
+- `registrar_pressao` - Registrar pressão (Fase 5)
+- `registrar_elemento` - Cadastrar novo elemento (Fase 6)
+- `registrar_amostra` - Registrar análise (Fase 7)
 
 ---
 
-## Validações de Voz
+## Validações de Voz - Fase 1
 
 | Campo | Validação | Exemplo de Resposta do Sistema |
 |-------|-----------|--------------------------------|
-| Código Cilindro | Formato CIL-XXX | "Código inválido. O formato deve ser CIL-001." |
-| Data | Formato de data | "Data não reconhecida. Diga a data no formato dia mês ano." |
-| Pressão | 0-300 bar | "Pressão deve estar entre 0 e 300 bar. Qual o valor?" |
-| Nome Elemento | Primeira maiúscula | "Nome alterado para Ferro." |
-| Tempo Chama | HH:MM:SS | "Tempo inválido. Diga o tempo no formato hora minuto segundo." |
+| Código | Apenas números (3 dígitos) | "Código 001. Certo?" |
+| Data | Formato de data (dia mês ano) | "Data não reconhecida. Diga a data no formato dia mês ano." |
+| Gás (kg) | Decimal | "Quantos quilos?" |
+| Custo | Decimal | "Qual o valor em reais?" |
+| Status | ativo/esgotado | "Status ativo ou esgotado?" |
+
+### Conversão de Código
+- Entrada: "001" → Saída: "CIL-001"
+- Entrada: "um" → Saída: "CIL-001"
+- Entrada: "dois" → Saída: "CIL-002"
 
 ---
 
-## Comandos de Voz Aceitos
+## Comandos de Voz Aceitos - Fase 1: Cilindro Only
 
 ### Afirmação
-- "sim", "confirma", "correto", "certo", "ok", "yes", "y"
+- "sim", "confirma", "correto", "certo", "ok", "yes", "y", "um"
 
 ### Negação
 - "não", "nao", "cancelar", "errado", "não confirma", "no", "n"
 
-### Navegação
-- "cilindro", "registrar cilindro", "novo cilindro"
+### Navegação - Fase 1
+- "cilindro", "registrar cilindro", "novo cilindro", "um"
+
+### Números (para códigos e valores)
+- "zero", "um", "dois", "três", "quatro", "cinco", "seis", "sete", "oito", "nove"
+- "dez", "onze", "doze", "treze", "quatorze", "quinze"
+- "vinte", "trinta", "quarenta", "cinquenta"
+- "cem", "mil"
+
+### Comandos das próximas fases (depois de Cilindro)
 - "pressão", "registrar pressão", "pressão do cilindro"
 - "elemento", "registrar elemento", "novo elemento"
 - "amostra", "registrar amostra", "nova amostra"
 - "cancelar", "voltar", "menu principal"
-
-### Números
-- "um", "dois", "três", "quatro", "cinco", "seis", "sete", "oito", "nove", "dez"
-- "onze", "doze", "treze", "quatorze", "quinze"
-- "vinte", "trinta", "quarenta", "cinquenta"
-- "cem", "mil"
 
 ---
 
@@ -318,41 +368,59 @@ backend/
 
 ## Cronograma de Implementação
 
-| Fase | Descrição | Prioridade |
-|------|-----------|------------|
-| **Fase 1** | Configuração básica - Web Speech API + botão no dashboard | Alta |
-| **Fase 2** | Estado IDLE - Início da conversa + lista de opções | Alta |
-| **Fase 3** | Intent detection - Identificar intenção do usuário | Alta |
-| **Fase 4** | Fluxo Cilindro - CRUD completo por voz | Alta |
-| **Fase 5** | Fluxo Pressão - Registro por voz | Média |
-| **Fase 6** | Fluxo Elemento - CRUD por voz | Média |
-| **Fase 7** | Fluxo Amostra - Registro por voz | Média |
-| **Fase 8** | Feedback visual + histórico no modal | Média |
-| **Fase 9** | Testes e ajustes de usabilidade | Média |
+|Fase|Descrição|Prioridade|Notas|
+|----|-----------|------------|-------|
+|**Fase 1**|Configuração básica - Web Speech API + botão no dashboard|Alta|Apenas Cilindro|
+|**Fase 2**|Estado IDLE - Início da conversa + lista de opções|Alta|Apenas Cilindro|
+|**Fase 3**|Intent detection - Identificar intenção do usuário|Alta|Apenas Cilindro|
+|**Fase 4**|Fluxo Cilindro - CRUD completo por voz|Alta|PRIMEIRA funcionalidade completa|
+|**Fase 5**|Fluxo Pressão - Registro por voz|Média|depois de Cilindro|
+|**Fase 6**|Fluxo Elemento - CRUD por voz|Média|depois de Cilindro|
+|**Fase 7**|Fluxo Amostra - Registro por voz|Média|depois de Cilindro|
+|**Fase 8**|Feedback visual + histórico no modal|Média|depois de Cilindro|
+|**Fase 9**|Testes e ajustes de usabilidade|Média|depois de Cilindro|
 
 ---
 
 ## Possíveis Desafios e Soluções
 
-| Desafio | Solução |
-|---------|---------|
-| Navegador não suporta Web Speech API | Exibir mensagem de alerta + fallback para texto |
-| Ruído ambiente atrapalha reconhecimento | Filtro de confiança (reconhecer apenas >0.8) |
-| Usuário fala muito rápido | Buffer de pausa + confirmação de entendimento |
-| Diferentes sotaques/acentos | NLP flexível com sinônimos |
-| Conexão instável | Cache offline + retry automático |
+|Desafio|Solução|
+|--------|---------|
+|Navegador não suporta Web Speech API|Exibir mensagem de alerta + fallback para texto|
+|Ruído ambiente atrapalha reconhecimento|Filtro de confiança (reconhecer apenas >0.8)|
+|Usuário fala muito rápido|Buffer de pausa + confirmação de entendimento|
+|Diferentes sotaques/acentos|NLP flexível com sinônimos|
+|Conexão instável|Cache offline + retry automático|
+
+**Notas:**
+- Apenas Firefox e Chrome têm suporte completo ao Web Speech API
+- Safari/iOS têm limitações-known
+- Outras entidades serão testadas após Cilindro estar funcionando
 
 ---
 
-## Testes Necessários
+## Escopo - O que NÃO faz parte da Fase 1
+
+**Adiado para depois:**
+- Registro de Pressão por voz
+- Registro de Elementos por voz
+- Registro de Amostras por voz
+- Consulta/Listagem por voz
+- Edição por voz
+- Exclusão por voz
+- Backend API para voz
+
+---
+
+## TestesNecessários
 
 | Teste | Navegador |
 |-------|-----------|
-| Suporte completo | Chrome, Edge |
-| Suporte parcial | Firefox (verificar) |
-| Limitações | Safari/iOS |
-| Sem permissão de microfone | Testar rejeição elegante |
-| Offline temporário | Verificar comportamento |
+|Suporte completo|Chrome, Edge|
+|Suporte parcial|Firefox (verificar)|
+|Limitações|Safari/iOS|
+|Sem permissão de microfone|Testar rejeição elegante|
+|Offline temporário|Verificar comportamento|
 
 ---
 
@@ -396,10 +464,13 @@ function speak(text) {
 
 ## Roadmap
 
-- [ ] Fase 1: Configuração básica e botão no dashboard
-- [ ] Fase 2: Estado IDLE e conversa inicial
+### Fase 1: Cilindro Only (MVP) - Em Progresso
+- [ ] Fase 1: Configuração básica + botão no dashboard
+- [ ] Fase 2: Estado IDLE + conversa inicial
 - [ ] Fase 3: Identificação de intenção
-- [ ] Fase 4: Fluxo completo Cilindro
+- [ ] Fase 4: Fluxo completo Cilindro ← **PRIMEIRA funcionalidade completa**
+
+### Fases seguintes (depois de Cilindro funcionar)
 - [ ] Fase 5: Fluxo Pressão
 - [ ] Fase 6: Fluxo Elemento
 - [ ] Fase 7: Fluxo Amostra
