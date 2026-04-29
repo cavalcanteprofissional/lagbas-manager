@@ -324,7 +324,7 @@ O frontend estará disponível em: `http://localhost:5000`
 
 ---
 
-## Deploy Vercel
+## Deploy Vercel (Frontend + Backend)
 
 ### Configuração do Projeto
 
@@ -334,7 +334,7 @@ O frontend estará disponível em: `http://localhost:5000`
    - Escolha o repositório `labgas-manager`
 
 2. **Configurações do Projeto**
-   - Framework Preset: **Other**
+   - Framework Preset: **Services**
    - Build Command: *(deixe vazio)*
    - Output Directory: *(deixe vazio)*
    - Install Command: *(deixe vazio)*
@@ -347,7 +347,32 @@ O frontend estará disponível em: `http://localhost:5000`
 
 4. **Configurar Domains**
    - Branch `main`: labgas-manager.vercel.app (produção)
-   - Branch `v2-cores`: v2.labgas-manager.vercel.app (preview/homologação)
+   - Branch `master`: labgas-manager.vercel.app (produção)
+
+### Arquitetura de Deploy
+
+O projeto usa `vercel.json` para fazer deploy de **dois serviços** em um único projeto:
+
+| URL | Serviço | Descrição |
+|-----|---------|-----------|
+| `/` | Frontend | App Flask completo com UI Jinja2 |
+| `/api/*` | Backend | API REST do diretório `backend/` |
+
+### Estrutura de Arquivos para Deploy
+
+```
+labgas-manager/
+├── vercel.json          # Configuração de build e rotas
+├── frontend/
+│   ├── app.py           # App Flask principal (UI + API completa)
+│   ├── requirements.txt # Dependências do frontend
+│   └── templates/       # Templates Jinja2
+├── backend/
+│   ├── app.py           # API Flask standalone
+│   ├── requirements.txt # Dependências do backend
+│   └── routes/          # Rotas da API
+└── runtime.txt          # Python 3.11
+```
 
 ---
 
