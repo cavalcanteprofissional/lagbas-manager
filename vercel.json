@@ -1,12 +1,33 @@
 {
-    "experimentalServices": {
-        "frontend": {
-            "entrypoint": "frontend",
-            "routePrefix": "/"
-        },
-        "backend": {
-            "entrypoint": "backend",
-            "routePrefix": "/_/backend"
-        }
+  "version": 2,
+  "builds": [
+    {
+      "src": "frontend/app.py",
+      "use": "@vercel/python"
+    },
+    {
+      "src": "backend/app.py",
+      "use": "@vercel/python"
     }
+  ],
+  "experimentalServices": {
+    "frontend": {
+      "entrypoint": "frontend/app.py",
+      "routePrefix": "/"
+    },
+    "backend": {
+      "entrypoint": "backend/app.py",
+      "routePrefix": "/_/backend"
+    }
+  },
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "backend/app.py"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "frontend/app.py"
+    }
+  ]
 }
