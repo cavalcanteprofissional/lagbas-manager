@@ -11,7 +11,7 @@ from supabase import create_client, Client
 from blueprints.helpers import get_authenticated_client
 from utils.constants import ELEMENTO_CORES
 
-load_dotenv()
+load_dotenv('.env.local')
 
 app = Flask(__name__)
 app.secret_key = os.getenv("SECRET_KEY")

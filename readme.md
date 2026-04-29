@@ -178,7 +178,7 @@ pip install -r requirements.txt
 
 ### Configuração
 
-Crie o arquivo `frontend/.env` com as variáveis de ambiente:
+Crie o arquivo `frontend/.env.local` com as variáveis de ambiente:
 
 ```env
 SECRET_KEY=sua_chave_secreta_aqui
@@ -188,6 +188,8 @@ SUPABASE_SERVICE_KEY=sua_service_role_key
 ```
 
 **Nota**: A `service_role_key` é necessária para operações de admin (bypass RLS).
+
+> **Arquitetura de Configuração**: O projeto usa `.env.local` em vez de `.env` para manter as secrets separadas do repositório. O arquivo `.env.example` contém os placeholders. O `.gitignore` já está configurado para ignorar arquivos `.env.local`.
 
 ### Executar
 
