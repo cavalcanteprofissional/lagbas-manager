@@ -10,16 +10,6 @@
       "use": "@vercel/python"
     }
   ],
-  "experimentalServices": {
-    "frontend": {
-      "entrypoint": "frontend/app.py",
-      "routePrefix": "/"
-    },
-    "backend": {
-      "entrypoint": "backend/app.py",
-      "routePrefix": "/_/backend"
-    }
-  },
   "routes": [
     {
       "src": "/api/(.*)",
