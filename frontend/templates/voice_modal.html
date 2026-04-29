@@ -1,0 +1,103 @@
+<div id="voice-modal" class="modal fade" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" role="dialog" aria-labelledby="voiceModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header" style="background: linear-gradient(135deg, #0070b8, #4da3e8); color: white;">
+                <h5 class="modal-title" id="voiceModalLabel">
+                    <i class="bi bi-mic"></i> Assistente de Voz
+                </h5>
+                <button type="button" class="btn-close btn-close-white" id="voice-close-btn" aria-label="Fechar"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-6 text-center mb-3">
+                        <button type="button" class="btn btn-lg rounded-circle" id="voice-mic-btn" style="background: linear-gradient(135deg, #0070b8, #4da3e8); color: white; width: 100px; height: 100px;">
+                            <i class="bi bi-mic fs-3"></i>
+                        </button>
+                        <div class="mt-2">
+                            <span id="voice-status" class="badge bg-secondary">Aguardando</span>
+                        </div>
+                        <div class="mt-2">
+                            <small class="text-muted" id="voice-hint">Clique no microfone para falar</small>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div id="voice-state-display" class="alert alert-info py-2 px-3">
+                            <small>Estado: <span id="voice-state">IDLE</span></small>
+                            <span class="float-end">
+                                <button class="btn btn-sm btn-outline-secondary" id="voice-reset-btn" title="Reiniciar">
+                                    <i class="bi bi-arrow-counterclockwise"></i>
+                                </button>
+                            </span>
+                        </div>
+
+                        <div id="voice-progress-container" class="mb-2">
+                            <small class="text-muted">Progresso:</small>
+                            <div class="progress" style="height: 8px;">
+                                <div id="voice-progress-bar" class="progress-bar" role="progressbar" style="width: 0%; background: linear-gradient(135deg, #0070b8, #4da3e8);"></div>
+                            </div>
+                        </div>
+
+                        <div id="voice-current-step" class="alert alert-primary mb-2">
+                            <strong>Passo:</strong> <span id="voice-step-name">Início</span>
+                        </div>
+
+                        <div id="voice-data-preview" class="alert alert-secondary py-1 px-2 mb-2" style="font-size: 0.8rem;">
+                            <small class="text-muted">Dados coletados:</small>
+                            <div id="voice-collected-data" class="small">Nenhum</div>
+                        </div>
+
+                        <div class="mb-2 p-2 bg-light rounded">
+                            <small class="text-muted">Seleção rápida:</small>
+                            <div id="voice-quick-buttons" class="d-flex flex-wrap gap-1 mt-1">
+                                <button class="btn btn-sm btn-outline-primary quick-select" data-value="cilindro">Cilindro</button>
+                                <button class="btn btn-sm btn-outline-info quick-select" data-value="pressão">Pressão</button>
+                                <button class="btn btn-sm btn-outline-warning quick-select" data-value="elemento">Elemento</button>
+                                <button class="btn btn-sm btn-outline-success quick-select" data-value="amostra">Amostra</button>
+                                <button class="btn btn-sm btn-outline-success quick-select" data-value="ativo">Ativo</button>
+                                <button class="btn btn-sm btn-outline-danger quick-select" data-value="esgotado">Esgotado</button>
+                                <button class="btn btn-sm btn-outline-secondary quick-select" data-value="sim">Sim</button>
+                                <button class="btn btn-sm btn-outline-secondary quick-select" data-value="não">Não</button>
+                                <button class="btn btn-sm btn-outline-dark quick-select" data-value="cancelar">Cancelar</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="voice-history" class="border rounded p-2 mb-2" style="max-height: 180px; overflow-y: auto; scroll-behavior: smooth;">
+                    <small class="text-muted"><i class="bi bi-chat-dots"></i> Histórico:</small>
+                    <div id="voice-history-content" class="mt-1 small"></div>
+                </div>
+
+                <div class="input-group">
+                    <input type="text" class="form-control" id="voice-text-input" placeholder="Ou digite aqui...">
+                    <button class="btn btn-outline-primary" type="button" id="voice-text-btn">
+                        <i class="bi bi-send"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary btn-sm" id="voice-start-btn">
+                    <i class="bi bi-play-fill"></i> Iniciar
+                </button>
+                <button type="button" class="btn btn-outline-danger btn-sm" data-bs-dismiss="modal">
+                    <i class="bi bi-x-lg"></i> Fechar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+#voice-mic-btn.recording {
+    animation: pulse 1s infinite;
+    background: linear-gradient(135deg, #dc3545, #c82333) !important;
+}
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
+.quick-select {
+    font-size: 0.75rem;
+}
+</style>

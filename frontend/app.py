@@ -320,6 +320,88 @@ def perfil():
     return render_template("perfil.html", stats=stats, user_role=user_role, user_nome=user_nome, habilitar_abas=habilitar_abas)
 
 
+@app.route("/api/buscar-codigo", methods=["POST"])
+@login_required
+def api_buscar_codigo():
+    """Retorna ID do cilindro pelo código"""
+    data = request.get_json()
+    codigo = data.get("codigo", "").strip()
+    
+    if not codigo:
+        return {"error": "Código é obrigatório"}, 400
+    
+    try:
+        from blueprints.helpers import get_user_id, is_admin
+        user_id = get_user_id()
+        admin = is_admin()
+        
+        # Buscar cilindro pelo código
+        if admin:
+            response = supabase.table("cilindro").select("id,codigo").eq("codigo", codigo).execute()
+        else:
+            response = supabase.table("cilindro").select("id,codigo").eq("codigo", codigo).eq("user_id", user_id).execute()
+        
+        if response.data:
+            return {"id": response.data[0]["id"], "codigo": response.data[0]["codigo"]}
+        else:
+            return {"error": "Cilindro não encontrado"}, 404
+    except Exception as e:
+        return {"error": str(e)}, 500
+
+
+@app.route("/api/buscar-elemento", methods=["POST"])
+@login_required
+def api_buscar_elemento():
+    """Retorna ID do elemento pelo nome"""
+    data = request.get_json()
+    nome = data.get("nome", "").strip()
+    
+    if not nome:
+        return {"error": "Nome é obrigatório"}, 400
+    
+    try:
+        from blueprints.helpers import get_user_id, is_admin
+        user_id = get_user_id()
+        admin = is_admin()
+        
+        # Normalizar nome para busca (primeira maiúscula)
+        nome_normalizado = nome.title()
+        
+        # Buscar elemento pelo nome
+        if admin:
+            response = supabase.table("elemento").select("id,nome").eq("nome", nome_normalizado).execute()
+        else:
+            response = supabase.table("elemento").select("id,nome").eq("nome", nome_normalizado).eq("user_id", user_id).execute()
+        
+        if response.data:
+            return {"id": response.data[0]["id"], "nome": response.data[0]["nome"]}
+        else:
+            return {"error": "Elemento não encontrado"}, 404
+    except Exception as e:
+        return {"error": str(e)}, 500
+
+
+@app.route("/api/dados-usuario", methods=["GET"])
+@login_required
+def api_dados_usuario():
+    """Retorna cilindro e elementos do usuário para quick-select"""
+    try:
+        from blueprints.helpers import get_user_id, is_admin
+        user_id = get_user_id()
+        
+        # Buscar cilindos
+        cilindro_response = supabase.table("cilindro").select("id,codigo").eq("user_id", user_id).order("codigo").execute()
+        cilindros = [{"id": c["id"], "codigo": c["codigo"]} for c in (cilindro_response.data or [])]
+        
+        # Buscar elementos
+        elemento_response = supabase.table("elemento").select("id,nome").eq("user_id", user_id).order("nome").execute()
+        elementos = [{"id": e["id"], "nome": e["nome"]} for e in (elemento_response.data or [])]
+        
+        return {"cilindros": cilindros, "elementos": elementos}
+    except Exception as e:
+        return {"error": str(e)}, 500
+
+
 from blueprints.auth import auth_bp
 from blueprints.cilindro import cilindro_bp
 from blueprints.elemento import elemento_bp
