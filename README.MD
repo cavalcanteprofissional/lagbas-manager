@@ -183,11 +183,18 @@ Crie o arquivo `frontend/.env.local` com as variáveis de ambiente:
 ```env
 SECRET_KEY=sua_chave_secreta_aqui
 SUPABASE_URL=https://seu-projeto.supabase.co
+
+# Desenvolvimento local
 SUPABASE_KEY=sua_chave_anon
 SUPABASE_SERVICE_KEY=sua_service_role_key
 ```
 
 **Nota**: A `service_role_key` é necessária para operações de admin (bypass RLS).
+
+> **Nota sobre nomenclatura de variáveis**: O Supabase injeta variáveis com nomes diferentes na Vercel:
+> - `SUPABASE_ANON_KEY` (em vez de `SUPABASE_KEY`)
+> - `SUPABASE_SERVICE_ROLE_KEY` (em vez de `SUPABASE_SERVICE_KEY`)
+> O código automaticamente detecta qual nome usar em cada ambiente.
 
 > **Arquitetura de Configuração**: O projeto usa `.env.local` em vez de `.env` para manter as secrets separadas do repositório. O arquivo `.env.example` contém os placeholders. O `.gitignore` já está configurado para ignorar arquivos `.env.local`.
 
@@ -334,16 +341,17 @@ O frontend estará disponível em: `http://localhost:5000`
    - Escolha o repositório `labgas-manager`
 
 2. **Configurações do Projeto**
-   - Framework Preset: **Services**
+   - Framework Preset: **Flask** (não Other ou Services)
    - Build Command: *(deixe vazio)*
    - Output Directory: *(deixe vazio)*
    - Install Command: *(deixe vazio)*
 
 3. **Environment Variables**
-   - `SECRET_KEY`: sua chave secreta
-   - `SUPABASE_URL`: https://seu-projeto.supabase.co
-   - `SUPABASE_KEY`: sua chave anon
-   - `SUPABASE_SERVICE_KEY`: sua service role key
+   - `SECRET_KEY`: sua chave secreta (obrigatória)
+   - As variáveis do Supabase são injetadas automaticamente pelo Supabase na Vercel:
+     - `SUPABASE_URL` (automático)
+     - `SUPABASE_ANON_KEY` (automático)
+     - `SUPABASE_SERVICE_ROLE_KEY` (automático)
 
 4. **Configurar Domains**
    - Branch `main`: labgas-manager.vercel.app (produção)
