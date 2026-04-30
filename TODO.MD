@@ -389,18 +389,19 @@ Criar diretório database/ com schema, RLS, seed e diagrama do banco de dados.
 Deploy do frontend na Vercel. Problema: erro 500 FUNCTION_INVOCATION_FAILED.
 
 ### Problema Identificado
-O código usava `load_dotenv('.env.local')` que não funciona na Vercel (arquivo não existe).
+1. O código usava `load_dotenv('.env.local')` que não existe na Vercel
+2. Variáveis do Supabase com nomes diferentes (SUPABASE_ANON_KEY vs SUPABASE_KEY)
+3. 404: Rotas não reconhecidas
 
 ### Solução Aplicada
-Modificado `frontend/app.py`:
-- **Antes**: `load_dotenv('.env.local')`
-- **Depois**: `load_dotenv()` (procura .env padrão)
-- Na Vercel, variáveis são injetadas automaticamente via Environment Variables
+- **load_dotenv**: Agora tenta carregar .env.local mas não falha se não existir
+- **Variáveis Supabase**: Usa fallback para ambos os nomes (local e Vercel)
+- **vercel.json**: Criado em frontend/ para configuração específica
 
 ### Configurações do Projeto Vercel
 
 | Configuração | Valor |
-|--------------|-------|
+|-------------|-------|
 | Framework Preset | Flask |
 | Build Command | *(vazio)* |
 | Output Directory | *(vazio)* |
@@ -410,24 +411,19 @@ Modificado `frontend/app.py`:
 | Variável | Descrição |
 |----------|------------|
 | SECRET_KEY | Chave secreta para sessões (gere com Python) |
-| SUPABASE_URL | URL do projeto Supabase |
-| SUPABASE_KEY | Chave pública (sb_publishable_...) |
-| SUPABASE_SERVICE_KEY | Service role key |
+| As variáveis do Supabase são injetadas automaticamente | |
 
-### Estrutura de Deploy
-```
-labgas-manager/
-├── vercel.json              # Configuração de build (frontend only)
-└── frontend/
-    ├── app.py               # Flask app (todas as rotas)
-    ├── requirements.txt     # Dependências
-    └── templates/           # Templates Jinja2
-```
+### Nomenclatura de Variáveis
+
+| Ambiente | Variáveis Usadas |
+|----------|------------------|
+| **Desenvolvimento Local** | `SUPABASE_KEY`, `SUPABASE_SERVICE_KEY` |
+| **Vercel (automático)** | `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` |
 
 ### Deploy Simplificado
 - Apenas frontend deployado (backend não necessário)
 - Todo o código (UI + API) está em frontend/app.py
-- Rotas: /cilindros, /elementos, /amostras, /pressoes, /admin, /historico
+- Arquivo de configuração: `frontend/vercel.json`
 
 ---
 
