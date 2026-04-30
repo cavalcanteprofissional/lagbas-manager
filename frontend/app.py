@@ -11,7 +11,9 @@ from supabase import create_client, Client
 from blueprints.helpers import get_authenticated_client
 from utils.constants import ELEMENTO_CORES
 
-load_dotenv('.env.local')
+# Carrega .env local apenas se existir (desenvolvimento)
+# Na Vercel, as variáveis são injetadas automaticamente
+load_dotenv()
 
 app = Flask(__name__)
 app.secret_key = os.getenv("SECRET_KEY")

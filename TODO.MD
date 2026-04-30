@@ -383,6 +383,54 @@ Criar diretório database/ com schema, RLS, seed e diagrama do banco de dados.
 
 ---
 
+## Fase 10 - Deploy Vercel (Frontend Only) ✅ CONCLUÍDO
+
+### Descrição
+Deploy do frontend na Vercel. Problema: erro 500 FUNCTION_INVOCATION_FAILED.
+
+### Problema Identificado
+O código usava `load_dotenv('.env.local')` que não funciona na Vercel (arquivo não existe).
+
+### Solução Aplicada
+Modificado `frontend/app.py`:
+- **Antes**: `load_dotenv('.env.local')`
+- **Depois**: `load_dotenv()` (procura .env padrão)
+- Na Vercel, variáveis são injetadas automaticamente via Environment Variables
+
+### Configurações do Projeto Vercel
+
+| Configuração | Valor |
+|--------------|-------|
+| Framework Preset | Flask |
+| Build Command | *(vazio)* |
+| Output Directory | *(vazio)* |
+
+### Environment Variables Necessárias
+
+| Variável | Descrição |
+|----------|------------|
+| SECRET_KEY | Chave secreta para sessões (gere com Python) |
+| SUPABASE_URL | URL do projeto Supabase |
+| SUPABASE_KEY | Chave pública (sb_publishable_...) |
+| SUPABASE_SERVICE_KEY | Service role key |
+
+### Estrutura de Deploy
+```
+labgas-manager/
+├── vercel.json              # Configuração de build (frontend only)
+└── frontend/
+    ├── app.py               # Flask app (todas as rotas)
+    ├── requirements.txt     # Dependências
+    └── templates/           # Templates Jinja2
+```
+
+### Deploy Simplificado
+- Apenas frontend deployado (backend não necessário)
+- Todo o código (UI + API) está em frontend/app.py
+- Rotas: /cilindros, /elementos, /amostras, /pressoes, /admin, /historico
+
+---
+
 ## Fase 9 - Limpeza de Arquivos ✅ CONCLUÍDO
 
 ### Descrição
