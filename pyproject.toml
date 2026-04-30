@@ -1,0 +1,6 @@
+[project]
+name = "labgas-manager"
+requires-python = ">=3.11"
+
+[tool.vercel]
+pythonVersion = "3.11"

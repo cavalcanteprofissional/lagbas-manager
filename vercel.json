@@ -3,24 +3,10 @@
   "builds": [
     {
       "src": "frontend/app.py",
-      "use": "@vercel/python",
-      "config": {
-        "excludeFiles": ["frontend/venv/**", "frontend/__pycache__/**"]
-      }
-    },
-    {
-      "src": "backend/app.py",
-      "use": "@vercel/python",
-      "config": {
-        "excludeFiles": ["backend/venv/**", "backend/__pycache__/**"]
-      }
+      "use": "@vercel/python"
     }
   ],
   "routes": [
-    {
-      "src": "/api/(.*)",
-      "dest": "backend/app.py"
-    },
     {
       "src": "/(.*)",
       "dest": "frontend/app.py"
