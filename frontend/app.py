@@ -30,9 +30,12 @@ limiter = Limiter(
     storage_uri=os.getenv("REDIS_URL", "memory://")
 )
 
+# URLs do Supabase (injetadas pela Vercel ou via .env.local)
 SUPABASE_URL = os.getenv("SUPABASE_URL")
-SUPABASE_KEY = os.getenv("SUPABASE_KEY")
-SUPABASE_SERVICE_KEY = os.getenv("SUPABASE_SERVICE_KEY")
+# Vercel injeta como SUPABASE_ANON_KEY, desenvolvimento local usa SUPABASE_KEY
+SUPABASE_KEY = os.getenv("SUPABASE_ANON_KEY") or os.getenv("SUPABASE_KEY")
+# Vercel injeta como SUPABASE_SERVICE_ROLE_KEY, desenvolvimento local usa SUPABASE_SERVICE_KEY
+SUPABASE_SERVICE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY") or os.getenv("SUPABASE_SERVICE_KEY")
 
 if not SUPABASE_URL or not SUPABASE_KEY:
     raise ValueError("SUPABASE_URL e SUPABASE_KEY são obrigatórios")
