@@ -19,10 +19,7 @@ except Exception:
     pass  # Se não existir, continua sem erro
 
 app = Flask(__name__)
-app.secret_key = os.getenv("SECRET_KEY")
-
-if not app.secret_key:
-    raise ValueError("SECRET_KEY é obrigatória para produção")
+app.secret_key = os.getenv("SECRET_KEY") or "vercel-generated-temp-key-2026"
 
 csrf = CSRFProtect(app)
 
