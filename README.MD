@@ -4,6 +4,8 @@
 
 Dashboard para gestão de cilindro de gás e elementos analisados em laboratório de química, utilizando **Flask** com **Jinja2** para o frontend web e **Supabase** como banco de dados PostgreSQL.
 
+![LabGas Manager](latex/figuras/thumbnail.png)
+
 ---
 
 ## Sistema de Cores v2.1.0
