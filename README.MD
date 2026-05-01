@@ -108,7 +108,7 @@ Dashboard para gestão de cilindro de gás e elementos analisados em laboratóri
 
 ### Novidades v1.9.0
 
-- **Nova Aba Pressão**: Registro de pressão dos cilindos (versão inicial)
+- **Nova Aba Pressão**: Registro de pressão dos cilindro (versão inicial)
 
 ### Recursos de Segurança v1.5.0
 
@@ -135,7 +135,7 @@ Dashboard para gestão de cilindro de gás e elementos analisados em laboratóri
 
 ### Visão Geral
 
-O LabGas Manager segue uma arquitetura **monolítica modular** utilizando **Flask** como framework web. A aplicação é dividida em **Blueprints** para organização de código, onde cada Blueprint representa um domínio de negócio (autenticação,cilindros, elementos, etc.). O banco de dados **Supabase** (PostgreSQL) fornece tanto o armazenamento de dados quanto a autenticação de usuários.
+O LabGas Manager segue uma arquitetura **monolítica modular** utilizando **Flask** como framework web. A aplicação é dividida em **Blueprints** para organização do código, em que cada Blueprint representa um domínio de negócio (autenticação,cilindros, elementos, etc.). O banco de dados **Supabase** (PostgreSQL) fornece tanto o armazenamento de dados quanto a autenticação de usuários.
 
 ### Diagrama de Arquitetura
 
@@ -252,7 +252,7 @@ sequenceDiagram
 |------------|-----------|---------|
 | app.py | Aplicação Flask principal, configurações globais | `frontend/app.py` |
 | auth.py | Blueprint de autenticação (login, register, logout) | `frontend/blueprints/auth.py` |
-| cilindro.py | CRUD de cylinders de gás | `frontend/blueprints/cilindro.py` |
+| cilindro.py | CRUD de cilindro de gás | `frontend/blueprints/cilindro.py` |
 | elemento.py | CRUD de elementos químicos | `frontend/blueprints/elemento.py` |
 | amostra.py | CRUD de amostras analisadas | `frontend/blueprints/amostra.py` |
 | pressao.py | CRUD de medições de pressão | `frontend/blueprints/pressao.py` |
@@ -273,7 +273,7 @@ sequenceDiagram
 | Tabela | Descrição | Relações |
 |--------|-----------|----------|
 | perfil | Dados do usuário (role, permissões) | 1:N com cilindro, elemento, amostra, pressao |
-| cilindro | Cadastro de cylinders de gás | 1:N com amostra, pressao |
+| cilindro | Cadastro de cilindro de gás | 1:N com amostra, pressao |
 | elemento | Cadastro de elementos químicos | 1:N com amostra |
 | amostra | Registros de análises realizadas | N:1 com cilindro, elemento |
 | pressao | Medições de pressão | N:1 com cilindro |
@@ -308,7 +308,7 @@ sequenceDiagram
 
 ### Visão Geral
 
-O banco de dados do LabGas Manager utiliza **PostgreSQL** através do **Supabase**. A estrutura é composta por 6 tabelas principais, com relacionamentos definidos através de chaves estrangeiras e políticas de **Row Level Security (RLS)** para garantir que cada usuário visualize e manipule apenas os seus próprios dados.
+O banco de dados do LabGas Manager utiliza **PostgreSQL** através do **Supabase**. A estrutura é composta por 6 tabelas principais, com relacionamentos definidos por meio de chaves estrangeiras e políticas de **Row Level Security (RLS)** para garantir que cada usuário visualize e manipule apenas os seus próprios dados.
 
 ### Schema
 
@@ -533,7 +533,7 @@ labgas-manager/
 │   │   ├── login.html       # Página de login
 │   │   ├── register.html    # Página de registro
 │   │   ├── dashboard.html   # Dashboard principal
-│   │   ├── cilindro.html    # Gerenciamento de cylinders
+│   │   ├── cilindro.html    # Gerenciamento de cilindro
 │   │   ├── pressao.html     # Gerenciamento de pressão
 │   │   ├── elemento.html    # Gerenciamento de elementos
 │   │   ├── amostra.html     # Gerenciamento de amostras
@@ -670,7 +670,7 @@ O frontend estará disponível em: `http://localhost:5000`
 ### Admin
 - Painel de administração com lista de usuários
 - Ativar/Desativar usuários
-- Promover/Demover usuários (admin/usuario)
+- Promover/Rebaixar usuários (admin/usuario)
 - Deletar usuário e todos os dados associados
 - Visualizar dados de qualquer usuário
 - Controle de acesso por abas
@@ -702,7 +702,7 @@ O frontend estará disponível em: `http://localhost:5000`
 | v1.9.3 | Remover obrigatoriedade dos campos na aba Pressão |
 | v1.9.2 | Adicionar campo temperatura à aba Pressão |
 | v1.9.1 | Renomear aba Temperatura para Pressão, ícone bi-activity |
-| v1.9.0 | Nova aba Pressão - registro de pressão dos cilindos |
+| v1.9.0 | Nova aba Pressão - registro de pressão do cilindro |
 | v1.8.0 | Sistema de expiração de sessão por inatividade (10 min) |
 | v1.7.0 | Correções RLS, mensagens de erro amigáveis |
 | v1.6.0 | Exportação de dados (JSON/CSV/Excel/Markdown) + Controle de acesso por abas |
