@@ -1,12 +1,12 @@
 # LabGas Manager
 
-**Versão: 2.0.2** (Branch: v2-cores)
+**Versão: 2.1.0** (Branch: master)
 
 Dashboard para gestão de cilindro de gás e elementos analisados em laboratório de química, utilizando **Flask** com **Jinja2** para o frontend web e **Supabase** como banco de dados PostgreSQL.
 
 ---
 
-## Sistema de Cores v2.0.0
+## Sistema de Cores v2.1.0
 
 ### Cor Primária
 - **Principal**: `#0070b8` (derivada do ícone TSA)
@@ -17,12 +17,30 @@ Dashboard para gestão de cilindro de gás e elementos analisados em laboratóri
 |----------|-----|-----|
 | `--primary-darkest` | #002a47 | Sidebar, textos escuros |
 | `--primary-dark` | #003a5e | Sidebar hover, headers |
-| `--primary` | #0070b8 | Brand, botões |
+| `--primary` | #0070b8 | Brand, botões, elemento |
 | `--primary-light` | #4da3e8 | Gradientes, cards |
 | `--primary-lighter` | #6cccff | Gráficos, acentos |
 | `--primary-lightest` | #88d4ff | Highlights |
-| `--accent` | #005f96 | Cilindro |
-| `--accent-alt` | #4da3e8 | Elemento |
+| `--accent` | #005f96 | Cilindro (antigo) |
+| `--accent-alt` | #4da3e8 | Elemento (antigo) |
+
+### Paleta de Cores por KPI
+
+| Variável | Hex | Uso |
+|----------|-----|-----|
+| `--green` | #00897b | Cilindros, Ativos, tags de cilindro |
+| `--green-dark` | #00695c | Gradiente stat-card Cilindros |
+| `--green-light` | #4db6ac | Gradiente stat-card Cilindros |
+| `--pink` | #e91e63 | Amostras, tags de amostra |
+| `--pink-dark` | #c2185b | Gradiente stat-card Amostras |
+| `--pink-light` | #f06292 | Gradiente stat-card Amostras |
+| `--purple` | #7b1fa2 | Tags de Consumo (L/min) |
+| `--purple-light` | #ba68c8 | Tags de Qtd |
+| `--yellow` | #f59e0b | Tag "Atualizado" (mesma cor do btn Editar) |
+| `--red` | #dc3545 | Tag "Excluído" (mesma cor do btn Excluir) |
+| `--orange` | #f59e0b | Pressões |
+| `--orange-dark` | #d97706 | Gradiente stat-card Pressões |
+| `--orange-light` | #fbbf24 | Gradiente stat-card Pressões |
 
 ---
 
@@ -293,6 +311,7 @@ O frontend estará disponível em: `http://localhost:5000`
 
 | Versão | Descrição |
 |--------|-----------|
+| v2.1.0 | Sistema completo de paleta de cores por KPI |
 | v2.0.2 | Correções de consistência frontend vs backend (pressao/temperatura), documentação database/ |
 | v2.0.1 | Log de usuários no histórico (cadastro, role, permissões), visualizar senha |
 | v2.0.0 | Novo padrão de cores #0070b8, UI modernizada |
@@ -306,6 +325,47 @@ O frontend estará disponível em: `http://localhost:5000`
 | v1.5.0 | Correções de segurança (CSRF, IDOR, Rate Limiting, RLS) |
 | v1.4.1 | Correções de UX e mensagens amigáveis, formatação de datas |
 | v1.4.0 | Refatoração para Blueprints, código modular |
+
+---
+
+## Novidades v2.1.0
+
+### Sistema de Paleta de Cores por KPI
+Cada KPI (Cilindros, Elementos, Amostras, Pressões) agora possui cores padronizadas com gradientes.
+
+### StatCards Padronizados
+- **Cilindros/Ativos**: Verde (`stat-card green`)
+- **Pressões**: Laranja (`stat-card orange`)
+- **Elementos**: Azul (`stat-card blue`)
+- **Amostras**: Rosa (`stat-card pink`)
+
+### Tags Padronizadas por Tipo
+- **Cilindro**: Tag verde (`var(--green)`)
+- **Elemento**: Tag azul (`var(--primary)`)
+- **Amostra**: Tag rosa (`var(--pink)`)
+- **Pressão**: Tag amarelo (`#f59e0b`)
+
+### Tags de Ação no Histórico
+- **Criado**: Verde (`var(--green)`)
+- **Atualizado**: Amarelo (`var(--yellow)`) - mesma cor do botão Editar
+- **Excluído**: Vermelho (`var(--red)`) - mesma cor do botão Excluir
+
+### Novas Variáveis CSS
+- `--green`, `--green-dark`, `--green-light` - Cilindros
+- `--pink`, `--pink-dark`, `--pink-light` - Amostras
+- `--purple`, `--purple-light` - Consumo (L/min), Qtd
+- `--yellow` - Tag "Atualizado"
+- `--red` - Tag "Excluído"
+- `--orange`, `--orange-dark`, `--orange-light` - Pressões
+
+### Ordenação Alfabética
+- Aba "Elementos" agora exibe elementos em ordem alfabética (A-Z)
+
+### Correções Visuais
+- Stat-card "Ativos" agora usa cor verde (antes roxo)
+- Stat-card "Pressões" agora usa gradiente laranja verdadeiro (antes azul)
+- Tags de código de cilindro em todas as abas
+- Tags de elemento em azul em todas as abas
 
 ---
 

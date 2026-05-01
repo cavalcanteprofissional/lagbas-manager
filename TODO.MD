@@ -93,10 +93,10 @@ O projeto mantém dois diretórios para permitir evolução futura:
 
 ---
 
-## Fase 11 - Paleta de Cores por KPI no Dashboard ⏳
+## Fase 11 - Paleta de Cores por KPI no Dashboard ✅ CONCLUÍDO
 
 ### Descrição
-Cada KPI (Cilindros, Elementos, Amostras) terá uma cor diferente mantendo padrões de gradiente/degrade.
+Cada KPI (Cilindros, Elementos, Amostras, Pressões) possui uma cor diferente mantendo padrões de gradiente/degrade.
 
 ### Tarefas
 
@@ -111,25 +111,42 @@ Cada KPI (Cilindros, Elementos, Amostras) terá uma cor diferente mantendo padr�
 - [x] Atualizar stat-card.green para usar nova paleta (base.html)
 - [x] Atualizar gráfico "Quantidade de Amostras por Cilindro" com paleta verde (dashboard.html)
 - [x] Atualizar header do card com gradiente verde (dashboard.html)
+- [x] Código do cilindro em tag verde em todas as abas (dashboard, cilindro, pressao, historico)
 
-#### 11.2 Paleta para Elementos (pendente)
-- [ ] Definir paleta de cores
-- [ ] Aplicar no stat-card.blue
-- [ ] Aplicar no gráfico relacionado
+#### 11.2 Paleta para Elementos
+- [x] Usar cor `--primary` para tags de elemento
+- [x] Aplicar no stat-card.blue
+- [x] Elemento em tag azul em todas as abas (dashboard, elemento, amostra, historico)
 
-#### 11.3 Paleta para Amostras (pendente)
+#### 11.3 Paleta para Amostras
 - [x] Adicionar variáveis CSS `--pink-*` no `:root` (base.html)
 - [x] Atualizar stat-card.pink para usar nova paleta (base.html)
 - [x] Atualizar gráfico "Elementos mais analisados por Amostras" com paleta rosa (dashboard.html)
 - [x] Adicionar constante `ELEMENTO_CORES_AMOSTRAS` (constants.py)
 - [x] Aplicar no header do card relacionado (dashboard.html)
-- [x] Padronizar tags de cilindro (verde) em todas as abas (amostra.html, historico.html, admin_user_data.html)
 - [x] Padronizar tags de amostra (rosa) em todas as abas (amostra.html, historico.html, admin_user_data.html)
+
+#### 11.4 Paleta para Pressões
+- [x] Adicionar variáveis CSS `--orange-*` no `:root` (base.html)
+- [x] Atualizar stat-card.orange para usar gradiente laranja (base.html)
+- [x] Aplicar em Perfil e Admin User Data
+
+#### 11.5 Tags de Ação no Histórico
+- [x] Tag "Criado" em verde (`var(--green)`)
+- [x] Tag "Atualizado" em amarelo (`var(--yellow)`) - mesma cor do botão Editar
+- [x] Tag "Excluído" em vermelho (`var(--red)`) - mesma cor do botão Excluir
+
+#### 11.6 Outras Alterações
 - [x] Adicionar variáveis CSS `--purple` e `--purple-light` (base.html)
 - [x] Tag "Consumo (L/min)" em roxo (elemento.html)
 - [x] Tag "Qtd" em roxo claro (amostra.html)
-- [x] Código do cilindro em tag verde em todas as abas (dashboard, cilindro, pressao, historico)
-- [x] Elemento em tag azul (--primary-light) em todas as abas (dashboard, elemento, amostra, historico)
+- [x] Ordenação alfabética na aba Elementos (elemento.py)
+- [x] Remover tags de Itens no Histórico (texto normal)
+- [x] Stat-card "Ativos" usa cor verde
+
+---
+
+## Projeto Concluído ✅
 
 ---
 
