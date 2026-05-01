@@ -75,6 +75,24 @@ Admin pode habilitar/desabilitar acesso às abas para usuários comuns.
 
 ---
 
+## Estrutura de Diretórios - Futuro Backend
+
+### Decisão de Arquitetura
+
+O projeto mantém dois diretórios para permitir evolução futura:
+
+| Diretório | Conteúdo | Status |
+|-----------|----------|--------|
+| `frontend/` | Flask + Jinja2 (app completo) | **Em uso** - Produção |
+| `backend/` | Estrutura para API REST futura | Reservado para desenvolvimento |
+
+### Motivação
+- Atualmente todo o código (UI + API) está em `frontend/`
+- O diretório `backend/` está reservado para quando um backend maduro e profissional for necessário
+- Mantém a separação conceitual de responsabilidades
+
+---
+
 ## Projeto Concluído ✅
 
 > As tarefas de segurança acima estão em andamento. Abaixo está o histórico do projeto.
