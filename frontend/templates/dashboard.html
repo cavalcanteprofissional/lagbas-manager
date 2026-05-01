@@ -34,7 +34,7 @@
         </div>
     </div>
     <div class="col-6 col-lg-3">
-        <div class="card stat-card purple h-100">
+        <div class="card stat-card green h-100">
             <div class="card-body d-flex flex-column justify-content-center">
                 <h5 class="card-title"><i class="bi bi-check-circle me-1"></i> Ativos</h5>
                 <h2 class="mb-0">{{ ativos }}</h2>
@@ -205,7 +205,7 @@
                             <span class="badge" style="background-color: var(--primary);">{{ e.nome }}</span>
                             <small class="d-block text-muted">{{ "%.1f"|format(e.consumo_lpm) }} L/min</small>
                         </div>
-                        <span class="badge" style="background-color: var(--purple);">{{ "%.1f"|format(e.consumo_lpm) }}</span>
+                        {{ "%.1f"|format(e.consumo_lpm) }} L/min
                     </div>
                     {% endfor %}
                 </div>

@@ -64,17 +64,7 @@
                                 {{ h.acao|title }}
                             </span>
                         </td>
-                        <td>
-                            {% if h.tipo == 'cilindro' %}
-                            <span class="badge" style="background-color: var(--green);">{{ h.nome }}</span>
-                            {% elif h.tipo == 'elemento' %}
-                            <span class="badge" style="background-color: var(--primary);">{{ h.nome }}</span>
-                            {% elif h.tipo == 'amostra' %}
-                            <span class="badge" style="background-color: var(--pink);">{{ h.nome }}</span>
-                            {% else %}
-                            <strong>{{ h.nome }}</strong>
-                            {% endif %}
-                        </td>
+                        <td><strong>{{ h.nome }}</strong></td>
                         {% if is_admin %}<td><small>{{ h.usuario_nome }}</small></td>{% endif %}
                     </tr>
                     {% endfor %}
