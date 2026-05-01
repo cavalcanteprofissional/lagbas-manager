@@ -133,12 +133,359 @@ Dashboard para gestão de cilindro de gás e elementos analisados em laboratóri
 
 ## Arquitetura do Sistema
 
+### Visão Geral
+
+O LabGas Manager segue uma arquitetura **monolítica modular** utilizando **Flask** como framework web. A aplicação é dividida em **Blueprints** para organização de código, onde cada Blueprint representa um domínio de negócio (autenticação,cilindros, elementos, etc.). O banco de dados **Supabase** (PostgreSQL) fornece tanto o armazenamento de dados quanto a autenticação de usuários.
+
+### Diagrama de Arquitetura
+
+```mermaid
+graph TB
+    subgraph "Navegador (Cliente)"
+        Browser["Navegador<br/>Bootstrap 5 + Jinja2"]
+    end
+
+    subgraph "Servidor (Flask - Vercel)"
+        App["app.py<br/>Aplicação Principal"]
+        
+        subgraph "Blueprints"
+            Auth["auth.py<br/>Login, Register, Logout"]
+            Cilindro["cilindro.py<br/>CRUD Cilindros"]
+            Elemento["elemento.py<br/>CRUD Elementos"]
+            Amostra["amostra.py<br/>CRUD Amostras"]
+            Pressao["pressao.py<br/>CRUD Pressão"]
+            Historico["historico.py<br/>Histórico"]
+            Admin["admin.py<br/>Administração"]
+        end
+        
+        subgraph "Utils"
+            SupabaseClient["supabase_utils.py<br/>Cliente Supabase"]
+            Validators["validators.py<br/>Validações"]
+            Constants["constants.py<br/>Constantes"]
+        end
+        
+        subgraph "Middleware"
+            CSRF["CSRF Protection<br/>flask-wtf"]
+            Limiter["Rate Limiting<br/>flask-limiter"]
+            LoginManager["Flask-Login<br/>Autenticação"]
+        end
+    end
+
+    subgraph "Supabase (PostgreSQL)"
+        AuthDB["auth.users<br/>Autenticação"]
+        
+        subgraph "Tabelas"
+            Perfil["perfil"]
+            CilindroTB["cilindro"]
+            ElementoTB["elemento"]
+            AmostraTB["amostra"]
+            PressaoTB["pressao"]
+            HistoricoTB["historico_log"]
+        end
+        
+        subgraph "RLS Policies"
+            RLS["Row Level Security"]
+        end
+    end
+
+    Browser --> App
+    App --> Auth
+    App --> Cilindro
+    App --> Elemento
+    App --> Amostra
+    App --> Pressao
+    App --> Historico
+    App --> Admin
+    
+    Auth --> LoginManager
+    Cilindro --> SupabaseClient
+    Elemento --> SupabaseClient
+    Amostra --> SupabaseClient
+    Pressao --> SupabaseClient
+    Historico --> SupabaseClient
+    Admin --> SupabaseClient
+    
+    SupabaseClient --> AuthDB
+    SupabaseClient --> Perfil
+    SupabaseClient --> CilindroTB
+    SupabaseClient --> ElementoTB
+    SupabaseClient --> AmostraTB
+    SupabaseClient --> PressaoTB
+    SupabaseClient --> HistoricoTB
+    
+    App --> CSRF
+    App --> Limiter
+    App --> LoginManager
 ```
-┌─────────────────┐     ┌─────────────────┐
-│   Flask+Jinja2  │────▶│    Supabase    │
-│  (Frontend Web) │     │  (PostgreSQL)  │
-│   + Blueprints  │     │                │
-└─────────────────┘     └─────────────────┘
+
+### Fluxo de Dados
+
+```mermaid
+sequenceDiagram
+    participant User as Usuário
+    participant Browser as Navegador
+    participant Flask as Flask App
+    participant Supabase as Supabase
+    participant RLS as RLS Policies
+
+    User->>Browser: Acessa aplicação
+    Browser->>Flask: Requisição HTTP
+    Flask->>Flask: Valida CSRF Token
+    Flask->>Supabase: Autentica usuário
+    Supabase-->>Flask: Retorna sessão
+    
+    Note over Flask,Supabase: Operações CRUD
+    Flask->>Supabase: SELECT/INSERT/UPDATE/DELETE
+    Supabase->>RLS: Verifica políticas
+    RLS-->>Supabase: Permite/Bloqueia
+    Supabase-->>Flask: Retorna dados
+    
+    Flask-->>Browser: Renderiza Template Jinja2
+    Browser-->>User: Exibe página
+```
+
+### Componentes
+
+#### Frontend (Flask + Jinja2)
+
+| Componente | Descrição | Arquivo |
+|------------|-----------|---------|
+| app.py | Aplicação Flask principal, configurações globais | `frontend/app.py` |
+| auth.py | Blueprint de autenticação (login, register, logout) | `frontend/blueprints/auth.py` |
+| cilindro.py | CRUD de cylinders de gás | `frontend/blueprints/cilindro.py` |
+| elemento.py | CRUD de elementos químicos | `frontend/blueprints/elemento.py` |
+| amostra.py | CRUD de amostras analisadas | `frontend/blueprints/amostra.py` |
+| pressao.py | CRUD de medições de pressão | `frontend/blueprints/pressao.py` |
+| historico.py | Visualização de log de atividades | `frontend/blueprints/historico.py` |
+| admin.py | Painel administrativo e exportação de dados | `frontend/blueprints/admin.py` |
+| helpers.py | Funções auxiliares (get_user_id, is_admin, etc) | `frontend/blueprints/helpers.py` |
+
+#### Utils
+
+| Componente | Descrição | Arquivo |
+|------------|-----------|---------|
+| supabase_utils.py | Cliente Supabase (autenticado e admin) | `frontend/utils/supabase_utils.py` |
+| validators.py | Funções de validação (safe_int, safe_float) | `frontend/utils/validators.py` |
+| constants.py | Constantes do sistema (status, cores, elementos) | `frontend/utils/constants.py` |
+
+#### Banco de Dados (Supabase)
+
+| Tabela | Descrição | Relações |
+|--------|-----------|----------|
+| perfil | Dados do usuário (role, permissões) | 1:N com cilindro, elemento, amostra, pressao |
+| cilindro | Cadastro de cylinders de gás | 1:N com amostra, pressao |
+| elemento | Cadastro de elementos químicos | 1:N com amostra |
+| amostra | Registros de análises realizadas | N:1 com cilindro, elemento |
+| pressao | Medições de pressão | N:1 com cilindro |
+| historico_log | Log de todas as operações | N:1 com perfil |
+
+### Tecnologias
+
+| Categoria | Tecnologia | Versão |
+|----------|------------|--------|
+| Framework Web | Flask | 3.0+ |
+| Template Engine | Jinja2 | - |
+| UI Framework | Bootstrap | 5.3 |
+| Ícones | Bootstrap Icons | 1.11 |
+| Banco de Dados | Supabase (PostgreSQL) | - |
+| Autenticação | Supabase Auth | - |
+| ORM/Cliente | Supabase Python | - |
+| Segurança | flask-wtf (CSRF) | - |
+| Rate Limiting | flask-limiter | - |
+| Sessão | Flask-Login | - |
+| Deploy | Vercel | - |
+
+### Padrões de Projeto
+
+- **Blueprints**: Modularização do código Flask por domínio
+- **MVC**: Separação clara de Model (Supabase), View (Jinja2), Controller (Blueprints)
+- **RLS**: Row Level Security no PostgreSQL para controle de acesso
+- **Service Role**: Uso de chave de serviço para operações administrativas
+
+---
+
+## Arquitetura do Banco de Dados
+
+### Visão Geral
+
+O banco de dados do LabGas Manager utiliza **PostgreSQL** através do **Supabase**. A estrutura é composta por 6 tabelas principais, com relacionamentos definidos através de chaves estrangeiras e políticas de **Row Level Security (RLS)** para garantir que cada usuário visualize e manipule apenas os seus próprios dados.
+
+### Schema
+
+```mermaid
+erDiagram
+    PERFIL ||--o{ CILINDRO : "possui"
+    PERFIL ||--o{ ELEMENTO : "possui"
+    PERFIL ||--o{ AMOSTRA : "possui"
+    PERFIL ||--o{ PRESSAO : "possui"
+    PERFIL ||--o{ HISTORICO_LOG : "registra"
+    
+    CILINDRO ||--o{ AMOSTRA : "usado_em"
+    CILINDRO ||--o{ PRESSAO : "medido_em"
+    ELEMENTO ||--o{ AMOSTRA : "analisado_em"
+
+    PERFIL {
+        uuid id PK "ID do usuário (ref auth.users)"
+        varchar role "admin ou usuario"
+        boolean ativo "Usuário ativo?"
+        varchar nome "Nome do usuário"
+        varchar email "Email do usuário"
+        jsonb habilitar_abas "Permissões de acesso"
+        timestamptz criado_em "Data de criação"
+    }
+
+    CILINDRO {
+        int id PK "ID automático"
+        varchar codigo "Código único (CIL-XXX)"
+        date data_compra "Data de compra"
+        date data_inicio_consumo "Início de uso"
+        date data_fim "Fim de uso"
+        decimal gas_kg "Quantidade de gás em kg"
+        decimal litros_equivalentes "Litros equivalentes"
+        decimal custo "Custo do cilindro"
+        varchar status "ativo ou esgotado"
+        uuid user_id FK "Usuário dono"
+        timestamp created_at "Data de criação"
+    }
+
+    ELEMENTO {
+        int id PK "ID automático"
+        varchar nome "Nome do elemento"
+        decimal consumo_lpm "Consumo em L/min"
+        uuid user_id FK "Usuário dono"
+        timestamp created_at "Data de criação"
+    }
+
+    AMOSTRA {
+        int id PK "ID automático"
+        date data "Data da análise"
+        varchar tempo_chama "Tempo de chama (HH:MM:SS)"
+        int cilindro_id FK "Cilindro usado"
+        int elemento_id FK "Elemento analisado"
+        int quantidade_amostras "Quantidade"
+        uuid user_id FK "Usuário dono"
+        timestamp created_at "Data de criação"
+    }
+
+    PRESSAO {
+        int id PK "ID automático"
+        int cilindro_id FK "Cilindro medido"
+        numeric pressao "Pressão em bar"
+        numeric temperatura "Temperatura em °C"
+        date data "Data da medição"
+        time hora "Hora da medição"
+        uuid user_id FK "Usuário dono"
+        timestamp created_at "Data de criação"
+    }
+
+    HISTORICO_LOG {
+        int id PK "ID automático"
+        varchar tipo "cilindro, elemento, amostra, pressao, perfil"
+        varchar acao "criado, atualizado, excluido"
+        varchar nome "Nome do item"
+        uuid user_id FK "Usuário que executou"
+        timestamp created_at "Data/hora da ação"
+    }
+```
+
+### Relacionamentos
+
+| De | Para | Cardinalidade | Descrição |
+|----|------|----------------|------------|
+| cilindro.user_id | perfil.id | N:1 | Cada cilindro pertence a um usuário |
+| elemento.user_id | perfil.id | N:1 | Cada elemento pertence a um usuário |
+| amostra.user_id | perfil.id | N:1 | Cada amostra pertence a um usuário |
+| amostra.cilindro_id | cilindro.id | N:1 | Cada amostra usa um cilindro |
+| amostra.elemento_id | elemento.id | N:1 | Cada amostra usa um elemento |
+| pressao.user_id | perfil.id | N:1 | Cada medição pertence a um usuário |
+| pressao.cilindro_id | cilindro.id | N:1 | Cada medição é de um cilindro |
+| historico_log.user_id | perfil.id | N:1 | Cada registro é de um usuário |
+
+### Índices
+
+O banco de dados possui índices otimizados para as operações mais frequentes:
+
+| Tabela | Índice | Coluna(s) | Propósito |
+|--------|--------|-----------|-----------|
+| cilindro | idx_cilindro_user_id | user_id | Filtrar por usuário |
+| cilindro | idx_cilindro_codigo | codigo | Busca por código |
+| elemento | idx_elemento_user_id | user_id | Filtrar por usuário |
+| elemento | idx_elemento_nome | nome | Busca por nome |
+| amostra | idx_amostra_user_id | user_id | Filtrar por usuário |
+| amostra | idx_amostra_cilindro_id | cilindro_id | Vincular cilindro |
+| amostra | idx_amostra_elemento_id | elemento_id | Vincular elemento |
+| amostra | idx_amostra_data | data | Filtrar por data |
+| pressao | idx_pressao_user_id | user_id | Filtrar por usuário |
+| pressao | idx_pressao_cilindro_id | cilindro_id | Vincular cilindro |
+| pressao | idx_pressao_data | data | Filtrar por data |
+| historico_log | idx_historico_log_user_id | user_id | Filtrar por usuário |
+| historico_log | idx_historico_log_tipo | tipo | Filtrar por tipo |
+| historico_log | idx_historico_log_created_at | created_at | Ordenação temporal |
+
+### Políticas RLS (Row Level Security)
+
+O banco de dados utiliza **Row Level Security** para garantir o isolamento de dados entre usuários. Cada tabela possui políticas específicas que determinam quais registros cada usuário pode acessar.
+
+| Tabela | SELECT | INSERT | UPDATE | DELETE |
+|--------|--------|--------|--------|--------|
+| cilindro | Público (todos) | Próprio usuário | Próprio usuário | Próprio usuário |
+| elemento | Público (todos) | Próprio usuário | Próprio usuário | Próprio usuário |
+| amostra | Público (todos) | Próprio usuário | Próprio usuário | Próprio usuário |
+| perfil | Próprio usuário | Próprio usuário | Próprio usuário | - |
+| pressao | Público (todos) | Próprio usuário | Próprio usuário | Próprio usuário |
+| historico_log | Público (todos) | Admin (service_role) | - | - |
+
+### Fluxo de Dados do Banco
+
+```mermaid
+flowchart TB
+    subgraph "Ações do Usuário"
+        Login["Login/Registro"]
+        CRUD["Operações CRUD"]
+    end
+    
+    subgraph "Supabase"
+        Auth["auth.users<br/>Autenticação"]
+        
+        subgraph "Tabelas com RLS"
+            T1["perfil"]
+            T2["cilindro"]
+            T3["elemento"]
+            T4["amostra"]
+            T5["pressao"]
+            T6["historico_log"]
+        end
+        
+        subgraph "Políticas"
+            P1["Políticas RLS"]
+            P2["Verificação user_id"]
+        end
+    end
+    
+    subgraph "Resultado"
+        D1["Dados do próprio usuário"]
+        D2["Dados públicos (SELECT)"]
+        D3["Acesso negado"]
+    end
+    
+    Login --> Auth
+    CRUD --> P1
+    P1 --> P2
+    P2 --> T1
+    P2 --> T2
+    P2 --> T3
+    P2 --> T4
+    P2 --> T5
+    P2 --> T6
+    
+    T1 --> D1
+    T2 --> D2
+    T3 --> D2
+    T4 --> D1
+    T5 --> D1
+    T6 --> D2
+    
+    P2 -->|Acesso negado| D3
 ```
 
 ---
@@ -149,24 +496,72 @@ Dashboard para gestão de cilindro de gás e elementos analisados em laboratóri
 labgas-manager/
 ├── .gitignore
 ├── AGENTS.md                  # Documentação técnica
-├── readme.md                  # Este arquivo
-├── database/                # Schema, RLS, seed e diagrama do banco de dados
-├── frontend/                  # Flask + Jinja2 (Web)
-│   ├── app.py                 # Aplicação Flask principal
-│   ├── blueprints/            # Blueprints Flask
-│   │   ├── auth.py           # Login, register, logout
-│   │   ├── cilindro.py       # CRUD Cilindros
-│   │   ├── pressao.py           # CRUD Pressão
-│   │   ├── elemento.py       # CRUD Elementos
-│   │   ├── amostra.py        # CRUD Amostras
-│   │   ├── admin.py          # Funções admin
-│   │   ├── historico.py      # Histórico de atividades
-│   │   └── helpers.py        # Funções auxiliares
-│   ├── utils/                # Utilitários
-│   │   ├── supabase_utils.py # Cliente Supabase
-│   │   ├── validators.py     # Validações
-│   │   └── constants.py      # Constantes
-│   └── templates/            # Templates HTML Jinja2
+├── README.MD                  # Este arquivo
+├── LICENSE                    # Licença MIT
+├── TODO.MD                    # Tarefas e histórico do projeto
+│
+├── database/                  # Banco de dados
+│   ├── schema.sql            # CREATE TABLE + índices
+│   ├── rls.sql              # Políticas RLS
+│   ├── seed.sql             # Dados iniciais (elementos padrão)
+│   └── DIAGRAM.MD           # Diagramas (ER, Fluxo)
+│
+├── frontend/                  # Aplicação Flask (Web)
+│   ├── app.py               # Aplicação principal
+│   ├── requirements.txt     # Dependências Python
+│   ├── vercel.json         # Configuração de deploy
+│   │
+│   ├── blueprints/          # Blueprints Flask
+│   │   ├── __init__.py
+│   │   ├── auth.py          # Login, register, logout
+│   │   ├── cilindro.py      # CRUD Cilindros
+│   │   ├── pressao.py       # CRUD Pressão
+│   │   ├── elemento.py     # CRUD Elementos
+│   │   ├── amostra.py       # CRUD Amostras
+│   │   ├── historico.py    # Histórico de atividades
+│   │   ├── admin.py         # Funções administrativas
+│   │   └── helpers.py       # Funções auxiliares
+│   │
+│   ├── utils/               # Utilitários
+│   │   ├── __init__.py
+│   │   ├── supabase_utils.py  # Cliente Supabase
+│   │   ├── validators.py      # Validações
+│   │   └── constants.py       # Constantes
+│   │
+│   ├── templates/          # Templates Jinja2
+│   │   ├── base.html        # Template base
+│   │   ├── login.html       # Página de login
+│   │   ├── register.html    # Página de registro
+│   │   ├── dashboard.html   # Dashboard principal
+│   │   ├── cilindro.html    # Gerenciamento de cylinders
+│   │   ├── pressao.html     # Gerenciamento de pressão
+│   │   ├── elemento.html    # Gerenciamento de elementos
+│   │   ├── amostra.html     # Gerenciamento de amostras
+│   │   ├── historico.html   # Histórico de atividades
+│   │   ├── perfil.html      # Perfil do usuário
+│   │   ├── admin.html       # Painel administrativo
+│   │   ├── admin_user_data.html  # Dados de usuário específico
+│   │   └── voice_modal.html # Modal do assistente de voz
+│   │
+│   ├── static/              # Arquivos estáticos
+│   │   ├── favicon.svg
+│   │   └── js/
+│   │       └── voice_assistant.js
+│   │
+│   ├── .env.example         # Exemplo de variáveis de ambiente
+│   └── .env.local           # Variáveis de ambiente (não versionado)
+│
+├── backend/                  # Reservado para API REST futura
+│   ├── app.py
+│   ├── config.py
+│   ├── requirements.txt
+│   ├── Procfile
+│   └── .env
+│
+└── latex/                    # Documentação LaTeX (artigo)
+    ├── artigo.tex
+    ├── referencias.bib
+    └── figuras/
 ```
 
 ---
