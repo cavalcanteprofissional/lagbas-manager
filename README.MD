@@ -50,8 +50,8 @@ Dashboard para gestão de cilindro de gás e elementos analisados em laboratóri
 
 | Aba | Funcionalidades |
 |-----|-----------------|
-| **Dashboard** | Cards com estatísticas, gráficos de amostras por cilindro, elementos mais analisados, eficiência de cylinders |
-| **Cilindros** | CRUD completo, código CIL-XXX, status (ativo/esgotado), compartilhamento |
+| **Dashboard** | Cards com estatísticas, gráficos de amostras por cilindro, elementos mais analisados, eficiência de cilindro |
+| **Cilindros** | CRUD completo, código CIL-XXX, status (ativo/esgotado) |
 | **Pressão** | CRUD completo, pressão (bar), temperatura (°C), data e hora, vinculado a cilindro |
 | **Elementos** | CRUD completo, consumo em L/min, 20 elementos padrão pré-carregados |
 | **Amostras** | CRUD completo, vinculado a cilindro/elemento, tempo de chama, quantidade |
@@ -127,7 +127,7 @@ Dashboard para gestão de cilindro de gás e elementos analisados em laboratóri
 - **Banco de Dados**: Supabase (PostgreSQL)
 - **Autenticação**: Supabase Auth (via Flask-Login)
 - **Gerenciamento de Dependências**: pip + venv
-- **Deploy**: Railway.app
+- **Deploy**: Vercel
 
 ---
 
@@ -150,7 +150,7 @@ labgas-manager/
 ├── .gitignore
 ├── AGENTS.md                  # Documentação técnica
 ├── readme.md                  # Este arquivo
-├── database.md               # Schema completo do banco de dados
+├── database/                # Schema, RLS, seed e diagrama do banco de dados
 ├── frontend/                  # Flask + Jinja2 (Web)
 │   ├── app.py                 # Aplicação Flask principal
 │   ├── blueprints/            # Blueprints Flask
@@ -283,7 +283,7 @@ O frontend estará disponível em: `http://localhost:5000`
 
 ### Histórico
 - Registro de todas as operações CRUD
-- Filtros por tipo (cilindro/elemento/amostra/perfil) e ação (criado/atualizado/excluido)
+- Filtros por tipo (cilindro/pressao/elemento/amostra/perfil) e ação (criado/atualizado/excluido)
 - Exibição do usuário que realizou a ação
 - **Log de usuários**: Cadastro, alteração de role, ativação/desativação, permissões de abas
 
@@ -293,17 +293,6 @@ O frontend estará disponível em: `http://localhost:5000`
 - Validação de código de cilindro (CIL-XXX)
 - Normalização de nomes de elementos
 - **Mensagens de erro amigáveis**: Erros técnicos são convertidos para mensagens amigáveis
-
----
-
-## Deploy no Railway
-
-1. Criar projeto no Railway com o repositório GitHub
-2. Adicionar variáveis de ambiente:
-   - `SECRET_KEY`: chave secreta para sessões
-   - `SUPABASE_URL`: URL do projeto Supabase
-   - `SUPABASE_KEY`: chave anônima do Supabase
-3. Start Command: `gunicorn app:app`
 
 ---
 
