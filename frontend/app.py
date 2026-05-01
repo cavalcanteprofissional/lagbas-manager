@@ -9,7 +9,7 @@ from dotenv import load_dotenv
 from supabase import create_client, Client
 
 from blueprints.helpers import get_authenticated_client
-from utils.constants import ELEMENTO_CORES
+from utils.constants import ELEMENTO_CORES, ELEMENTO_CORES_AMOSTRAS
 
 # Carrega .env.local para desenvolvimento local (se existir)
 # Na Vercel, as variáveis são injetadas automaticamente via Environment Variables
@@ -152,7 +152,7 @@ def dashboard():
     supabase = get_supabase_client()
     
     cilindro_response = supabase.table("cilindro").select("*").eq("user_id", user_id).execute()
-    elementos_response = supabase.table("elemento").select("*").eq("user_id", user_id).execute()
+    elementos_response = supabase.table("elemento").select("*").eq("user_id", user_id).order("nome").execute()
     amostras_response = supabase.table("amostra").select("*").eq("user_id", user_id).execute()
 
     cilindro = cilindro_response.data or []
@@ -262,6 +262,7 @@ def dashboard():
         cilindro_dict=cilindro_dict,
         elemento_dict=elemento_dict,
         elemento_cores=ELEMENTO_CORES,
+        elemento_cores_amostras=ELEMENTO_CORES_AMOSTRAS,
         total_quantidade_amostras=total_quantidade_amostras,
     )
 

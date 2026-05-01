@@ -170,7 +170,7 @@ def list():
             
             return redirect(url_for("elemento.list"))
     
-    response = get_supabase_client().table("elemento").select("*").order("created_at", desc=True).execute()
+    response = get_supabase_client().table("elemento").select("*").order("nome", desc=False).execute()
     elementos = response.data or []
     
     total = len(elementos)

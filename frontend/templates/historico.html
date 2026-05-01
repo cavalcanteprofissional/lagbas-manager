@@ -55,16 +55,26 @@
                             <small>{{ h.data|formatar_data if h.data else '-' }}</small>
                         </td>
                         <td>
-                            <span class="badge" style="background-color: {{ '#0070b8' if h.tipo == 'cilindro' else '#f59e0b' if h.tipo == 'pressao' else '#4da3e8' if h.tipo == 'elemento' else '#6cccff' }};">
+                            <span class="badge" style="background-color: {{ 'var(--green)' if h.tipo == 'cilindro' else 'var(--pink)' if h.tipo == 'amostra' else '#f59e0b' if h.tipo == 'pressao' else 'var(--primary)' if h.tipo == 'elemento' else 'var(--primary-lighter)' if h.tipo == 'perfil' else 'var(--primary)' }};">
                                 {{ h.tipo|title }}
                             </span>
                         </td>
                         <td>
-                            <span class="badge" style="background-color: {{ '#0070b8' if h.acao == 'criado' else '#f59e0b' if h.acao == 'atualizado' else '#dc3545' if h.acao == 'excluido' else '#6c757d' }};">
+                            <span class="badge" style="background-color: {{ 'var(--green)' if h.acao == 'criado' else 'var(--yellow)' if h.acao == 'atualizado' else 'var(--red)' if h.acao == 'excluido' else '#6c757d' }};">
                                 {{ h.acao|title }}
                             </span>
                         </td>
-                        <td><strong>{{ h.nome }}</strong></td>
+                        <td>
+                            {% if h.tipo == 'cilindro' %}
+                            <span class="badge" style="background-color: var(--green);">{{ h.nome }}</span>
+                            {% elif h.tipo == 'elemento' %}
+                            <span class="badge" style="background-color: var(--primary);">{{ h.nome }}</span>
+                            {% elif h.tipo == 'amostra' %}
+                            <span class="badge" style="background-color: var(--pink);">{{ h.nome }}</span>
+                            {% else %}
+                            <strong>{{ h.nome }}</strong>
+                            {% endif %}
+                        </td>
                         {% if is_admin %}<td><small>{{ h.usuario_nome }}</small></td>{% endif %}
                     </tr>
                     {% endfor %}

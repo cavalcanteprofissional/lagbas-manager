@@ -93,6 +93,46 @@ O projeto mantém dois diretórios para permitir evolução futura:
 
 ---
 
+## Fase 11 - Paleta de Cores por KPI no Dashboard ⏳
+
+### Descrição
+Cada KPI (Cilindros, Elementos, Amostras) terá uma cor diferente mantendo padrões de gradiente/degrade.
+
+### Tarefas
+
+#### 11.1 Paleta Verde para Cilindros
+- [x] Adicionar variáveis CSS `--green-*` no `:root` (base.html)
+  - `--green-darkest`: #004d40
+  - `--green-dark`: #00695c
+  - `--green`: #00897b
+  - `--green-light`: #4db6ac
+  - `--green-lighter`: #80cbc4
+  - `--green-lightest`: #b2dfdb
+- [x] Atualizar stat-card.green para usar nova paleta (base.html)
+- [x] Atualizar gráfico "Quantidade de Amostras por Cilindro" com paleta verde (dashboard.html)
+- [x] Atualizar header do card com gradiente verde (dashboard.html)
+
+#### 11.2 Paleta para Elementos (pendente)
+- [ ] Definir paleta de cores
+- [ ] Aplicar no stat-card.blue
+- [ ] Aplicar no gráfico relacionado
+
+#### 11.3 Paleta para Amostras (pendente)
+- [x] Adicionar variáveis CSS `--pink-*` no `:root` (base.html)
+- [x] Atualizar stat-card.pink para usar nova paleta (base.html)
+- [x] Atualizar gráfico "Elementos mais analisados por Amostras" com paleta rosa (dashboard.html)
+- [x] Adicionar constante `ELEMENTO_CORES_AMOSTRAS` (constants.py)
+- [x] Aplicar no header do card relacionado (dashboard.html)
+- [x] Padronizar tags de cilindro (verde) em todas as abas (amostra.html, historico.html, admin_user_data.html)
+- [x] Padronizar tags de amostra (rosa) em todas as abas (amostra.html, historico.html, admin_user_data.html)
+- [x] Adicionar variáveis CSS `--purple` e `--purple-light` (base.html)
+- [x] Tag "Consumo (L/min)" em roxo (elemento.html)
+- [x] Tag "Qtd" em roxo claro (amostra.html)
+- [x] Código do cilindro em tag verde em todas as abas (dashboard, cilindro, pressao, historico)
+- [x] Elemento em tag azul (--primary-light) em todas as abas (dashboard, elemento, amostra, historico)
+
+---
+
 ## Projeto Concluído ✅
 
 > As tarefas de segurança acima estão em andamento. Abaixo está o histórico do projeto.

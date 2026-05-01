@@ -18,6 +18,32 @@
             --accent: #005f96;
             --accent-alt: #4da3e8;
             --sidebar-width: 260px;
+
+            /* Paleta Verde Similar à Primary */
+            --green-darkest: #004d40;
+            --green-dark: #00695c;
+            --green: #00897b;
+            --green-light: #4db6ac;
+            --green-lighter: #80cbc4;
+            --green-lightest: #b2dfdb;
+
+            /* Paleta Rosa Similar à Primary */
+            --pink-darkest: #880e4f;
+            --pink-dark: #c2185b;
+            --pink: #e91e63;
+            --pink-light: #f06292;
+            --pink-lighter: #f48fb1;
+            --pink-lightest: #f8bbd9;
+
+            /* Paleta Roxo para Tags */
+            --purple: #7b1fa2;
+            --purple-light: #ba68c8;
+
+            /* Paleta Amarelo (same as btn-warning) */
+            --yellow: #f59e0b;
+
+            /* Paleta Vermelho (same as btn-danger) */
+            --red: #dc3545;
         }
         body {
             background-color: #f8f9fa;
@@ -83,13 +109,13 @@
             transform: scale(0.98);
         }
         .stat-card.green, .stat-card.cilindro {
-            background: linear-gradient(135deg, var(--accent) 0%, var(--accent-alt) 100%);
+            background: linear-gradient(135deg, var(--green-dark) 0%, var(--green-light) 100%);
         }
         .stat-card.blue, .stat-card.elemento {
             background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary-light) 100%);
         }
         .stat-card.pink, .stat-card.amostra {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-lighter) 100%);
+            background: linear-gradient(135deg, var(--pink-dark) 0%, var(--pink-light) 100%);
         }
         .stat-card.purple, .stat-card.ativos {
             background: linear-gradient(135deg, var(--primary-darkest) 0%, var(--primary-dark) 100%);
