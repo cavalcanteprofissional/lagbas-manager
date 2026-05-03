@@ -246,11 +246,10 @@ def pressao_list():
     response = get_supabase_client().table("pressao").select("*").order("created_at", desc=True).execute()
     pressoes = response.data or []
     
-    cilindro_ids = list(set(t.get("cilindro_id") for t in pressoes if t.get("cilindro_id")))
-    cilindro_dict = {}
-    if cilindro_ids:
-        cilindro_response = get_admin_client().table("cilindro").select("id,codigo").in_("id", cilindro_ids).execute()
-        cilindro_dict = {c.get("id"): c.get("codigo") for c in (cilindro_response.data or [])}
+    cilindro_list_response = get_authenticated_client().table("cilindro").select("id,codigo").eq("user_id", user_id).order("codigo").execute()
+    cilindro_list = cilindro_list_response.data or []
+    
+    cilindro_dict = {c.get("id"): c.get("codigo") for c in cilindro_list}
     
     for p in pressoes:
         p["cilindro_codigo"] = cilindro_dict.get(p.get("cilindro_id"), "")
@@ -261,9 +260,6 @@ def pressao_list():
     paginated_data = pressoes[start:end]
     
     pressoes = paginated_data
-    
-    cilindro_list_response = get_authenticated_client().table("cilindro").select("id,codigo").eq("user_id", user_id).order("codigo").execute()
-    cilindro_list = cilindro_list_response.data or []
     
     pages = (total + per_page - 1) // per_page if total > 0 else 1
     end_page = min(page * per_page, total) if total > 0 else 0
