@@ -10,6 +10,7 @@ from supabase import create_client, Client
 
 from blueprints.helpers import get_authenticated_client
 from utils.constants import ELEMENTO_CORES, ELEMENTO_CORES_AMOSTRAS
+from utils.erros_utils import formatar_erro_supabase
 
 # Carrega .env.local para desenvolvimento local (se existir)
 # Na Vercel, as variáveis são injetadas automaticamente via Environment Variables
@@ -19,7 +20,9 @@ except Exception:
     pass  # Se não existir, continua sem erro
 
 app = Flask(__name__)
-app.secret_key = os.getenv("SECRET_KEY") or "vercel-generated-temp-key-2026"
+app.secret_key = os.getenv("SECRET_KEY")
+if not app.secret_key:
+    raise ValueError("SECRET_KEY é obrigatória. Defina a variável de ambiente.")
 
 csrf = CSRFProtect(app)
 
@@ -370,7 +373,7 @@ def api_buscar_codigo():
         else:
             return {"error": "Cilindro não encontrado"}, 404
     except Exception as e:
-        return {"error": str(e)}, 500
+        return {"error": formatar_erro_supabase(str(e), "buscar código")}, 500
 
 
 @app.route("/api/buscar-elemento", methods=["POST"])
@@ -402,7 +405,7 @@ def api_buscar_elemento():
         else:
             return {"error": "Elemento não encontrado"}, 404
     except Exception as e:
-        return {"error": str(e)}, 500
+        return {"error": formatar_erro_supabase(str(e), "buscar elemento")}, 500
 
 
 @app.route("/api/dados-usuario", methods=["GET"])
@@ -423,7 +426,7 @@ def api_dados_usuario():
         
         return {"cilindros": cilindros, "elementos": elementos}
     except Exception as e:
-        return {"error": str(e)}, 500
+        return {"error": formatar_erro_supabase(str(e), "buscar dados do usuário")}, 500
 
 
 from blueprints.auth import auth_bp

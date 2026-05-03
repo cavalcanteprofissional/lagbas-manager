@@ -655,6 +655,42 @@ registros de `amostra` ficam órfãos.
 
 **Status**: [x] Não aplicável ✅
 
+---
+
+## Fase 14 - Correções Críticas ⏳
+
+### 14.1 IndexError em perfil_response.data[0]
+
+**Problema**: app.py:296 acessa `data[0]` sem verificar se lista está vazia
+
+**Decisão**: JÁ SEGURO - código tem verificação `if perfil_response.data else {}`
+
+**Status**: [x] Não necessário ✅
+
+### 14.2 APIs Expondo Erros
+
+**Problema**: app.py:372,404,426 expõem `str(e)` diretamente
+
+**Correção**: Usar formatar_erro_supabase()
+
+**Status**: [x] Concluído ✅
+
+### 14.3 Fallback Secret Key
+
+**Problema**: app.py:22 ainda tem fallback temporário
+
+**Correção**: Removido fallback, agora exige SECRET_KEY
+
+**Status**: [x] Concluído ✅
+
+### 14.4 Admin N+1 Queries
+
+**Problema**: admin.py:54-57 faz 4 consultas por usuário
+
+**Decisão**: NÃO necessário - performance aceitável para poucos usuários
+
+**Status**: [x] Não aplicável ✅
+
 ### 12.2 CORS Excessivamente Permissivo (app.py:101-106)
 
 **Problema**: `Access-Control-Allow-Origin: "*"` permite requisições de qualquer domínio.
