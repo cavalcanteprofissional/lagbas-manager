@@ -722,6 +722,30 @@ registros de `amostra` ficam órfãos.
 
 **Status**: [x] Concluído ✅
 
+---
+
+## Fase 16 - Otimização helpers.py com Cache ✅ CONCLUÍDO
+
+### 16.1 is_admin() com Cache
+**Problema**: Query ao banco ignorando cached_user_info
+**Correção**: Ler do cache da sessão
+**Status**: [x] Concluído ✅
+
+### 16.2 get_user_role() com Cache
+**Problema**: Query ao banco ignorando cached_user_info
+**Correção**: Ler do cache da sessão
+**Status**: [x] Concluído ✅
+
+### 16.3 get_user_name() com Cache
+**Problema**: Query ao banco ignorando cached_user_info
+**Correção**: Ler do cache da sessão
+**Status**: [x] Concluído ✅
+
+### 16.4 get_habilitar_abas() com Cache
+**Problema**: Query separada ao banco
+**Correção**: Usar cache
+**Status**: [x] Concluído ✅
+
 ### 12.2 CORS Excessivamente Permissivo (app.py:101-106)
 
 **Problema**: `Access-Control-Allow-Origin: "*"` permite requisições de qualquer domínio.
@@ -787,5 +811,31 @@ registros de `amostra` ficam órfãos.
 **Solução**: Renomear para `list()` para consistência.
 
 **Arquivo**: `frontend/blueprints/pressao.py`
+
+**Status**: [x] Concluído ✅
+
+---
+
+## Fase 17 - Localização Portuguese ✅ CONCLUÍDO
+
+### 17.1 Mensagem do Flask-Login
+
+**Problema**: Mensagem padrão "Please log in to access this page." em inglês.
+
+**Correção**: Configurar login_manager.login_message em app.py
+
+**Código**:
+```python
+login_manager.login_message = "Por favor, faça login para acessar esta página."
+login_manager.login_message_category = "warning"
+```
+
+**Status**: [x] Concluído ✅
+
+### 17.2 Verificação Final
+
+**Problema**: Typo em app.py:153 - `get_habilitar_aba` deveria ser `get_habilitar_abas`
+
+**Correção**: Corrigido typo
 
 **Status**: [x] Concluído ✅

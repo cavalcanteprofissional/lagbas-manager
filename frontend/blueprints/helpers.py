@@ -11,27 +11,9 @@ def get_user_id():
 
 
 def is_admin():
-    """Verifica se o usuário atual é admin"""
-    user_id = get_user_id()
-    if not user_id:
-        logger.warning("is_admin: user_id não encontrado na sessão")
-        return False
-    
-    try:
-        from utils.supabase_utils import get_supabase_client
-        supabase = get_authenticated_client()
-        response = supabase.table("perfil").select("role").eq("id", user_id).execute()
-        
-        if response.data and len(response.data) > 0:
-            role = response.data[0].get("role", "usuario")
-            logger.info(f"is_admin: user_id={user_id}, role={role}")
-            return role == "admin"
-        else:
-            logger.warning(f"is_admin: perfil não encontrado para user_id={user_id}")
-    except Exception as e:
-        logger.error(f"is_admin: erro ao buscar perfil: {str(e)}")
-    
-    return False
+    """Verifica se o usuário atual é admin - usa cache da sessão"""
+    cached = session.get('cached_user_info', {})
+    return cached.get('is_admin', False)
 
 
 def is_user_active(user_id):
@@ -48,34 +30,15 @@ def is_user_active(user_id):
 
 
 def get_user_role():
-    """Retorna o role do usuário atual"""
-    user_id = get_user_id()
-    if not user_id:
-        return "usuario"
-    try:
-        from utils.supabase_utils import get_supabase_client
-        supabase = get_authenticated_client()
-        response = supabase.table("perfil").select("role").eq("id", user_id).execute()
-        if response.data:
-            return response.data[0].get("role", "usuario")
-    except Exception as e:
-        logger.error(f"get_user_role: erro: {str(e)}")
-    return "usuario"
+    """Retorna o role do usuário atual - usa cache da sessão"""
+    cached = session.get('cached_user_info', {})
+    return cached.get('user_role', 'usuario')
 
 
 def get_user_name():
-    """Retorna o nome do usuário atual"""
-    user_id = get_user_id()
-    if not user_id:
-        return ""
-    try:
-        supabase = get_authenticated_client()
-        response = supabase.table("perfil").select("nome").eq("id", user_id).execute()
-        if response.data:
-            return response.data[0].get("nome", "")
-    except Exception as e:
-        logger.error(f"get_user_name: erro: {str(e)}")
-    return ""
+    """Retorna o nome do usuário atual - usa cache da sessão"""
+    cached = session.get('cached_user_info', {})
+    return cached.get('user_name', '')
 
 
 def get_authenticated_client():
@@ -117,8 +80,6 @@ ABAS_DEFAULT = {aba: True for aba in ABAS_DISPONIVEIS}
 
 def pode_acessar_aba(aba):
     """Verifica se o usuário atual pode acessar a aba especificada"""
-    from utils.supabase_utils import get_admin_client
-    
     if is_admin():
         return True
     
@@ -126,27 +87,23 @@ def pode_acessar_aba(aba):
     if not user_id:
         return False
     
-    try:
-        client = get_admin_client()
-        response = client.table("perfil").select("habilitar_abas").eq("id", user_id).execute()
-        
-        if response.data and len(response.data) > 0:
-            habilitar_abas = response.data[0].get("habilitar_abas")
-            if habilitar_abas is None:
-                return True
-            return habilitar_abas.get(aba, True)
-    except Exception as e:
-        logger.error(f"pode_acessar_aba: erro ao buscar perfil: {str(e)}")
-    
-    return True
+    habilitar_abas = get_habilitar_abas(user_id)
+    return habilitar_abas.get(aba, True)
 
 
-def get_habilitar_abas(user_id):
+def get_habilitar_abas(user_id=None):
     """Retorna o dicionário de abas habilitadas para o usuário"""
-    from utils.supabase_utils import get_admin_client
+    if user_id is None:
+        user_id = get_user_id()
     
     if not user_id:
         return ABAS_DEFAULT.copy()
+    
+    cached = session.get('cached_user_info', {})
+    perfil_role = cached.get('user_role')
+    
+    if perfil_role == 'admin':
+        return {aba: True for aba in ABAS_DISPONIVEIS}
     
     try:
         client = get_admin_client()

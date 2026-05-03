@@ -1,6 +1,6 @@
 # LabGas Manager
 
-**Versão: 2.1.0** (Branch: master)
+**Versão: 2.2.1** (Branch: master)
 
 Dashboard para gestão de cilindro de gás e elementos analisados em laboratório de química, utilizando **Flask** com **Jinja2** para o frontend web e **Supabase** como banco de dados PostgreSQL.
 
@@ -693,6 +693,17 @@ O frontend estará disponível em: `http://localhost:5000`
 
 ---
 
+## Novidades v2.2.1
+
+### Localização Portuguese
+
+- **Mensagem do Flask-Login**: Mensagem de redirecionamento para login agora em português
+  - "Por favor, faça login para acessar esta página."
+
+- **Correção de Typo**: app.py - `get_habilitar_aba` → `get_habilitar_abas`
+
+---
+
 ## Novidades v2.2.0
 
 ### Segurança e Melhorias
@@ -728,10 +739,22 @@ O frontend estará disponível em: `http://localhost:5000`
 
 ---
 
+## Novidades v2.2.1
+
+### Localização Portuguese
+
+- **Mensagem do Flask-Login**: Mensagem de redirecionamento para login agora em português
+  - "Por favor, faça login para acessar esta página."
+
+- **Correção de Typo**: app.py - `get_habilitar_aba` → `get_habilitar_abas`
+
+---
+
 ## Changelog
 
 | Versão | Descrição |
 |--------|-----------|
+| v2.2.1 | Mensagem do Flask-Login em português, correção de typo |
 | v2.2.0 | Rate limiting em sessão, verificação is_user_active, CORS configurável, CASCADE deletes, cache, variáveis de ambiente, NUMERIC precisão, FK CASCADE |
 | v2.1.0 | Sistema completo de paleta de cores por KPI |
 | v2.0.2 | Correções de consistência frontend vs backend (pressao/temperatura), documentação database/ |

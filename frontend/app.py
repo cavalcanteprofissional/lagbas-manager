@@ -52,6 +52,8 @@ supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = "auth.login"
+login_manager.login_message = "Por favor, faça login para acessar esta página."
+login_manager.login_message_category = "warning"
 
 from blueprints.auth import User
 
@@ -119,15 +121,30 @@ def add_cors_headers(response):
 
 @app.context_processor
 def inject_user_info():
-    from blueprints.helpers import is_admin, get_user_role, get_user_name, pode_acessar_aba
+    from blueprints.helpers import get_habilitar_abas
     from datetime import datetime
     
-    if 'user_id' in session and 'cached_user_info' not in session:
-        session['cached_user_info'] = {
-            'user_role': get_user_role(),
-            'user_name': get_user_name(),
-            'is_admin': is_admin()
-        }
+    user_id = session.get('user_id')
+    
+    if user_id and 'cached_user_info' not in session:
+        from utils.supabase_utils import get_admin_client
+        client = get_admin_client()
+        
+        perfil_response = client.table("perfil").select("role,nome,habilitar_abas").eq("id", user_id).execute()
+        
+        if perfil_response.data:
+            perfil = perfil_response.data[0]
+            session['cached_user_info'] = {
+                'user_role': perfil.get('role', 'usuario'),
+                'user_name': perfil.get('nome', ''),
+                'is_admin': perfil.get('role') == 'admin'
+            }
+        else:
+            session['cached_user_info'] = {
+                'user_role': 'usuario',
+                'user_name': '',
+                'is_admin': False
+            }
     
     cached = session.get('cached_user_info', {})
     
@@ -135,7 +152,7 @@ def inject_user_info():
         is_admin=cached.get('is_admin', False), 
         user_role=cached.get('user_role', 'usuario'), 
         user_name=cached.get('user_name', ''), 
-        pode_acessar_aba=pode_acessar_aba,
+        pode_acessar_aba=get_habilitar_abas,
         today=datetime.now().strftime("%Y-%m-%d")
     )
 
