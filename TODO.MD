@@ -839,3 +839,27 @@ login_manager.login_message_category = "warning"
 **Correção**: Corrigido typo
 
 **Status**: [x] Concluído ✅
+
+---
+
+## Fase 18 - Correções Python 3.14+ ✅ CONCLUÍDO
+
+### 18.1 datetime.utcnow() Deprecated
+
+**Problema**: `datetime.utcnow()` deprecated e scheduled for removal
+
+**Correção**: Substituir por `datetime.now(timezone.utc)`
+
+**Arquivo**: `frontend/app.py`
+
+**Status**: [x] Concluído ✅
+
+### 18.2 Cache de habilitar_abas
+
+**Problema**: Query extra ao banco ao verificar permissões de aba
+
+**Correção**: Adicionar ao cached_user_info no context_processor
+
+**Arquivo**: `frontend/app.py` + `frontend/blueprints/helpers.py`
+
+**Status**: [x] Concluído ✅
