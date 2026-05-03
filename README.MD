@@ -732,7 +732,7 @@ O frontend estará disponível em: `http://localhost:5000`
 
 | Versão | Descrição |
 |--------|-----------|
-| v2.2.0 | Rate limiting em sessão, verificação is_user_active, CORS configurável, CASCADE deletes, cache context processor, variáveis de ambiente |
+| v2.2.0 | Rate limiting em sessão, verificação is_user_active, CORS configurável, CASCADE deletes, cache, variáveis de ambiente, NUMERIC precisão, FK CASCADE |
 | v2.1.0 | Sistema completo de paleta de cores por KPI |
 | v2.0.2 | Correções de consistência frontend vs backend (pressao/temperatura), documentação database/ |
 | v2.0.1 | Log de usuários no histórico (cadastro, role, permissões), visualizar senha |

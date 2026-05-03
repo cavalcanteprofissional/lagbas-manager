@@ -21,9 +21,9 @@ CREATE TABLE cilindro (
     data_compra DATE NOT NULL,
     data_inicio_consumo DATE,
     data_fim DATE,
-    gas_kg DECIMAL(5,2) DEFAULT 1.0,
-    litros_equivalentes DECIMAL(10,2) DEFAULT 956.0,
-    custo DECIMAL(10,2) DEFAULT 290.00,
+    gas_kg NUMERIC(6,2) DEFAULT 1.0,
+    litros_equivalentes NUMERIC(10,3) DEFAULT 956.0,
+    custo NUMERIC(10,2) DEFAULT 290.00,
     status VARCHAR(20) DEFAULT 'ativo',
     user_id UUID REFERENCES auth.users(id),
     created_at TIMESTAMP DEFAULT NOW()
@@ -33,7 +33,7 @@ CREATE TABLE cilindro (
 CREATE TABLE elemento (
     id SERIAL PRIMARY KEY,
     nome VARCHAR(100) NOT NULL,
-    consumo_lpm DECIMAL(5,2) NOT NULL,
+    consumo_lpm NUMERIC(5,2) NOT NULL,
     user_id UUID REFERENCES auth.users(id),
     created_at TIMESTAMP DEFAULT NOW()
 );
@@ -42,8 +42,8 @@ CREATE TABLE elemento (
 CREATE TABLE pressao (
     id SERIAL PRIMARY KEY,
     cilindro_id INTEGER REFERENCES cilindro(id) ON DELETE CASCADE,
-    pressao NUMERIC NOT NULL,
-    temperatura NUMERIC,
+    pressao NUMERIC(5,2) NOT NULL,
+    temperatura NUMERIC(5,2),
     data DATE NOT NULL,
     hora TIME NOT NULL,
     user_id UUID REFERENCES auth.users(id),
@@ -68,7 +68,7 @@ CREATE TABLE historico_log (
     tipo VARCHAR(20) NOT NULL,
     acao VARCHAR(20) NOT NULL,
     nome VARCHAR(100) NOT NULL,
-    user_id UUID REFERENCES auth.users(id),
+    user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
     created_at TIMESTAMP DEFAULT NOW()
 );
 
@@ -86,6 +86,7 @@ CREATE INDEX idx_amostra_elemento_id ON amostra(elemento_id);
 CREATE INDEX idx_amostra_data ON amostra(data);
 CREATE INDEX idx_perfil_id ON perfil(id);
 CREATE INDEX idx_perfil_role ON perfil(role);
+CREATE INDEX idx_perfil_role_ativo ON perfil(role, ativo);
 CREATE INDEX idx_pressao_user_id ON pressao(user_id);
 CREATE INDEX idx_pressao_cilindro_id ON pressao(cilindro_id);
 CREATE INDEX idx_pressao_data ON pressao(data);

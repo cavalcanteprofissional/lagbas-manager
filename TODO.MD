@@ -691,6 +691,37 @@ registros de `amostra` ficam órfãos.
 
 **Status**: [x] Não aplicável ✅
 
+---
+
+## Fase 15 - Correções Banco de Dados ✅ CONCLUÍDO
+
+### 15.1 NUMERIC Precisão
+
+**Correção**: Alterar tipos NUMERIC para precisão definida
+
+**SQL Executado**:
+- cilindro: gas_kg NUMERIC(6,2), litros_equivalentes NUMERIC(10,3), custo NUMERIC(10,2)
+- pressao: pressao NUMERIC(5,2), temperatura NUMERIC(5,2)
+- elemento: consumo_lpm NUMERIC(5,2)
+
+**Status**: [x] Concluído ✅
+
+### 15.2 Índice Composto
+
+**Correção**: Criar índice (role, ativo) em perfil
+
+**SQL Executado**: CREATE INDEX idx_perfil_role_ativo ON perfil(role, ativo);
+
+**Status**: [x] Concluído ✅
+
+### 15.3 FK Historico_log
+
+**Correção**: Adicionar CASCADE em historico_log.user_id
+
+**SQL Executado**: ALTER TABLE historico_log ADD FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE;
+
+**Status**: [x] Concluído ✅
+
 ### 12.2 CORS Excessivamente Permissivo (app.py:101-106)
 
 **Problema**: `Access-Control-Allow-Origin: "*"` permite requisições de qualquer domínio.
