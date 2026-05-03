@@ -863,3 +863,22 @@ login_manager.login_message_category = "warning"
 **Arquivo**: `frontend/app.py` + `frontend/blueprints/helpers.py`
 
 **Status**: [x] Concluído ✅
+
+---
+
+## Fase 19 - UX Aprimorada ✅ CONCLUÍDO
+
+### 19.1 Botão Voice Responsivo
+
+**Problema**: Botão muito grande em telas pequeñas (mobile)
+
+**Correção**: Ícone apenas em mobile, texto completo em desktop
+
+**Código**:
+```html
+<i class="bi bi-mic d-lg-none"></i><span class="d-none d-lg-inline"><i class="bi bi-mic"></i> Voice</span>
+```
+
+**Arquivo**: `templates/dashboard.html`
+
+**Status**: [x] Concluído ✅
