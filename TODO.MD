@@ -595,6 +595,31 @@ registros de `amostra` ficam órfãos.
 
 **Status**: [x] Concluído ✅
 
+---
+
+## Fase 21 - Otimização Queries Duplicadas ✅ CONCLUÍDO
+
+### 21.1 Pressão - Query Cilindro Duplicada
+
+**Problema**: 2 queries de cilindro (dropdown + map display)
+
+**Correção**: Reutilizar resultado único
+
+**Código**:
+```python
+# ANTES: 2 queries
+cilindro_response = get_admin_client().table("cilindro").select...
+cilindro_list_response = get_authenticated_client().table("cilindro").select...
+
+# DEPOIS: 1 query
+cilindro_list_response = get_authenticated_client().table("cilindro").select...
+cilindro_dict = {c.get("id"): c.get("codigo") for c in cilindro_list}
+```
+
+**Arquivo**: `frontend/blueprints/pressao.py`
+
+**Status**: [x] Concluído ✅
+
 ### 12.8 Erros de Syntax e Lógica (Fase Final)
 
 **Problemas encontrados**:

@@ -1,6 +1,6 @@
 # LabGas Manager
 
-**Versão: 2.2.4** (Branch: master)
+**Versão: 2.2.5** (Branch: master)
 
 Dashboard para gestão de cilindro de gás e elementos analisados em laboratório de química, utilizando **Flask** com **Jinja2** para o frontend web e **Supabase** como banco de dados PostgreSQL.
 
@@ -761,6 +761,10 @@ O frontend estará disponível em: `http://localhost:5000`
 - **Correção pressao.py**: Renomeado função `list()` → `pressao_list()`
   - Resolve TypeError: list() sobrescrevia builtin
 
+- **Otimização Pressão**: Remove query duplicada de cilindro
+  - Reutiliza query única para dropdown e map display
+  - Redução de 50% na página
+
 ---
 
 ## Novidades v2.2.1
@@ -778,6 +782,7 @@ O frontend estará disponível em: `http://localhost:5000`
 
 | Versão | Descrição |
 |--------|-----------|
+| v2.2.5 | Otimização query cilindro em Pressão |
 | v2.2.4 | Otimização N+1 admin + fix pressao.list() |
 | v2.2.3 | Botão Voice responsivo (ícone mobile, texto desktop) |
 | v2.2.2 | datetime.now(timezone.utc) + cache de habilitar_abas |
