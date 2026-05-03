@@ -60,7 +60,7 @@ def list():
                 if gas_kg_val < 0 or custo_val < 0:
                     raise ValueError("Valores não podem ser negativos")
             except ValueError as e:
-                flash(f"Valores inválidos: {str(e)}", "danger")
+                flash(f"Valores inválidos.", "danger")
                 return redirect(url_for("cilindro.list"))
             
             if not admin:
@@ -126,7 +126,7 @@ def list():
                 if gas_kg_val < 0 or custo_val < 0:
                     raise ValueError("Valores não podem ser negativos")
             except ValueError as e:
-                flash(f"Valores inválidos: {str(e)}", "danger")
+                flash(f"Valores inválidos.", "danger")
                 return redirect(url_for("cilindro.list"))
             
             try:
@@ -237,7 +237,7 @@ def list():
                 if not_owned:
                     flash(f"Alguns cilindos não foram excluídos (não pertencem a você): {', '.join(not_owned)}", "warning")
             except Exception as e:
-                flash(f"Erro ao excluir cilindos: {str(e)}", "danger")
+                flash(formatar_erro_supabase(str(e), "excluir cilindros"), "danger")
             
             return redirect(url_for("cilindro.list"))
     

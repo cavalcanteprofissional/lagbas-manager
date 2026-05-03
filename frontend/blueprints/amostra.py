@@ -160,7 +160,7 @@ def list():
                 registrar_historico("amostra", "excluido", nome_amostra, user_id)
                 flash("Amostra excluída com sucesso!", "success")
             except Exception as e:
-                flash(f"Erro ao excluir amostra: {str(e)}", "danger")
+                flash(formatar_erro_supabase(str(e), "excluir amostra"), "danger")
             
             return redirect(url_for("amostra.list"))
         
@@ -202,7 +202,7 @@ def list():
                 if not_owned:
                     flash(f"{len(not_owned)} amostra(s) não foram excluídas (não pertencem a você)", "warning")
             except Exception as e:
-                flash(f"Erro ao excluir amostras: {str(e)}", "danger")
+                flash(formatar_erro_supabase(str(e), "excluir amostras"), "danger")
             
             return redirect(url_for("amostra.list"))
     

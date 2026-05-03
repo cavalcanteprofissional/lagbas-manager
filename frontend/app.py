@@ -60,7 +60,8 @@ def load_user(user_id):
     return None
 
 
-INACTIVITY_TIMEOUT = timedelta(minutes=10)
+INACTIVITY_TIMEOUT_MINUTES = int(os.getenv("INACTIVITY_TIMEOUT_MINUTES", "10"))
+INACTIVITY_TIMEOUT = timedelta(minutes=INACTIVITY_TIMEOUT_MINUTES)
 
 PUBLIC_ENDPOINTS = [
     'auth.login',
@@ -324,7 +325,7 @@ def perfil():
                     supabase.table("perfil").update({"nome": nome}).eq("id", user_id).execute()
                     flash("Perfil atualizado com sucesso!", "success")
             except Exception as e:
-                flash(f"Erro ao atualizar perfil: {str(e)}", "danger")
+                flash("Erro ao atualizar perfil.", "danger")
             
             return redirect(url_for("perfil"))
 

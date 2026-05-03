@@ -79,7 +79,7 @@ def list():
             
             data = {
                 "nome": nome,
-                "consumo_lpm": float(consumo_lpm) if consumo_lpm else 0
+                "consumo_lpm": safe_float(consumo_lpm, 0)
             }
             
             if not admin:
@@ -119,7 +119,7 @@ def list():
                 registrar_historico("elemento", "excluido", elemento_nome, user_id)
                 flash("Elemento excluído com sucesso!", "success")
             except Exception as e:
-                flash(f"Erro ao excluir elemento: {str(e)}", "danger")
+                flash(formatar_erro_supabase(str(e), "excluir elemento"), "danger")
             
             return redirect(url_for("elemento.list"))
         
@@ -166,7 +166,7 @@ def list():
                 if not_owned:
                     flash(f"Alguns elementos não foram excluídos (não pertencem a você): {', '.join(not_owned)}", "warning")
             except Exception as e:
-                flash(f"Erro ao excluir elementos: {str(e)}", "danger")
+                flash(formatar_erro_supabase(str(e), "excluir elementos"), "danger")
             
             return redirect(url_for("elemento.list"))
     

@@ -43,7 +43,7 @@ def list():
                     flash("Pressão deve estar entre 0 e 300 bar", "danger")
                     return redirect(url_for("pressao.list"))
             except ValueError as e:
-                flash(f"Pressão inválida: {str(e)}", "danger")
+                flash("Pressão inválida.", "danger")
                 return redirect(url_for("pressao.list"))
             
             temp_val = None
@@ -54,7 +54,7 @@ def list():
                         flash("Temperatura deve estar entre -50°C e 100°C", "danger")
                         return redirect(url_for("pressao.list"))
                 except ValueError as e:
-                    flash(f"Temperatura inválida: {str(e)}", "danger")
+                    flash("Temperatura inválida.", "danger")
                     return redirect(url_for("pressao.list"))
             
             try:
@@ -120,7 +120,7 @@ def list():
                     flash("Pressão deve estar entre 0 e 300 bar", "danger")
                     return redirect(url_for("pressao.list"))
             except ValueError as e:
-                flash(f"Pressão inválida: {str(e)}", "danger")
+                flash("Pressão inválida.", "danger")
                 return redirect(url_for("pressao.list"))
             
             temp_val = None
@@ -131,7 +131,7 @@ def list():
                         flash("Temperatura deve estar entre -50°C e 100°C", "danger")
                         return redirect(url_for("pressao.list"))
                 except ValueError as e:
-                    flash(f"Temperatura inválida: {str(e)}", "danger")
+                    flash("Temperatura inválida.", "danger")
                     return redirect(url_for("pressao.list"))
             
             try:
@@ -239,7 +239,7 @@ def list():
                 if not_owned:
                     flash(f"Alguns registros não foram excluídos (não pertencem a você): {', '.join(not_owned)}", "warning")
             except Exception as e:
-                flash(f"Erro ao excluir registros: {str(e)}", "danger")
+                flash(formatar_erro_supabase(str(e), "excluir registros"), "danger")
             
             return redirect(url_for("pressao.list"))
     

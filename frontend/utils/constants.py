@@ -1,10 +1,11 @@
 # Constants for the application
+import os
 
-ITEMS_PER_PAGE = 10
+ITEMS_PER_PAGE = int(os.getenv("ITEMS_PER_PAGE", "10"))
 
-LITROS_EQUIVALENTES_KG = 956.0
-GAS_KG_DEFAULT = 1.0
-CUSTO_DEFAULT = 290.00
+LITROS_EQUIVALENTES_KG = float(os.getenv("LITROS_EQUIVALENTES_KG", "956.0"))
+GAS_KG_DEFAULT = float(os.getenv("GAS_KG_DEFAULT", "1.0"))
+CUSTO_DEFAULT = float(os.getenv("CUSTO_DEFAULT", "290.00"))
 
 CILINDRO_STATUS = ["ativo", "esgotado"]
 

@@ -113,7 +113,7 @@ def login():
                         flash("Perfil criado com sucesso!", "success")
 
                 except Exception as e:
-                    flash(f"Erro ao criar/atualizar perfil: {str(e)}", "warning")
+                    flash("Erro ao criar/atualizar perfil.", "warning")
 
                 user = User(response.user.id, response.user.email, session["user_data"])
                 login_user(user, remember=True, duration=timedelta(days=7))

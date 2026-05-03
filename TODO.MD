@@ -609,6 +609,52 @@ registros de `amostra` ficam órfãos.
 
 **Status**: [x] Concluído ✅
 
+---
+
+## Fase 13 - Padronização e Melhorias ⏳
+
+### 13.1 tratamento de Erros
+
+**Problema**: Diversos arquivos ainda usam `str(e)` diretamente ao invés de `formatar_erro_supabase()`.
+
+**Correções**: elemento.py, amostra.py, pressao.py, cilindro.py, auth.py, app.py
+
+**Status**: [x] Concluído ✅
+
+### 13.2 elemento.py safe_float()
+
+**Problema**: Usa `float()` diretamente em vez de `safe_float()` (linha 82).
+
+**Correção**: Substituído por safe_float()
+
+**Status**: [x] Concluído ✅
+
+### 13.3 historico.py Otimização
+
+**Problema**: Duas consultas separadas ao banco (select e count).
+
+**Decisão**: NÃO necessário - Supabase Python client não suporta count na mesma query
+
+**Status**: [x] Não aplicável ✅
+
+### 13.4 Variáveis de Ambiente
+
+**Problema**: Valores hardcoded (INACTIVITY_TIMEOUT, ITEMS_PER_PAGE).
+
+**Correção**: now usa os.getenv() com valores padrão
+- INACTIVITY_TIMEOUT_MINUTES
+- ITEMS_PER_PAGE
+
+**Status**: [x] Concluído ✅
+
+### 13.5 Remover Imports Locais
+
+**Problema**: Múltiplos `from flask import current_app` local.
+
+**Decisão**: NÃO necessário - necessário em contexto de rotas
+
+**Status**: [x] Não aplicável ✅
+
 ### 12.2 CORS Excessivamente Permissivo (app.py:101-106)
 
 **Problema**: `Access-Control-Allow-Origin: "*"` permite requisições de qualquer domínio.
