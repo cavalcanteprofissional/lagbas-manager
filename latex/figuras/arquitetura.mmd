@@ -1,22 +1,78 @@
-flowchart TD
-    subgraph Cliente["Navegador Web"]
-        UI[Interface Jinja2]
+flowchart TB
+    subgraph Cliente["Navegador (Cliente)"]
+        direction TB
+        Browser["Navegador<br/>Bootstrap 5 + Jinja2"]
     end
-    
-    subgraph Servidor["Servidor Flask"]
-        Auth[Autenticação JWT]
-        API[API REST]
-        Blueprints[Blueprints MVC]
+
+    subgraph Servidor["Servidor (Flask - Vercel)"]
+        direction LR
+        subgraph Blueprints["Blueprints"]
+            Auth["auth.py<br/>Login, Register<br/>Logout"]
+            Cilindro["cilindro.py<br/>CRUD Cilindros"]
+            Elemento["elemento.py<br/>CRUD Elementos"]
+            Amostra["amostra.py<br/>CRUD Amostras"]
+            Pressao["pressao.py<br/>CRUD Pressão"]
+            Historico["historico.py<br/>Histórico"]
+            Admin["admin.py<br/>Administração"]
+        end
+        
+        subgraph Utils["Utils"]
+            SupabaseClient["supabase_utils.py<br/>Cliente Supabase"]
+            Validators["validators.py<br/>Validações"]
+            Constants["constants.py<br/>Constantes"]
+        end
+        
+        subgraph Middleware["Middleware"]
+            CSRF["CSRF Protection<br/>flask-wtf"]
+            Limiter["Rate Limiting<br/>flask-limiter"]
+            LoginManager["Flask-Login<br/>Autenticação"]
+        end
     end
-    
-    subgraph Banco["Supabase"]
-        DB[(PostgreSQL)]
-        RLS[Políticas RLS]
+
+    subgraph Supabase["Supabase (PostgreSQL)"]
+        direction LR
+        subgraph Tabelas["Tabelas"]
+            AuthDB["auth.users<br/>Autenticação"]
+            Perfil["perfil"]
+            CilindroTB["cilindro"]
+            ElementoTB["elemento"]
+            AmostraTB["amostra"]
+            PressaoTB["pressao"]
+            HistoricoTB["historico_log"]
+        end
+        
+        subgraph Seguranca["Segurança"]
+            RLS["Row Level Security<br/>Políticas RLS"]
+        end
     end
+
+    Browser -->|HTTP| Servidor
+    Servidor --> Auth
+    Servidor --> Cilindro
+    Servidor --> Elemento
+    Servidor --> Amostra
+    Servidor --> Pressao
+    Servidor --> Historico
+    Servidor --> Admin
     
-    UI -->|HTTP| Auth
-    Auth --> Blueprints
-    Blueprints -->|API REST| API
-    API -->|Consulta SQL| DB
-    API -->|HTML/CSS/JS| UI
-    RLS -.->|Segurança| DB
+    Auth --> LoginManager
+    Cilindro --> SupabaseClient
+    Elemento --> SupabaseClient
+    Amostra --> SupabaseClient
+    Pressao --> SupabaseClient
+    Historico --> SupabaseClient
+    Admin --> SupabaseClient
+    
+    SupabaseClient -->|Consulta SQL| AuthDB
+    SupabaseClient --> Perfil
+    SupabaseClient --> CilindroTB
+    SupabaseClient --> ElementoTB
+    SupabaseClient --> AmostraTB
+    SupabaseClient --> PressaoTB
+    SupabaseClient --> HistoricoTB
+    
+    Servidor --> CSRF
+    Servidor --> Limiter
+    Servidor --> LoginManager
+    
+    RLS -.->|Verifica| Tabelas

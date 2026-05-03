@@ -1,0 +1,75 @@
+flowchart TB
+    subgraph Login["Login/Registro"]
+        direction TB
+        Auth["auth.py<br/>Autenticação JWT"]
+    end
+
+    subgraph Dashboard["Dashboard"]
+        direction TB
+        Dash["Dashboard<br/>Página Inicial"]
+    end
+
+    subgraph Sidebar["Menu Lateral (Sidebar)"]
+        direction TB
+        Side["Sidebar<br/>Menu de Navegação"]
+    end
+
+    subgraph Permissao["Verificação de Permissão"]
+        direction TB
+        CheckAba["pode_acessar_aba(aba)"]
+        IsAdmin["is_admin()"]
+    end
+
+    subgraph AbasControladas["Abas com Controle"]
+        direction TB
+        Cil["Cilindros"]
+        Elem["Elementos"]
+        Amost["Amostras"]
+        Press["Pressão"]
+        Hist["Histórico"]
+    end
+
+    subgraph AbasLivres["Abas de Acesso Livre"]
+        direction TB
+        Perf["Perfil"]
+    end
+
+    subgraph Admin["Área Administrativa"]
+        direction TB
+        AdminPanel["Admin<br/>Apenas role=admin"]
+    end
+
+    subgraph Resultado["Resultado"]
+        direction TB
+        Show["Aba Exibida"]
+        Block["Acesso Bloqueado (403)"]
+    end
+
+    Auth -->|Autenticado| Dashboard
+    Dashboard --> Sidebar
+    
+    Sidebar --> CheckAba
+    
+    CheckAba --> IsAdmin
+    
+    IsAdmin -->|Sim| Show
+    IsAdmin -->|Não| Cil
+    IsAdmin -->|Não| Elem
+    IsAdmin -->|Não| Amost
+    IsAdmin -->|Não| Press
+    IsAdmin -->|Não| Hist
+    
+    Cil -.-> CheckAba
+    Elem -.-> CheckAba
+    Amost -.-> CheckAba
+    Press -.-> CheckAba
+    Hist -.-> CheckAba
+    
+    CheckAba -->|Verdadeiro| Show
+    CheckAba -->|Falso| Block
+    
+    Show --> Perf
+    Show --> AdminPanel
+    
+    style Show fill:#90EE90
+    style Block fill:#FFB6C1

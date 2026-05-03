@@ -1,0 +1,33 @@
+sequenceDiagram
+    participant User as Usuário
+    participant Browser as Navegador
+    participant Flask as Flask App
+    participant Supabase as Supabase
+    participant RLS as RLS Policies
+
+    User->>Browser: Acessa aplicação
+    Browser->>Flask: Requisição HTTP
+    Flask->>Flask: Valida CSRF Token
+    
+    alt Usuário não autenticado
+        Flask->>Supabase: Autentica usuário (JWT)
+        Supabase-->>Flask: Retorna sessão
+        Flask-->>Browser: Redireciona para login
+    else Usuário autenticado
+        Note over Flask: Sessão ativa
+    end
+    
+    Note over Flask,Supabase: Operações CRUD
+    Flask->>Supabase: SELECT/INSERT/UPDATE/DELETE
+    Supabase->>RLS: Verifica políticas
+    RLS-->>Supabase: Permite/Bloqueia
+    
+    alt Acesso permitido
+        Supabase-->>Flask: Retorna dados
+    else Acesso negado
+        Supabase-->>Flask: Erro 403 Forbidden
+        Flask-->>Browser: Página de erro
+    end
+    
+    Flask-->>Browser: Renderiza Template Jinja2
+    Browser-->>User: Exibe página

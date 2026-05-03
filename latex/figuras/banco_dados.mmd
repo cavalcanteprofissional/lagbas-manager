@@ -1,0 +1,73 @@
+erDiagram
+    PERFIL ||--o{ CILINDRO : "possui"
+    PERFIL ||--o{ ELEMENTO : "possui"
+    PERFIL ||--o{ AMOSTRA : "possui"
+    PERFIL ||--o{ PRESSAO : "possui"
+    PERFIL ||--o{ HISTORICO_LOG : "registra"
+    
+    CILINDRO ||--o{ AMOSTRA : "usado_em"
+    CILINDRO ||--o{ PRESSAO : "medido_em"
+    ELEMENTO ||--o{ AMOSTRA : "analisado_em"
+
+    PERFIL {
+        uuid id PK "ID do usuário (ref auth.users)"
+        varchar role "admin ou usuario"
+        boolean ativo "Usuário ativo?"
+        varchar nome "Nome do usuário"
+        varchar email "Email do usuário"
+        jsonb habilitar_abas "Permissões de acesso"
+        timestamptz criado_em "Data de criação"
+    }
+
+    CILINDRO {
+        int id PK "ID automático"
+        varchar codigo "Código único (CIL-XXX)"
+        date data_compra "Data de compra"
+        date data_inicio_consumo "Início de uso"
+        date data_fim "Fim de uso"
+        decimal gas_kg "Quantidade de gás em kg"
+        decimal litros_equivalentes "Litros equivalentes"
+        decimal custo "Custo do cilindro"
+        varchar status "ativo ou esgotado"
+        uuid user_id FK "Usuário dono"
+        timestamp created_at "Data de criação"
+    }
+
+    ELEMENTO {
+        int id PK "ID automático"
+        varchar nome "Nome do elemento"
+        decimal consumo_lpm "Consumo em L/min"
+        uuid user_id FK "Usuário dono"
+        timestamp created_at "Data de criação"
+    }
+
+    AMOSTRA {
+        int id PK "ID automático"
+        date data "Data da análise"
+        varchar tempo_chama "Tempo de chama (HH:MM:SS)"
+        int cilindro_id FK "Cilindro usado"
+        int elemento_id FK "Elemento analisado"
+        int quantidade_amostras "Quantidade"
+        uuid user_id FK "Usuário dono"
+        timestamp created_at "Data de criação"
+    }
+
+    PRESSAO {
+        int id PK "ID automático"
+        int cilindro_id FK "Cilindro medido"
+        numeric pressao "Pressão em bar"
+        numeric temperatura "Temperatura em °C"
+        date data "Data da medição"
+        time hora "Hora da medição"
+        uuid user_id FK "Usuário dono"
+        timestamp created_at "Data de criação"
+    }
+
+    HISTORICO_LOG {
+        int id PK "ID automático"
+        varchar tipo "cilindro, elemento, amostra, pressao, perfil"
+        varchar acao "criado, atualizado, excluido"
+        varchar nome "Nome do item"
+        uuid user_id FK "Usuário que executou"
+        timestamp created_at "Data/hora da ação"
+    }

@@ -56,7 +56,7 @@
 \maketitle
 
 \begin{abstract}
-O presente trabalho descreve o desenvolvimento e implementação de um sistema web para gestão e rastreabilidade de dados em laboratórios químicos, fundamentado nos princípios das Boas Práticas de Laboratório (BPL). O sistema foi desenvolvido utilizando Flask como framework backend, Jinja2 para templating, Supabase como banco de dados PostgreSQL e tecnologias de autenticação baseadas em JWT. A aplicação contempla o registro completo de cilindros, elementos analisados, amostras processadas e medições de pressão, permitindo o acompanhamento do ciclo de vida completo dos insumos laboratoriais. O dashboard analítico fornece métricas essenciais para o controle de qualidade, incluindo eficiência de cilindros por elemento, consumo por tempo de chama e frequência de análise por elemento. Os resultados demonstram que a digitalização dos processos de coleta de dados, aliados às políticas de segurança Row Level Security (RLS) e controle de acesso baseado em papéis, atende aos requisitos de rastreabilidade e integridade de dados exigidos pela literatura científica e regulamentações aplicáveis.
+O presente trabalho descreve o desenvolvimento e implementação de um sistema web para gestão e rastreabilidade de dados em laboratórios químicos, fundamentado nos princípios das Boas Práticas de Laboratório (BPL). O sistema foi desenvolvido utilizando Flask como framework backend, Jinja2 para templating, Supabase como banco de dados PostgreSQL e tecnologias de autenticação baseadas em JWT. A aplicação contempla o registro completo de cilindros, elementos analisados, amostras processadas e medições de pressão, permitindo o acompanhamento do ciclo de vida completo dos insumos laboratoriais. O dashboard analítico fornece métricas essenciais para o controle de qualidade, incluindo eficiência de cilindro por elemento, consumo por tempo de chama e frequência de análise por elemento. Os resultados demonstram que a digitalização dos processos de coleta de dados, aliados às políticas de segurança Row Level Security (RLS) e controle de acesso baseado em papéis, atende aos requisitos de rastreabilidade e integridade de dados exigidos pela literatura científica e regulamentações aplicáveis.
 
 \textbf{Palavras-chave:} Boas Práticas de Laboratório; Sistema de Gestão de Laboratórios; Rastreabilidade; Flask; Supabase; Desenvolvimento Web.
 \end{abstract}
@@ -143,7 +143,7 @@ O sistema \textit{LabGas Manager} foi desenvolvido seguindo uma arquitetura MVC 
 
 \begin{figure}[h!]
 \centering
-\includegraphics[width=0.9\textwidth]{figuras/figura1_arquitetura}
+\includegraphics[width=0.9\textwidth]{figuras/arquitetura}
 \caption{Arquitetura do Sistema LabGas Manager}
 \label{fig:arquitetura}
 \end{figure}
@@ -175,8 +175,6 @@ O sistema é composto pelos seguintes módulos principais:
 \subsection{Fluxo de Abas do Sistema}
 
 O sistema \textit{LabGas Manager} é organizado em um estrutura de abas que proporciona navegação intuitiva e acesso modular às funcionalidades. Cada aba representa um módulo específico do sistema, permitindo aos usuários acessar apenas as ferramentas relevantes às suas atividades.
-
-%\subsection{3.2.1 Abas Disponíveis}
 
 O sistema organiza-se em \textbf{7 áreas funcionais} acessíveis via menu lateral, sendo \textbf{5 delas} passíveis de controle de permissão pelo administrador, e \textbf{2 áreas} com acesso livre a todos os usuários autenticados.
 
@@ -217,18 +215,16 @@ O sistema organiza-se em \textbf{7 áreas funcionais} acessíveis via menu later
 
 \textbf{Nota:} A aba Admin é acessível exclusivamente para usuários com perfil de administrador, sendo controlada pela verificação de \texttt{role = 'admin'}, não pelas permissões de abas.
 
-%\subsection{3.2.2 Fluxo de Navegação}
-
-A navegação entre as abas do sistema é realizada através de um \textbf{menu lateral (sidebar)}, que exibe dinamicamente apenas as abas permitidas para o usuário logado. O Dashboard funciona como página inicial e ponto central de acesso.
+A navegação entre as abas do sistema é realizadas através de um \textbf{menu lateral (sidebar)}, que exibe dinamicamente apenas as abas permitidas para o usuário logado. O Dashboard funciona como página inicial e ponto central de acesso.
 
 \begin{figure}[h!]
 \centering
-\includegraphics[width=0.9\textwidth]{figuras/figura2_navegacao}
+includegraphics[width=0.9\textwidth]{figuras/navegacao}
 \caption{Fluxo de Navegação entre Abas do Sistema}
 \label{fig:navegacao}
 \end{figure}
 
-\textbf{Descrição do Fluxo: }
+\textbf{Descrição do Fluxo:}
 
 \begin{enumerate}
 \item O usuário autenticado acessa o sistema pelo \textbf{Dashboard} (página inicial)
@@ -244,15 +240,23 @@ A implementação técnica utiliza duas funções principais:
 \item \texttt{get\_habilitar\_abas(user\_id)}: Retorna o dicionário completo de permissões do usuário
 \end{itemize}
 
-%\subsection{3.2.3 Sistema de Controle de Permissões}
+\subsubsubsection{Sistema de Controle de Permissões}
 
 O sistema implementa um \textbf{controle de acesso granular} que permite ao administrador gerenciar quais abas cada usuário pode acessar. Esta funcionalidade atende aos requisitos de segurança e confidencialidade das Boas Práticas de Laboratório, garantindo que cada usuário visualize apenas as funcionalidades relevantes às suas atividades.
 
 Apenas 5 abas possuem sistema de controle de permissão:
 
-\lstinputlisting[language=JSON, caption=JSON de Permissões]{codigo/permissoes.json}
+\begin{lstlisting}[language=JSON, caption=JSON de Permissões]
+{
+    "cilindro": true,
+    "pressao": true,
+    "elemento": true,
+    "amostra": true,
+    "historico": true
+}
+\end{lstlisting}
 
-%\textbf{Características do Controle de Permissões:}
+\textbf{Características do Controle de Permissões:}
 
 \begin{enumerate}
 \item \textbf{Acesso padrão (default):} Todas as 5 abas controladas são liberadas automaticamente para novos usuários (\texttt{true} por padrão)
@@ -285,7 +289,7 @@ def listar_cilindros():
 \item \textbf{Visualização no perfil:} O usuário pode visualizar suas permissões atuais na aba Perfil
 \end{enumerate}
 
-%\textbf{Implementação Técnica:}
+\textbf{Implementação Técnica:}
 
 O sistema utiliza duas funções principais definidas em \texttt{blueprints/helpers.py}:
 
@@ -302,8 +306,6 @@ def get_habilitar_abas(user_id):
     # Busca no banco de dados o JSON de permissões
     return {aba: habilitar_abas.get(aba, True) for aba in ABAS_DISPONIVEIS}
 \end{lstlisting}
-
-%\textbf{Tabela de Resumo:}
 
 \begin{table}[h!]
 \centering
@@ -348,6 +350,54 @@ O modelo de dados foi implementado no PostgreSQL (via Supabase) com as seguintes
 
 As tabelas \texttt{cilindro}, \texttt{elemento}, \texttt{amostra} e \texttt{pressao} contêm o campo \texttt{user\_id} que estabelece o vínculo com o usuário proprietário do registro, garantindo o isolamento de dados entre diferentes usuários do sistema.
 
+\subsubsubsection{Índices do Banco de Dados}
+
+\begin{table}[h!]
+\centering
+\caption{Índices do Banco de Dados}
+\label{tab:indices}
+\begin{tabular}{@{}lll@{}}
+\toprule
+\textbf{Tabela} & \textbf{Índice} & \textbf{Coluna(s)} \\
+\midrule
+cilindro & idx\_cilindro\_user\_id & user_id \\
+cilindro & idx\_cilindro\_codigo & codigo \\
+elemento & idx\_elemento\_user\_id & user_id \\
+elemento & idx\_elemento\_nome & nome \\
+amostra & idx\_amostra\_user\_id & user_id \\
+amostra & idx\_amostra\_cilindro\_id & cilindro_id \\
+amostra & idx\_amostra\_elemento\_id & elemento_id \\
+amostra & idx\_amostra\_data & data \\
+pressao & idx\_pressao\_user\_id & user_id \\
+pressao & idx\_pressao\_cilindro\_id & cilindro_id \\
+pressao & idx\_pressao\_data & data \\
+historico\_log & idx\_historico\_log\_user\_id & user_id \\
+historico\_log & idx\_historico\_log\_tipo & tipo \\
+historico\_log & idx\_historico\_log\_created\_at & created\_at \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsubsubsection{Políticas RLS}
+
+\begin{table}[h!]
+\centering
+\caption{Políticas RLS (Row Level Security)}
+\label{tab:rls}
+\begin{tabular}{@{}llll@{}}
+\toprule
+\textbf{Tabela} & \textbf{SELECT} & \textbf{INSERT} & \textbf{UPDATE/DELETE} \\
+\midrule
+cilindro & Público & Próprio usuário & Próprio usuário \\
+elemento & Público & Próprio usuário & Próprio usuário \\
+amostra & Público & Próprio usuário & Próprio usuário \\
+perfil & Próprio usuário & Próprio usuário & Próprio usuário \\
+pressao & Público & Próprio usuário & Próprio usuário \\
+historico\_log & Público & Admin (service\_role) & - \\
+\bottomrule
+\end{tabular}
+\end{table}
+
 \subsection{Controle de Segurança e Auditoria}
 
 O sistema implementa múltiplas camadas de segurança para proteção dos dados e conformidade com requisitos de integridade:
@@ -360,8 +410,6 @@ O sistema implementa múltiplas camadas de segurança para proteção dos dados 
 \item \textbf{Validação de Entrada} - Sanitização e validação de todos os dados recebidos
 \item \textbf{Expiração de Sessão} - Sessões expiram após 10 minutos de inatividade
 \end{enumerate}
-
-%\subsubsection{3.3.1 Sistema de Auditoria e Registro de Log}
 
 O sistema possui um módulo completo de auditoria que registra todas as operações realizadas, garantindo a rastreabilidade exigida pelas Boas Práticas de Laboratório. A tabela \texttt{historico\_log} armazena os seguintes campos:
 
@@ -382,7 +430,7 @@ O sistema possui um módulo completo de auditoria que registra todas as operaç�
 \end{tabular}
 \end{table}
 
-%\textbf{Eventos Registrados por Módulo:}
+\textbf{Eventos Registrados por Módulo:}
 
 \begin{table}[h!]
 \centering
@@ -401,7 +449,7 @@ Pressão & Criado, atualizado, excluido \\
 \end{tabular}
 \end{table}
 
-%\textbf{Log de Eventos de Usuários:}
+\textbf{Log de Eventos de Usuários:}
 
 O sistema registra automaticamente os seguintes eventos relacionados a usuários:
 
@@ -472,8 +520,6 @@ O dashboard desenvolvido apresenta métricas agregadas para suporte à gestão e
 \textbf{Descrição:} Métrica que relaciona a quantidade de amostras processadas com o consumo de gás, permitindo identificar cilindro com melhor desempenho.
 
 \textbf{Cálculo:} Esta métrica identifica quais combinações de cilindro × elemento produzem mais amostras, permitindo otimizar o uso dos recursos e identificar padrões de consumo.
-
-%\textbf{Implementação Técnica:}
 
 As métricas são calculadas dinamicamente a partir dos dados armazenados, utilizando consultas SQL otimizadas com agregação e filtros. O sistema implementa cache de 5 minutos para reduzir a carga no banco de dados e melhorar a experiência do usuário.
 
@@ -551,10 +597,9 @@ A conformidade com os princípios das Boas Práticas de Laboratório foi verific
 \item Implementação de módulos adicionais para gestão de reagentes e controle de qualidade interno
 \end{itemize}
 
-O código fonte do sistema encontra-se disponível em repositório público: 
-\textbf{https://github.com/cavalcanteprofissional/lagbas-manager}
+O código fonte do sistema encontra-se disponível em repositório público: \textbf{https://github.com/cavalcanteprofessional/labgas-manager}
 
-允许 colaborações e customizações pela comunidade acadêmica.
+O sistema está disponível para colaborações e customizações pela comunidade acadêmica.
 
 %% Referências
 \begin{thebibliography}{99}
