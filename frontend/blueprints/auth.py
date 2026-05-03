@@ -4,30 +4,12 @@ from flask_login import login_user, logout_user, current_user
 from datetime import datetime, timedelta
 import jwt
 import logging
-import time
 
 from utils.supabase_utils import get_supabase_client, get_admin_client
-from blueprints.helpers import registrar_historico
+from blueprints.helpers import registrar_historico, is_user_active
 
 auth_bp = Blueprint('auth', __name__)
 logger = logging.getLogger(__name__)
-
-_rate_limit_storage = {}
-
-
-def check_rate_limit(key, limit=5, window=60):
-    """Simple rate limiting check"""
-    now = time.time()
-    if key not in _rate_limit_storage:
-        _rate_limit_storage[key] = []
-    
-    _rate_limit_storage[key] = [t for t in _rate_limit_storage[key] if now - t < window]
-    
-    if len(_rate_limit_storage[key]) >= limit:
-        return False
-    
-    _rate_limit_storage[key].append(now)
-    return True
 
 
 class User:
@@ -50,7 +32,6 @@ class User:
 
 
 def generate_jwt_token(user_id, secret_key):
-    from datetime import datetime, timedelta
     payload = {
         "user_id": user_id,
         "exp": datetime.utcnow() + timedelta(hours=24),
@@ -64,11 +45,17 @@ def login():
     if current_user.is_authenticated:
         return redirect(url_for("dashboard"))
 
-    if request.method == "POST":
-        client_ip = request.remote_addr
-        if not check_rate_limit(f"login:{client_ip}", limit=5, window=60):
-            flash("Muitas tentativas de login. Tente novamente em 1 minuto.", "danger")
+    login_blocked_until = session.get("login_blocked_until")
+    if login_blocked_until:
+        if datetime.utcnow().isoformat() < login_blocked_until:
+            remaining = 60  # segundos大致
+            flash(f"Login bloqueado. Tente novamente em {remaining} segundos.", "danger")
             return redirect(url_for("auth.login"))
+        else:
+            session.pop("login_blocked_until", None)
+
+    if request.method == "POST":
+        login_attempts = session.get("login_attempts", 0)
         
         email = request.form.get("email")
         password = request.form.get("password")
@@ -96,6 +83,12 @@ def login():
                 session["supabase_token"] = response.session.access_token
                 session["jwt_token"] = generate_jwt_token(response.user.id, secret_key)
                 session.permanent = True
+                
+                if not is_user_active(response.user.id):
+                    session.clear()
+                    flash("Usuário desativado. Contacte o administrador.", "danger")
+                    return redirect(url_for("auth.login"))
+                
                 session["user_data"] = {
                     "id": response.user.id,
                     "email": response.user.email,
@@ -132,6 +125,11 @@ def login():
             error_str = str(e)
             if "Invalid login credentials" in error_str:
                 flash("Email ou senha inválidos.", "danger")
+                login_attempts = session.get("login_attempts", 0) + 1
+                session["login_attempts"] = login_attempts
+                if login_attempts >= 5:
+                    session["login_blocked_until"] = (datetime.utcnow() + timedelta(minutes=1)).isoformat()
+                    session.pop("login_attempts", None)
             elif "rate limit" in error_str.lower():
                 flash("Muitas tentativas de login. Tente novamente em 1 minuto.", "danger")
             else:
@@ -146,10 +144,13 @@ def register():
         return redirect(url_for("dashboard"))
 
     if request.method == "POST":
-        client_ip = request.remote_addr
-        if not check_rate_limit(f"register:{client_ip}", limit=3, window=60):
-            flash("Muitas tentativas de registro. Tente novamente em 1 minuto.", "danger")
-            return redirect(url_for("auth.register"))
+        register_blocked_until = session.get("register_blocked_until")
+        if register_blocked_until:
+            if datetime.utcnow().isoformat() < register_blocked_until:
+                flash("Registro bloqueado. Tente novamente em 1 minuto.", "danger")
+                return redirect(url_for("auth.register"))
+            else:
+                session.pop("register_blocked_until", None)
         
         email = request.form.get("email")
         password = request.form.get("password")
@@ -215,8 +216,16 @@ def register():
                 flash("Muitas tentativas de registro. Tente novamente em 1 minuto.", "danger")
             elif "User already registered" in error_str:
                 flash("Este email já está cadastrado.", "danger")
+            elif "User already registered" in error_str:
+                flash("Este email já está cadastrado.", "danger")
             else:
                 flash(f"Erro no registro: {error_str}", "danger")
+                
+            register_attempts = session.get("register_attempts", 0) + 1
+            session["register_attempts"] = register_attempts
+            if register_attempts >= 3:
+                session["register_blocked_until"] = (datetime.utcnow() + timedelta(minutes=1)).isoformat()
+                session.pop("register_attempts", None)
 
     return render_template("register.html")
 

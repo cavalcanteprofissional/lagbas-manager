@@ -693,10 +693,46 @@ O frontend estará disponível em: `http://localhost:5000`
 
 ---
 
+## Novidades v2.2.0
+
+### Segurança e Melhorias
+
+- **Rate Limiting Baseado em Sessão**: Agora usa sessão Flask (funciona em production serverless)
+  - 5 tentativas de login → bloqueio de 1 minuto
+  - 3 tentativas de registro → bloqueio de 1 minuto
+  
+- **Verificação de Usuário Ativo**: Usuários desativados (`ativo=False`) são impedidos de fazer login
+
+- **CORS Configurável**: Nova variável `ALLOWED_ORIGINS` para especificar domínios permitidos
+
+- **Cache no Context Processor**: Informações do usuário cacheadas na sessão (reduz consultas ao banco)
+
+- **CASCADE Deletes**: Foreign keys com `ON DELETE CASCADE` no banco Supabase:
+  - `amostra.cilindro_id` → delete em cascata
+  - `amostra.elemento_id` → delete em cascata  
+  - `pressao.cilindro_id` → delete em cascata
+
+- **Tratamento de Erros Padronizado**: Uso de `formatar_erro_supabase()` em todos os blueprints
+
+- **Correções de Bugs**:
+  - Nome da função pressao renomeado para `list()` (consistência)
+  - Removidos imports locais duplicados em auth.py
+  - Lógica do register corrigida (bloco de bloqueio agora dentro do POST)
+  - Syntax error corrigido em cilindro.py (except fora de try)
+
+### Variáveis de Ambiente (Novas)
+
+| Variável | Descrição | Padrão |
+|---------|----------|-------|
+| `ALLOWED_ORIGINS` | Domínios permitidos para CORS (separados por vírgula) | `"*"` |
+
+---
+
 ## Changelog
 
 | Versão | Descrição |
 |--------|-----------|
+| v2.2.0 | Rate limiting em sessão, verificação is_user_active, CORS configurável, CASCADE deletes, cache context processor |
 | v2.1.0 | Sistema completo de paleta de cores por KPI |
 | v2.0.2 | Correções de consistência frontend vs backend (pressao/temperatura), documentação database/ |
 | v2.0.1 | Log de usuários no histórico (cadastro, role, permissões), visualizar senha |

@@ -511,3 +511,168 @@ Remover arquivos e diretórios desnecessários do projeto.
 - [x] Remover diretório `codigo/` (vazio)
 - [x] Remover diretório `figuras/` (vazio)
 - [x] Adicionar diretório `database/` à documentação
+
+---
+
+## Fase 12 - Correções de Segurança e Melhorias ✅ CONCLUÍDO
+
+### 12.1 Rate Limiting Ineficiente (auth.py:15-30)
+
+**Problema**: O rate limiting usa dicionário Python em memória (`_rate_limit_storage = {}`).
+Não funciona em produção (Vercel/serverless) porque cada invocação cria um novo processo.
+
+**Solução**: Usar contagem na sessão Flask com bloqueio por tempo.
+
+**Arquivo**: `frontend/blueprints/auth.py`
+
+**Status**: [x] Concluído ✅
+
+### 12.2 CORS Excessivamente Permissivo (app.py:101-106)
+
+**Problema**: `Access-Control-Allow-Origin: "*"` permite requisições de qualquer domínio.
+
+**Solução**: Configurar origens via variável ALLOWED_ORIGINS.
+
+**Arquivo**: `frontend/app.py`
+
+**Status**: [x] Concluído ✅
+
+### 12.3 Status "Ativo" do Usuário Nunca Verificado
+
+**Problema**: A função `is_user_active()` existe mas nunca é chamada durante o login.
+Usuários marcados como `ativo=False` ainda podem fazer login.
+
+**Solução**: Adicionar verificação em `auth.py` após login bem-sucedido.
+
+**Arquivo**: `frontend/blueprints/auth.py`
+
+**Status**: [x] Concluído ✅
+
+### 12.4 Exposição de Erros Técnicos ao Usuário
+
+**Problema**: Múltiplos arquivos mostram erros brutos do Supabase diretamente ao usuário:
+- `pressao.py` - "Erro ao buscar cilindro: {str(e)}"
+- `cilindro.py` - "Erro ao verificar código: {str(e)}"
+
+**Solução**: Usar `formatar_erro_supabase()` consistentemente.
+
+**Arquivo**: Múltiplos arquivos em `frontend/blueprints/`
+
+**Status**: [x] Concluído ✅
+
+### 12.5 Missing Database CASCADE Deletes
+
+**Problema**: O schema não define ON DELETE CASCADE. Se um cilindro/elemento for excluído,
+registros de `amostra` ficam órfãos.
+
+**Solução**: Adicionar ON DELETE CASCADE às foreign keys no schema.sql E no banco Supabase.
+
+**Arquivo**: `database/schema.sql` + SQL Editor Supabase
+
+**Status**: [x] Concluído ✅
+
+### 12.6 Cache Ausente no Context Processor
+
+**Problema**: O context_processor faz 3 consultas por requisição:
+- `is_admin()` → consulta banco
+- `get_user_role()` → consulta banco  
+- `get_user_name()` → consulta banco
+- `pode_acessar_aba()` → consulta banco
+
+**Solução**: Cachear na sessão após login (`cached_user_info`).
+
+**Arquivo**: `frontend/app.py`
+
+**Status**: [x] Concluído ✅
+
+### 12.7 Inconsistência de Nomenclatura (pressao.py)
+
+**Problema**: Nome da função `pressao_list()` não corresponde à rota `/pressoes`.
+
+**Solução**: Renomear para `list()` para consistência + atualizar base.html.
+
+**Arquivo**: `frontend/blueprints/pressao.py` + `templates/base.html`
+
+**Status**: [x] Concluído ✅
+
+### 12.8 Erros de Syntax e Lógica (Fase Final)
+
+**Problemas encontrados**:
+- `cilindro.py`: `except` fora do `try` correspondente (linha 138)
+- `auth.py`: múltiplos imports locais conflitando com import do topo
+- `auth.py` register: bloco `if register_blocked_until` fora do `if request.method == "POST"`
+
+**Correções aplicadas**:
+- Corrigida indentação do except em cilindro.py
+- Removidos imports locais duplicados em auth.py (funções login, register, generate_jwt_token)
+- Corrigida lógica do register (bloco agora dentro do POST)
+
+**Status**: [x] Concluído ✅
+
+### 12.2 CORS Excessivamente Permissivo (app.py:101-106)
+
+**Problema**: `Access-Control-Allow-Origin: "*"` permite requisições de qualquer domínio.
+
+**Solução**: Configurar origens específicas ou usar token CSRF para proteção.
+
+**Arquivo**: `frontend/app.py`
+
+**Status**: [x] Concluído ✅
+
+### 12.3 Status "Ativo" do Usuário Nunca Verificado
+
+**Problema**: A função `is_user_active()` existe mas nunca é chamada durante o login.
+Usuários marcados como `ativo=False` ainda podem fazer login.
+
+**Solução**: Adicionar verificação em `auth.py` após login bem-sucedido.
+
+**Arquivo**: `frontend/blueprints/auth.py`
+
+**Status**: [x] Concluído ✅
+
+### 12.4 Exposição de Erros Técnicos ao Usuário
+
+**Problema**: Múltiplos arquivos mostram erros brutos do Supabase diretamente ao usuário:
+- `pressao.py` - "Erro ao buscar cilindro: {str(e)}"
+- `cilindro.py` - "Erro ao verificar código: {str(e)}"
+
+**Solução**: Usar `formatar_erro_supabase()` consistentemente.
+
+**Arquivo**: Múltiplos arquivos em `frontend/blueprints/`
+
+**Status**: [x] Concluído ✅
+
+### 12.5 Missing Database CASCADE Deletes
+
+**Problema**: O schema não define ON DELETE CASCADE. Se um cilindro/elemento for excluído,
+registros de `amostra` ficam órfãos.
+
+**Solução**: Adicionar ON DELETE CASCADE às foreign keys no schema.sql.
+
+**Arquivo**: `database/schema.sql`
+
+**Status**: [x] Concluído ✅
+
+### 12.6 Cache Ausente no Context Processor
+
+**Problema**: O context_processor faz 3 consultas por requisição:
+- `is_admin()` → consulta banco
+- `get_user_role()` → consulta banco  
+- `get_user_name()` → consulta banco
+- `pode_acessar_aba()` → consulta banco
+
+**Solução**: Cachear na sessão após login.
+
+**Arquivo**: `frontend/app.py`
+
+**Status**: [x] Concluído ✅
+
+### 12.7 Inconsistência de Nomenclatura (pressao.py)
+
+**Problema**: Nome da função `pressao_list()` não corresponde à rota `/pressoes`.
+
+**Solução**: Renomear para `list()` para consistência.
+
+**Arquivo**: `frontend/blueprints/pressao.py`
+
+**Status**: [x] Concluído ✅

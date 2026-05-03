@@ -100,9 +100,16 @@ def check_inactivity():
 
 @app.after_request
 def add_cors_headers(response):
-    response.headers["Access-Control-Allow-Origin"] = "*"
-    response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS"
-    response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization"
+    if request.method == "OPTIONS":
+        response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS"
+        response.headers["Access-Control-Allow-Headers"] = "Content-Type, X-CSRFToken"
+        origin = request.headers.get("Origin")
+        if origin:
+            allowed_origins = os.getenv("ALLOWED_ORIGINS", "").split(",") if os.getenv("ALLOWED_ORIGINS") else []
+            if "*" in allowed_origins or not allowed_origins:
+                response.headers["Access-Control-Allow-Origin"] = "*"
+            elif origin in allowed_origins:
+                response.headers["Access-Control-Allow-Origin"] = origin
     return response
 
 
@@ -110,10 +117,20 @@ def add_cors_headers(response):
 def inject_user_info():
     from blueprints.helpers import is_admin, get_user_role, get_user_name, pode_acessar_aba
     from datetime import datetime
+    
+    if 'user_id' in session and 'cached_user_info' not in session:
+        session['cached_user_info'] = {
+            'user_role': get_user_role(),
+            'user_name': get_user_name(),
+            'is_admin': is_admin()
+        }
+    
+    cached = session.get('cached_user_info', {})
+    
     return dict(
-        is_admin=is_admin(), 
-        user_role=get_user_role(), 
-        user_name=get_user_name(), 
+        is_admin=cached.get('is_admin', False), 
+        user_role=cached.get('user_role', 'usuario'), 
+        user_name=cached.get('user_name', ''), 
         pode_acessar_aba=pode_acessar_aba,
         today=datetime.now().strftime("%Y-%m-%d")
     )

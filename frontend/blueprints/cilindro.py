@@ -70,7 +70,7 @@ def list():
                         flash("Código já existe para este usuário", "danger")
                         return redirect(url_for("cilindro.list"))
                 except Exception as e:
-                    flash(f"Erro ao verificar código: {str(e)}", "danger")
+                    flash(formatar_erro_supabase(str(e), "verificar código"), "danger")
                     return redirect(url_for("cilindro.list"))
             
             try:
@@ -136,7 +136,7 @@ def list():
                         flash("Código já existe para este usuário", "danger")
                         return redirect(url_for("cilindro.list"))
             except Exception as e:
-                flash(f"Erro ao verificar código: {str(e)}", "danger")
+                flash(formatar_erro_supabase(str(e), "verificar código"), "danger")
                 return redirect(url_for("cilindro.list"))
             
             try:
@@ -159,7 +159,7 @@ def list():
                 registrar_historico("cilindro", "atualizado", codigo, user_id)
                 flash("Cilindro atualizado com sucesso!", "success")
             except Exception as e:
-                flash(f"Erro ao atualizar cilindro: {str(e)}", "danger")
+                flash(formatar_erro_supabase(str(e), "atualizar cilindro"), "danger")
             
         elif action == "delete":
             cilindro_id = request.form.get("cilindro_id", "").strip()
@@ -190,7 +190,7 @@ def list():
                 registrar_historico("cilindro", "excluido", cilindro_codigo, user_id)
                 flash("Cilindro excluído com sucesso!", "success")
             except Exception as e:
-                flash(f"Erro ao excluir cilindro: {str(e)}", "danger")
+                flash(formatar_erro_supabase(str(e), "excluir cilindro"), "danger")
             
             return redirect(url_for("cilindro.list"))
         
