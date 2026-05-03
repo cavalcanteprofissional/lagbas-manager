@@ -1,6 +1,6 @@
 # LabGas Manager
 
-**Versão: 2.2.5** (Branch: master)
+**Versão: 2.3.0** (Branch: master)
 
 Dashboard para gestão de cilindro de gás e elementos analisados em laboratório de química, utilizando **Flask** com **Jinja2** para o frontend web e **Supabase** como banco de dados PostgreSQL.
 
@@ -765,6 +765,11 @@ O frontend estará disponível em: `http://localhost:5000`
   - Reutiliza query única para dropdown e map display
   - Redução de 50% na página
 
+- **Segurança Avançada**: Cookie secure + Security headers
+  - SESSION_COOKIE_SECURE (produção)
+  - SESSION_COOKIE_HTTPONLY + SAMESITE
+  - X-Frame-Options, X-Content-Type-Options, Referrer-Policy
+
 ---
 
 ## Novidades v2.2.1
@@ -782,6 +787,7 @@ O frontend estará disponível em: `http://localhost:5000`
 
 | Versão | Descrição |
 |--------|-----------|
+| v2.3.0 | Segurança avançada (cookie secure + security headers) |
 | v2.2.5 | Otimização query cilindro em Pressão |
 | v2.2.4 | Otimização N+1 admin + fix pressao.list() |
 | v2.2.3 | Botão Voice responsivo (ícone mobile, texto desktop) |

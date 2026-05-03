@@ -24,6 +24,13 @@ app.secret_key = os.getenv("SECRET_KEY")
 if not app.secret_key:
     raise ValueError("SECRET_KEY é obrigatória. Defina a variável de ambiente.")
 
+# Configuração de segurança baseada no ambiente
+is_production = os.getenv('FLASK_ENV') == 'production' or os.getenv('VERCEL_ENV') == 'production'
+if is_production:
+    app.config['SESSION_COOKIE_SECURE'] = True
+    app.config['SESSION_COOKIE_HTTPONLY'] = True
+    app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
+
 csrf = CSRFProtect(app)
 
 limiter = Limiter(
@@ -106,16 +113,23 @@ def check_inactivity():
 
 @app.after_request
 def add_cors_headers(response):
+    origin = request.headers.get("Origin")
+    if origin:
+        allowed_origins = os.getenv("ALLOWED_ORIGINS", "").split(",") if os.getenv("ALLOWED_ORIGINS") else []
+        if "*" in allowed_origins or not allowed_origins:
+            response.headers["Access-Control-Allow-Origin"] = "*"
+        elif origin in allowed_origins:
+            response.headers["Access-Control-Allow-Origin"] = origin
+    
     if request.method == "OPTIONS":
         response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS"
         response.headers["Access-Control-Allow-Headers"] = "Content-Type, X-CSRFToken"
-        origin = request.headers.get("Origin")
-        if origin:
-            allowed_origins = os.getenv("ALLOWED_ORIGINS", "").split(",") if os.getenv("ALLOWED_ORIGINS") else []
-            if "*" in allowed_origins or not allowed_origins:
-                response.headers["Access-Control-Allow-Origin"] = "*"
-            elif origin in allowed_origins:
-                response.headers["Access-Control-Allow-Origin"] = origin
+    
+    if is_production:
+        response.headers['X-Frame-Options'] = 'DENY'
+        response.headers['X-Content-Type-Options'] = 'nosniff'
+        response.headers['Referrer-Policy'] = 'strict-origin-when-cross-origin'
+    
     return response
 
 
