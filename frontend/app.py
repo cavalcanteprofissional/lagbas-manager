@@ -1,5 +1,5 @@
 import os
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from flask import Flask, render_template, redirect, url_for, session, request, flash
 from flask_login import LoginManager, login_required, current_user
 from flask_wtf import CSRFProtect
@@ -88,7 +88,7 @@ def check_inactivity():
         return
     
     last_activity = session.get('last_activity')
-    now = datetime.utcnow()
+    now = datetime.now(timezone.utc)
     
     if last_activity:
         try:
@@ -134,16 +134,20 @@ def inject_user_info():
         
         if perfil_response.data:
             perfil = perfil_response.data[0]
+            from blueprints.helpers import ABAS_DEFAULT
             session['cached_user_info'] = {
                 'user_role': perfil.get('role', 'usuario'),
                 'user_name': perfil.get('nome', ''),
-                'is_admin': perfil.get('role') == 'admin'
+                'is_admin': perfil.get('role') == 'admin',
+                'habilitar_abas': perfil.get('habilitar_abas') or ABAS_DEFAULT
             }
         else:
+            from blueprints.helpers import ABAS_DEFAULT
             session['cached_user_info'] = {
                 'user_role': 'usuario',
                 'user_name': '',
-                'is_admin': False
+                'is_admin': False,
+                'habilitar_abas': ABAS_DEFAULT
             }
     
     cached = session.get('cached_user_info', {})
@@ -165,7 +169,6 @@ def formatar_data(data):
         if "T" in data:
             data = data.split("T")[0]
         try:
-            from datetime import datetime
             dt = datetime.strptime(data, "%Y-%m-%d")
             return dt.strftime("%d/%m/%Y")
         except ValueError:

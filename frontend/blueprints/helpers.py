@@ -92,7 +92,7 @@ def pode_acessar_aba(aba):
 
 
 def get_habilitar_abas(user_id=None):
-    """Retorna o dicionário de abas habilitadas para o usuário"""
+    """Retorna o dicionário de abas habilitadas para o usuário - usa cache da sessão"""
     if user_id is None:
         user_id = get_user_id()
     
@@ -100,20 +100,12 @@ def get_habilitar_abas(user_id=None):
         return ABAS_DEFAULT.copy()
     
     cached = session.get('cached_user_info', {})
-    perfil_role = cached.get('user_role')
     
-    if perfil_role == 'admin':
+    if cached.get('is_admin'):
         return {aba: True for aba in ABAS_DISPONIVEIS}
     
-    try:
-        client = get_admin_client()
-        response = client.table("perfil").select("habilitar_abas").eq("id", user_id).execute()
-        
-        if response.data and len(response.data) > 0:
-            habilitar_abas = response.data[0].get("habilitar_abas")
-            if habilitar_abas:
-                return {aba: habilitar_abas.get(aba, True) for aba in ABAS_DISPONIVEIS}
-    except Exception as e:
-        logger.error(f"get_habilitar_abas: erro ao buscar perfil: {str(e)}")
+    habilitar_abas = cached.get('habilitar_abas')
+    if habilitar_abas:
+        return {aba: habilitar_abas.get(aba, True) for aba in ABAS_DISPONIVEIS}
     
     return ABAS_DEFAULT.copy()
