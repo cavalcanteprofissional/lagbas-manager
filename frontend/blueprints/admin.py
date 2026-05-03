@@ -48,19 +48,38 @@ def panel():
     users_response = client.table("perfil").select("*").execute()
     users = users_response.data or []
     
+    if users:
+        user_ids = [u.get("id") for u in users]
+        
+        cil_response = client.table("cilindro").select("user_id,id", count="exact").in_("user_id", user_ids).execute()
+        ele_response = client.table("elemento").select("user_id,id", count="exact").in_("user_id", user_ids).execute()
+        amo_response = client.table("amostra").select("user_id,id", count="exact").in_("user_id", user_ids).execute()
+        pre_response = client.table("pressao").select("user_id,id", count="exact").in_("user_id", user_ids).execute()
+        
+        cil_counts = {}
+        for r in cil_response.data or []:
+            cil_counts[r["user_id"]] = r.get("count", 0)
+        
+        ele_counts = {}
+        for r in ele_response.data or []:
+            ele_counts[r["user_id"]] = r.get("count", 0)
+        
+        amo_counts = {}
+        for r in amo_response.data or []:
+            amo_counts[r["user_id"]] = r.get("count", 0)
+        
+        pre_counts = {}
+        for r in pre_response.data or []:
+            pre_counts[r["user_id"]] = r.get("count", 0)
+    
     for user in users:
-        user_id = user.get("id")
+        uid = user.get("id")
         
-        cilindro_count = client.table("cilindro").select("id", count="exact").eq("user_id", user_id).execute()
-        elemento_count = client.table("elemento").select("id", count="exact").eq("user_id", user_id).execute()
-        amostra_count = client.table("amostra").select("id", count="exact").eq("user_id", user_id).execute()
-        pressao_count = client.table("pressao").select("id", count="exact").eq("user_id", user_id).execute()
-        
-        user["nome"] = user.get("nome") or user.get("email") or user_id
-        user["cilindros"] = cilindro_count.count or 0
-        user["elementos"] = elemento_count.count or 0
-        user["amostras"] = amostra_count.count or 0
-        user["pressoes"] = pressao_count.count or 0
+        user["nome"] = user.get("nome") or user.get("email") or uid
+        user["cilindros"] = cil_counts.get(uid, 0)
+        user["elementos"] = ele_counts.get(uid, 0)
+        user["amostras"] = amo_counts.get(uid, 0)
+        user["pressoes"] = pre_counts.get(uid, 0)
         if user.get("role") == "admin":
             user["habilitar_abas"] = {"cilindro": True, "pressao": True, "elemento": True, "amostra": True, "historico": True}
         else:
