@@ -12,7 +12,7 @@ pressao_bp = Blueprint('pressao', __name__)
 
 
 @pressao_bp.route("/pressoes", methods=["GET", "POST"])
-def list():
+def pressao_list():
     if not pode_acessar_aba("pressao"):
         flash("Você não tem permissão para acessar esta aba.", "warning")
         return redirect(url_for("dashboard"))
@@ -35,16 +35,16 @@ def list():
             
             if not cilindro_id or not pressao or not data or not hora:
                 flash("Cilindro, pressão, temperatura, data e hora são obrigatórios", "danger")
-                return redirect(url_for("pressao.list"))
+                return redirect(url_for("pressao.pressao_list"))
             
             try:
                 pressao_val = safe_float(pressao, 1.0)
                 if pressao_val < 0 or pressao_val > 300:
                     flash("Pressão deve estar entre 0 e 300 bar", "danger")
-                    return redirect(url_for("pressao.list"))
+                    return redirect(url_for("pressao.pressao_list"))
             except ValueError as e:
                 flash("Pressão inválida.", "danger")
-                return redirect(url_for("pressao.list"))
+                return redirect(url_for("pressao.pressao_list"))
             
             temp_val = None
             if temperatura:
@@ -52,32 +52,32 @@ def list():
                     temp_val = safe_float(temperatura, 25.0)
                     if temp_val < -50 or temp_val > 100:
                         flash("Temperatura deve estar entre -50°C e 100°C", "danger")
-                        return redirect(url_for("pressao.list"))
+                        return redirect(url_for("pressao.pressao_list"))
                 except ValueError as e:
                     flash("Temperatura inválida.", "danger")
-                    return redirect(url_for("pressao.list"))
+                    return redirect(url_for("pressao.pressao_list"))
             
             try:
                 datetime.strptime(data, "%Y-%m-%d")
             except ValueError:
                 flash("Data inválida", "danger")
-                return redirect(url_for("pressao.list"))
+                return redirect(url_for("pressao.pressao_list"))
             
             try:
                 datetime.strptime(hora, "%H:%M")
             except ValueError:
                 flash("Hora inválida", "danger")
-                return redirect(url_for("pressao.list"))
+                return redirect(url_for("pressao.pressao_list"))
             
             try:
                 cilindro_check = get_admin_client().table("cilindro").select("codigo").eq("id", cilindro_id).execute()
                 if not cilindro_check.data:
                     flash("Cilindro não encontrado", "danger")
-                    return redirect(url_for("pressao.list"))
+                    return redirect(url_for("pressao.pressao_list"))
                 cilindro_codigo = cilindro_check.data[0].get("codigo")
             except Exception as e:
                 flash(formatar_erro_supabase(str(e), "buscar cilindro"), "danger")
-                return redirect(url_for("pressao.list"))
+                return redirect(url_for("pressao.pressao_list"))
             
             try:
                 data_insert = {
@@ -112,16 +112,16 @@ def list():
             
             if not pressao_id or not cilindro_id or not pressao or not data or not hora:
                 flash("ID, cilindro, pressão, temperatura, data e hora são obrigatórios", "danger")
-                return redirect(url_for("pressao.list"))
+                return redirect(url_for("pressao.pressao_list"))
             
             try:
                 pressao_val = safe_float(pressao, 1.0)
                 if pressao_val < 0 or pressao_val > 300:
                     flash("Pressão deve estar entre 0 e 300 bar", "danger")
-                    return redirect(url_for("pressao.list"))
+                    return redirect(url_for("pressao.pressao_list"))
             except ValueError as e:
                 flash("Pressão inválida.", "danger")
-                return redirect(url_for("pressao.list"))
+                return redirect(url_for("pressao.pressao_list"))
             
             temp_val = None
             if temperatura:
@@ -129,20 +129,20 @@ def list():
                     temp_val = safe_float(temperatura, 25.0)
                     if temp_val < -50 or temp_val > 100:
                         flash("Temperatura deve estar entre -50°C e 100°C", "danger")
-                        return redirect(url_for("pressao.list"))
+                        return redirect(url_for("pressao.pressao_list"))
                 except ValueError as e:
                     flash("Temperatura inválida.", "danger")
-                    return redirect(url_for("pressao.list"))
+                    return redirect(url_for("pressao.pressao_list"))
             
             try:
                 cilindro_check = get_admin_client().table("cilindro").select("codigo").eq("id", cilindro_id).execute()
                 if not cilindro_check.data:
                     flash("Cilindro não encontrado", "danger")
-                    return redirect(url_for("pressao.list"))
+                    return redirect(url_for("pressao.pressao_list"))
                 cilindro_codigo = cilindro_check.data[0].get("codigo")
             except Exception as e:
                 flash(formatar_erro_supabase(str(e), "buscar cilindro"), "danger")
-                return redirect(url_for("pressao.list"))
+                return redirect(url_for("pressao.pressao_list"))
             
             try:
                 data_update = {
@@ -169,17 +169,17 @@ def list():
             
             if not pressao_id:
                 flash("ID da pressão é obrigatório", "danger")
-                return redirect(url_for("pressao.list"))
+                return redirect(url_for("pressao.pressao_list"))
             
             try:
                 pressao_info = get_supabase_client().table("pressao").select("cilindro_id,pressao,user_id").eq("id", pressao_id).execute().data
                 if not pressao_info:
                     flash("Registro de pressão não encontrado", "danger")
-                    return redirect(url_for("pressao.list"))
+                    return redirect(url_for("pressao.pressao_list"))
                 
                 if not admin and pressao_info[0].get("user_id") != user_id:
                     flash("Você não tem permissão para excluir este registro.", "danger")
-                    return redirect(url_for("pressao.list"))
+                    return redirect(url_for("pressao.pressao_list"))
                 
                 cilindro_id = pressao_info[0].get("cilindro_id")
                 pressao_val = pressao_info[0].get("pressao")
@@ -196,14 +196,14 @@ def list():
             except Exception as e:
                 flash(formatar_erro_supabase(str(e), "excluir pressão"), "danger")
             
-            return redirect(url_for("pressao.list"))
+            return redirect(url_for("pressao.pressao_list"))
         
         elif action == "delete_multiple":
             pressao_ids = request.form.getlist("pressao_ids")
             
             if not pressao_ids:
                 flash("Nenhum registro selecionado", "danger")
-                return redirect(url_for("pressao.list"))
+                return redirect(url_for("pressao.pressao_list"))
             
             try:
                 deleted_count = 0
@@ -241,7 +241,7 @@ def list():
             except Exception as e:
                 flash(formatar_erro_supabase(str(e), "excluir registros"), "danger")
             
-            return redirect(url_for("pressao.list"))
+            return redirect(url_for("pressao.pressao_list"))
     
     response = get_supabase_client().table("pressao").select("*").order("created_at", desc=True).execute()
     pressoes = response.data or []
