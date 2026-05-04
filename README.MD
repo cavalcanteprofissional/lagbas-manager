@@ -890,7 +890,7 @@ Cada KPI (Cilindros, Elementos, Amostras, Pressões) agora possui cores padroniz
    - Install Command: *(deixe vazio)*
 
 3. **Environment Variables**
-    - `FLASK_SECRET_KEY`: sua chave secreta (obrigatória)
+    - `SUPABASE_SECRET_KEY`: sua chave secreta do Supabase (obrigatória)
     - As variáveis do Supabase são injetadas automaticamente pelo Supabase na Vercel:
       - `SUPABASE_URL` (automático)
       - `SUPABASE_ANON_KEY` (automático)

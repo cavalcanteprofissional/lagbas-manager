@@ -20,9 +20,9 @@ except Exception:
     pass  # Se não existir, continua sem erro
 
 app = Flask(__name__)
-app.secret_key = os.getenv("FLASK_SECRET_KEY") or os.getenv("SECRET_KEY")
+app.secret_key = os.getenv("SUPABASE_SECRET_KEY") or os.getenv("FLASK_SECRET_KEY") or os.getenv("SECRET_KEY")
 if not app.secret_key:
-    raise ValueError("FLASK_SECRET_KEY é obrigatória. Defina a variável de ambiente.")
+    raise ValueError("SUPABASE_SECRET_KEY é obrigatória. Defina a variável de ambiente.")
 
 # Configuração de segurança baseada no ambiente
 is_production = os.getenv('FLASK_ENV') == 'production' or os.getenv('VERCEL_ENV') == 'production'
