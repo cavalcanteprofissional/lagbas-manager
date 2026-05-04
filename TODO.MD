@@ -75,6 +75,18 @@ Admin pode habilitar/desabilitar acesso às abas para usuários comuns.
 
 ---
 
+## Fase 6 - Vercel Deployment ✅ CONCLUÍDO
+
+### 1.1 Variáveis de Ambiente Vercel
+- [x] Renomear SECRET_KEY para FLASK_SECRET_KEY (evitar conflito com Postgresql)
+- [x] Adicionar fallback para SECRET_KEY (desenvolvimento local)
+
+### 1.2 build Configuration
+- [x] Configurar vercel.json para Flask (Python)
+- [x] Adicionar requirements.txt com todasdependências
+
+---
+
 ## Estrutura de Diretórios - Futuro Backend
 
 ### Decisão de Arquitetura

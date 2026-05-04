@@ -1,6 +1,6 @@
 # LabGas Manager
 
-**Versão: 2.3.0** (Branch: master)
+**Versão: 2.3.1** (Branch: master)
 
 Dashboard para gestão de cilindro de gás e elementos analisados em laboratório de química, utilizando **Flask** com **Jinja2** para o frontend web e **Supabase** como banco de dados PostgreSQL.
 
@@ -890,7 +890,7 @@ Cada KPI (Cilindros, Elementos, Amostras, Pressões) agora possui cores padroniz
    - Install Command: *(deixe vazio)*
 
 3. **Environment Variables**
-    - `SECRET_KEY`: sua chave secreta (obrigatória)
+    - `FLASK_SECRET_KEY`: sua chave secreta (obrigatória)
     - As variáveis do Supabase são injetadas automaticamente pelo Supabase na Vercel:
       - `SUPABASE_URL` (automático)
       - `SUPABASE_ANON_KEY` (automático)
